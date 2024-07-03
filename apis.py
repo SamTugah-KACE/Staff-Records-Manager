@@ -6,7 +6,7 @@ from database.db_session import get_db
 import schemas
 from models import (BioData, EmploymentDetail, BankDetail, Academic, Professional, 
                         Qualification, EmploymentHistory, FamilyInfo, EmergencyContact, 
-                        NextOfKin, Declaration, StaffCategory, Centre, User, Directorate, Grade, EmploymentType, Trademark)
+                        NextOfKin, Declaration, StaffCategory, Centre, User, Directorate, Grade, EmploymentType, Trademark, User)
 from crud import (bio_data, declaration, 
                   user, trademark)
 
@@ -21,6 +21,10 @@ from _crud import (centre, employment_type, grade, directorate, staff_category, 
 from auth import current_active_user, current_active_admin, current_active_admin_user
 from uuid import UUID
 import tempfile
+from tempfile import NamedTemporaryFile, TemporaryDirectory
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 
@@ -31,6 +35,8 @@ all_models = [
     Declaration, User
 ]
 
+# Assuming you have a list of all models you want to include in the search
+search_models = [Centre, Directorate, Grade, EmploymentType, StaffCategory, BioData, EmploymentDetail, BankDetail, Academic, Professional, Qualification, EmploymentHistory, FamilyInfo, EmergencyContact, NextOfKin, Declaration]
 
 bio_data_related_models  = [
     EmploymentDetail, BankDetail, Academic, Professional, Qualification, EmploymentHistory, FamilyInfo, EmergencyContact, NextOfKin, 
@@ -40,10 +46,41 @@ bio_data_related_models  = [
 
 api_router = APIRouter(prefix="/api")
 
+#users
+@api_router.post("/user", response_model=schemas.User,  tags=["Users"], status_code=status.HTTP_201_CREATED)
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db), current_user: User = Depends(current_active_admin)):
+    return crud.create_user(db=db, user=user)
+
+@api_router.get("/user/get/{user_id}", response_model=schemas.User, tags=["Users"])
+def read_user(user_id: UUID, db: Session = Depends(get_db), current_user: User = Depends(current_active_admin_user)):
+    db_user = crud.get_user(db, user_id)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user
+
+@api_router.get("/get/allusers", tags=["Users"])
+def read_users(skip: int = 0, limit: int = 10, db: Session = Depends(get_db), current_user: User = Depends(current_active_admin)):
+    users = crud.get_users(db, skip=skip, limit=limit)
+    return users
+
+@api_router.put("/user/update/{user_id}", response_model=schemas.User, tags=["Users"])
+def update_user(user_id: UUID, user_update: schemas.UserUpdate, db: Session = Depends(get_db), current_user: User = Depends(current_active_admin_user)):
+    return crud.update_user(db=db, user_id=user_id, user_update=user_update)
+
+
+
+@api_router.delete("/users/{user_id}", tags=["Users"])
+def delete_user(user_id: UUID, db: Session = Depends(get_db), current_user: User = Depends(current_active_admin_user)):
+    db_user = user.remove(db, user_id)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return "Data deleted successfully"
+
 
 @api_router.get("/search/", response_model=Dict[str, List[Dict[str, Any]]], tags=["Search Space"])
-def search(search_string: str, db: Session = Depends(get_db)):
-    results = crud.search_all(db, search_string, all_models)
+def search(search_string: str, db: Session = Depends(get_db), current_user: User = Depends(current_active_admin_user)):
+    results = crud.search_all(db, search_string, search_models, current_user)
     return results
 
 #Business Brand
@@ -555,115 +592,9 @@ def delete_bio_data(
 
 
 
-#users
-@api_router.post("/user", response_model=schemas.User,  tags=["Users"], status_code=status.HTTP_201_CREATED)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db), current_user: User = Depends(current_active_admin)):
-    return crud.create_user(db=db, user=user)
-
-@api_router.get("/user/get/{user_id}", response_model=schemas.User, tags=["Users"])
-def read_user(user_id: UUID, db: Session = Depends(get_db), current_user: User = Depends(current_active_admin_user)):
-    db_user = crud.get_user(db, user_id)
-    if db_user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    return db_user
-
-@api_router.get("/get/allusers", tags=["Users"])
-def read_users(skip: int = 0, limit: int = 10, db: Session = Depends(get_db), current_user: User = Depends(current_active_admin)):
-    users = crud.get_users(db, skip=skip, limit=limit)
-    return users
-
-@api_router.put("/user/update/{user_id}", response_model=schemas.User, tags=["Users"])
-def update_user(user_id: UUID, user_update: schemas.UserUpdate, db: Session = Depends(get_db), current_user: User = Depends(current_active_admin_user)):
-    return crud.update_user(db=db, user_id=user_id, user_update=user_update)
 
 
 
-@api_router.delete("/users/{user_id}", tags=["Users"])
-def delete_user(user_id: UUID, db: Session = Depends(get_db), current_user: User = Depends(current_active_admin_user)):
-    db_user = user.remove(db, user_id)
-    if db_user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    return "Data deleted successfully"
-
-
-
-
-
-
-@api_router.post("/declaration/", response_model=schemas.Declaration, tags=["Declaration"])
-def create_declaration(
-    *,
-    db: Session = Depends(get_db),
-    #declaration_in: schemas.DeclarationCreate,
-    bio_row_id: Optional[str] = Form(None),
-    status: Optional[bool] = Form(None),
-    declaration_date: Optional[date] = Form(None),
-    reps_signature: UploadFile = File(None),
-    employees_signature: UploadFile = File(None),
-
-    current_user: User = Depends(current_active_admin_user)
-) -> Any:
-    
-
-    declaration_in = schemas.DeclarationCreate(
-        bio_row_id = bio_row_id,
-        status=status,
-        declaration_date=declaration_date
-    )
-
-    files = {
-        'reps_signature': reps_signature.file.read() if reps_signature else None,
-        'employees_signature': employees_signature.file.read() if employees_signature else None
-    }
-
-    declaration = crud.declaration.create(db=db, obj_in=declaration_in, files=files)
-    return declaration
-
-@api_router.put("/update_declaration/{id}", response_model=schemas.Declaration, tags=["Declaration"])
-def update_declaration(
-    *,
-    db: Session = Depends(get_db),
-    id: UUID,
-    bio_row_id: Optional[str] = Form(None),
-    status: Optional[bool] = Form(None),
-    reps_signature: UploadFile = File(None),
-    employees_signature: UploadFile = File(None),
-    declaration_date: Optional[date] = Form(None),
-    current_user: User = Depends(current_active_admin_user)
-) -> Declaration:
-    declarat = crud.declaration.get(db=db, id=id)
-    if not declarat:
-        raise HTTPException(status_code=404, detail="Declaration not found")
-
-    files = {
-        'reps_signature': reps_signature.file.read() if reps_signature else None,
-        'employees_signature': employees_signature.file.read() if employees_signature else None
-    }
-
-    declaration_in = schemas.DeclarationUpdate(
-        bio_row_id=bio_row_id,
-        status=status,
-        declaration_date=declaration_date
-    )
-
-    declaratio = crud.declaration.update(db=db, db_obj=declarat, obj_in=declaration_in, files=files)
-    return declaratio
-
-@api_router.delete("/declaration/{id}", response_model=schemas.Declaration, tags=["Declaration"])
-def delete_declaration(
-    *,
-    db: Session = Depends(get_db),
-    id: UUID,
-    force_delete: bool = Query(False, description="Force delete related data"),
-    current_user: User = Depends(current_active_admin_user)
-) -> Any:
-    if not force_delete:
-        # Simulate user prompt by requiring an additional confirmation parameter
-        raise HTTPException(status_code=400, detail="Are you sure you want to delete all related data? This action is irreversible. Set force_delete=True to confirm.")
-    
-    declaration = crud.declaration.remove(db=db, id=id, force_delete=force_delete)
-    return declaration
 
 
 
@@ -732,18 +663,6 @@ def delete_employment_detail(
     if not employment_detail_obj:
         raise HTTPException(status_code=404, detail="employment_detail not found")
     return employment_detail.remove(db=db, id=id)
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1317,8 +1236,8 @@ def create_next_of_kin(
     
     return next_of_kin.create(db=db, obj_in=next_of_kin_in)
 
-@api_router.get("/staff_next_of_kin/", response_model=List[schemas.NextOfKin],  tags=["Next Of Kin"])
-def read_all_staff_next_of_kin(
+@api_router.get("/declaration/", response_model=List[schemas.NextOfKin],  tags=["Next Of Kin"])
+def read_all_declaration(
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
@@ -1367,6 +1286,102 @@ def delete_next_of_kin(
 
 
 
+@api_router.post("/declaration/", response_model=schemas.Declaration, tags=["Declaration"])
+def create_declaration(
+    *,
+    db: Session = Depends(get_db),
+    #declaration_in: schemas.DeclarationCreate,
+    bio_row_id: Optional[str] = Form(None),
+    status: Optional[bool] = Form(None),
+    declaration_date: Optional[date] = Form(None),
+    reps_signature: UploadFile = File(None),
+    employees_signature: UploadFile = File(None),
+
+    current_user: User = Depends(current_active_admin_user)
+) -> Any:
+    
+
+    declaration_in = schemas.DeclarationCreate(
+        bio_row_id = bio_row_id,
+        status=status,
+        declaration_date=declaration_date
+    )
+
+    files = {
+        'reps_signature': reps_signature.file.read() if reps_signature else None,
+        'employees_signature': employees_signature.file.read() if employees_signature else None
+    }
+
+    declaration = crud.declaration.create(db=db, obj_in=declaration_in, files=files)
+    return declaration
+
+@api_router.get("/all_declarationa/", response_model=List[schemas.Declaration],  tags=["Declaration"])
+def read_all_declaration(
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100,
+    current_user: User = Depends(current_active_admin_user)
+) -> List[Declaration]:
+    declaration_obj = declaration.get_multi_declarations(db, skip=skip, limit=limit)
+    return declaration_obj
+
+@api_router.get("/get_declaration/{id}", response_model=schemas.Declaration,  tags=["Declaration"])
+def read_declaration(
+    *,
+    db: Session = Depends(get_db),
+    id: str,
+    current_user: User = Depends(current_active_admin_user)
+) -> Declaration:
+    declaration_obj = declaration.get(db=db, id=id)
+    if not declaration_obj:
+        raise HTTPException(status_code=404, detail="declaration not found")
+    return declaration_obj
+
+
+@api_router.put("/update_declaration/{id}", response_model=schemas.Declaration, tags=["Declaration"])
+def update_declaration(
+    *,
+    db: Session = Depends(get_db),
+    id: UUID,
+    bio_row_id: Optional[str] = Form(None),
+    status: Optional[bool] = Form(None),
+    reps_signature: UploadFile = File(None),
+    employees_signature: UploadFile = File(None),
+    declaration_date: Optional[date] = Form(None),
+    current_user: User = Depends(current_active_admin_user)
+) -> Declaration:
+    declarat = crud.declaration.get(db=db, id=id)
+    if not declarat:
+        raise HTTPException(status_code=404, detail="Declaration not found")
+
+    files = {
+        'reps_signature': reps_signature.file.read() if reps_signature else None,
+        'employees_signature': employees_signature.file.read() if employees_signature else None
+    }
+
+    declaration_in = schemas.DeclarationUpdate(
+        bio_row_id=bio_row_id,
+        status=status,
+        declaration_date=declaration_date
+    )
+
+    declaratio = crud.declaration.update(db=db, db_obj=declarat, obj_in=declaration_in, files=files)
+    return declaratio
+
+@api_router.delete("/declaration/{id}", response_model=schemas.Declaration, tags=["Declaration"])
+def delete_declaration(
+    *,
+    db: Session = Depends(get_db),
+    id: UUID,
+    force_delete: bool = Query(False, description="Force delete related data"),
+    current_user: User = Depends(current_active_admin_user)
+) -> Any:
+    if not force_delete:
+        # Simulate user prompt by requiring an additional confirmation parameter
+        raise HTTPException(status_code=400, detail="Are you sure you want to delete all related data? This action is irreversible. Set force_delete=True to confirm.")
+    
+    declaration = crud.declaration.remove(db=db, id=id, force_delete=force_delete)
+    return declaration
 
 
 
@@ -1374,10 +1389,6 @@ def delete_next_of_kin(
 
 
 
-from tempfile import NamedTemporaryFile, TemporaryDirectory
-import logging
-
-logger = logging.getLogger(__name__)
 
 @api_router.get("/download-form/{bio_data_id}", response_description="Generate PDF for BioData", tags=["Download Records"])
 def generate_records_data_pdf(bio_data_id: str, db: Session = Depends(get_db)):

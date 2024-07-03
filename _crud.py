@@ -38,7 +38,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return obj
     def create(self, db: Session, obj_in: ModelType) -> ModelType:
         try:
-            self.check_unique_fields(db, obj_in)
+            #self.check_unique_fields(db, obj_in)
             db_obj = self.model(**obj_in.dict())
             db.add(db_obj)
             db.commit()
