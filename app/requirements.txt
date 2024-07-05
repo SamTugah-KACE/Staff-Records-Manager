@@ -7,6 +7,7 @@ fastapi_jwt_auth
 fastapi_mail
 google-cloud-storage
 jinja2
+fpdf
 pandas
 passlib[bcrypt]
 pathlib

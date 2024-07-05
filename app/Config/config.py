@@ -21,26 +21,11 @@ class Settings:
     RETRY_DELAY_MULTIPLIER: int = 1  # Exponential backoff multiplier
 
 
-    #set_allow_origin = ['http://localhost:4200','https://smconf.gikace.dev', 'https://smconf-test.web.app']
-
-    set_allow_origin = "http://localhost:4200,https://smconf.gikace.dev, https://smconf-test.web.app"
-
     POSTGRES_USER: str = os.getenv("POSTGRES_USER", "postgres")
-    POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "1234")
+    POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "password")
     POSTGRES_SERVER: str = os.getenv("POSTGRES_SERVER", "localhost")
     POSTGRES_PORT: str = os.getenv("POSTGRES_PORT", 5432)
     POSTGRES_DB: str = os.getenv("POSTGRES_DB", "personal_records_db")
-    INSTANCE_CONNECTION_NAME: str = os.getenv("INSTANCE_CONNECTION_NAME", None)
-    UNIX_SOCKET: str = os.getenv("INSTANCE_UNIX_SOCKET", '/cloudsql/')
-    PROJECT_ID: str = os.getenv("PROJECT_ID")
-    BUCKET_NAME: str = os.getenv("BUCKET_NAME", "personal_records_app")
-    FLYER_PATH: str = os.getenv("FLYER_PATH")
-    OUTLINE_PATH: str = os.getenv("OUTLINE_PATH")
-    SHOW_DOCS: str = os.getenv("SHOW_DOCS")
-    ALLOW_ORIGINS: str = os.getenv("ALLOW_ORIGINS", set_allow_origin)
-    SET_NEW_ORIGIN : list = ALLOW_ORIGINS.split(',')
-
-
 
 
     SQLALCHEMY_DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"

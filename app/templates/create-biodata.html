@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EVENT REGISTRATION FORM</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+
+  <style>
+    .center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  </style>
+
+
+</head>
+<body>
+
+
+
+    <div class="container">
+
+
+
+      <img src="https://storage.googleapis.com/developers-bucket/developers-bucket/smart-conference-app/flyers/GI-KACE-Logo.jpeg" class="center" alt="Women-in-Tech" height=220px width=500px>
+
+      <!-- <marquee behavior="" direction="" style="font-weight:bold;color:blue;">Welcome to Women-in-Tech Event Conference</marquee> -->
+        <div class="row justify-content-center">
+            <div class="card shadow-lg my-5">
+              <div class="card-body p-0">
+                <div class="row">
+                    <div class="p-5">
+                      <div class="text-center">
+                        <h4 class="text-primary">BIODATA REGISTRATION FORM</h4>
+                      </div>
+                      <form class="user" action="http://localhost:8000/api/bio_data" method="POST" enctype="multipart/form-data">
+
+
+                        <div class="row">
+                            <div class="col">
+                    <div class="form-group">
+                        <label>TITLE</label>
+                    <input type="text" name="title" id="name" class="form-control form-control-user" autocomplete="true" placeholder="Enter Title">	
+                    <span id="error_name" style="color: red;"></span>
+                        </div>
+                    </div>
+
+                        <div class="col">
+                        <div class="form-group">
+                            <label>FIRST NAME</label>
+                        <input type="text" name="first_name" id="name" class="form-control form-control-user" autocomplete="true" placeholder="Enter First Name">	
+                        <span id="error_name" style="color: red;"></span>
+                            </div>
+
+                        </div>
+                        </div>
+
+
+
+
+                        <div class="row">
+                            <div class="col">
+                    <div class="form-group">
+                        <label>OTHER NAMES</label>
+                    <input type="text" name="other_names" id="name" class="form-control form-control-user" autocomplete="true" placeholder="Enter Other Names">	
+                    <span id="error_name" style="color: red;"></span>
+                        </div>
+                    </div>
+
+                        <div class="col">
+                        <div class="form-group">
+                            <label>SURNAME</label>
+                        <input type="text" name="surname" id="name" class="form-control form-control-user" autocomplete="true" placeholder="Enter Surname">	
+                        <span id="error_name" style="color: red;"></span>
+                            </div>
+
+                        </div>
+                        </div>
+
+
+
+                        <div class="row">
+                            <div class="col">
+                    <div class="form-group">
+                        <label>PREVIUOS NAME</label>
+                    <input type="text" name="previous_name" id="name" class="form-control form-control-user" autocomplete="true" placeholder="Enter Previous Name">	
+                    <span id="error_name" style="color: red;"></span>
+                        </div>
+                    </div>
+
+                        <div class="col">
+
+                            <div class="form-group">
+                                <label>SELECT GENDER</label>
+                                <select name="gender" class="form-control form-control-user" required>
+                                  <option>Select Gender</option>
+                                  <option value="Female">Female</option>
+                                  <option value="Male">Male</option>
+                                </select>
+                                </div>
+                        </div>
+                        </div>
+
+
+
+
+
+
+                        <div class="row">
+                            <div class="col">
+                    <div class="form-group">
+                        <label>DATE OF BIRTH</label>
+                    <input type="date" name="date_of_birth" id="name" class="form-control form-control-user" autocomplete="true" placeholder="Enter Date of Birth">	
+                    <span id="error_name" style="color: red;"></span>
+                        </div>
+                    </div>
+
+                        <div class="col">
+                        <div class="form-group">
+                            <label>NATIONALITY</label>
+                        <input type="text" name="nationality" id="name" class="form-control form-control-user" autocomplete="true" placeholder="Enter NATIONALITY">	
+                        <span id="error_name" style="color: red;"></span>
+                            </div>
+
+                        </div>
+                        </div>
+
+
+
+
+
+                        <div class="row">
+                            <div class="col">
+                    <div class="form-group">
+                        <label>HOMETOWN</label>
+                    <input type="text" name="hometown" id="name" class="form-control form-control-user" autocomplete="true" placeholder="Enter HOMETOWN">	
+                    <span id="error_name" style="color: red;"></span>
+                        </div>
+                    </div>
+
+                        <div class="col">
+                        <div class="form-group">
+                            <label>RELIGION</label>
+                        <input type="text" name="religion" id="name" class="form-control form-control-user" autocomplete="true" placeholder="Enter RELIGION">	
+                        <span id="error_name" style="color: red;"></span>
+                            </div>
+
+                        </div>
+                        </div>
+
+
+
+
+
+
+
+                        <div class="row">
+                            <div class="col">
+                    <div class="form-group">
+                        <label>RESIDENTIAL ADDRESS</label>
+                    <input type="text" name="residential_addr" id="name" class="form-control form-control-user" autocomplete="true" placeholder="Enter Residential Address">	
+                    <span id="error_name" style="color: red;"></span>
+                        </div>
+                    </div>
+
+                        <div class="col">
+
+                            <div class="form-group">
+                                <label>MARITAL STATUS</label>
+                                <select name="marital_status" class="form-control form-control-user">
+                                  <option>Select Marital Status</option>
+                                  <option value="Single">Single</option>
+                                  <option value="Married">Married</option>
+                                  <option value="Divorced">Divorced</option>
+                                  <option value="Separated">Separated</option>
+                                  <option value="Widowed">Widowed</option>
+                                  <option value="Other">Other</option>
+                                </select>
+                                </div>
+                        </div>
+                        </div>
+
+
+
+
+
+
+
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label>PHONE NUMBER</label>
+                                <input type="text" name="active_phone_number" id="phone" class="form-control form-control-user" autocomplete="true" placeholder="0***********">	
+                                <span id="error_phone" style="color: red;"></span>
+                                    </div>
+                    </div>
+
+                        <div class="col">
+                            <div class="form-group">
+                                <label>EMAIL</label>
+                            <input type="email" name="email" id="email" class="form-control form-control-user" autocomplete="true" placeholder="Enter Email">	
+                            <span id="error_email" style="color: red;"></span>
+                                </div>
+
+                        </div>
+                        </div>
+
+
+
+
+
+
+
+                            
+                        <div class="row">
+                            <div class="col">
+                    <div class="form-group">
+                        <label>SSNIT NUMBER</label>
+                    <input type="text" name="ssnit_number" id="name" class="form-control form-control-user" autocomplete="true" placeholder="Enter SSNIT NUMBER">	
+                    <span id="error_name" style="color: red;"></span>
+                        </div>
+                    </div>
+
+                        <div class="col">
+                        <div class="form-group">
+                            <label>GHANA CARD NUMBER</label>
+                        <input type="text" name="ghana_card_number" id="name" class="form-control form-control-user" autocomplete="true" placeholder="Enter GHANA CARD NUMBER">	
+                        <span id="error_name" style="color: red;"></span>
+                            </div>
+
+                        </div>
+                        </div>
+
+
+
+
+
+
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label>ARE YOU DISABILED</label>
+                                    <select name="is_physically_challenged" class="form-control form-control-user">
+                                      <option>Select answer</option>
+                                      <option value="True">True</option>
+                                      <option value="False">False</option>
+                                    </select>
+                                    </div>
+                    </div>
+
+                        <div class="col">
+                        <div class="form-group">
+                            <label>DISABILITY</label>
+                        <input type="text" name="disability" id="name" class="form-control form-control-user" autocomplete="true" placeholder="If yes, specify">	
+                        <span id="error_name" style="color: red;"></span>
+                            </div>
+
+                        </div>
+                        </div>
+        
+                               
+
+                        <div class="form-group">
+                            <label>UPLOAD PROFILE PICTURE</label>
+                        <input type="file" name="file" id="file" class="form-control form-control-user" autocomplete="true" placeholder="If yes, specify">	
+                        <span id="error_name" style="color: red;"></span>
+                            </div>
+
+
+        <button type="submit" value="Create" class="btn btn-primary text-center btn-user btn-block" onclick="return validate()">Create</button>
+                        <hr>
+     
+                    </form>
+                     
+                      
+                    </div>
+                  </div>
+                </div>
+            </div>
+        
+        
+        
+        </div>
+        
+
+
+
+
+
+
+
+    </div>
+
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+
+
+  // CREATING A FUNCTION CALLED VALIDATE
+  function validate() {
+      
+  // CREATING OF VARIABLES(Are placeholders which are used to store values)
+  var name = document.getElementById('name').value;
+  var email = document.getElementById('email').value;
+  var phone = document.getElementById('phone').value;
+  
+  
+  //ENCRIPTED CODE FOR CHECKING IF NAME IS LETTERS OR ALPHABETS
+  var nametype = /^[A-Z a-z]+$/;
+  var email_validate = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+  
+  
+  
+  //CREATING A CONDITIONAL STATEMENTS
+  
+  //CREATING A CONDITION IF NAME IS EMPTY
+  if (name == "") {
+      document.getElementById('error_name').innerHTML = "Please fill out this field";
+      return false;
+  }
+  
+  
+  //CHECKING IF NAME INPUT IS NUMBER
+  if (nametype.test(name) == false) {
+      document.getElementById('error_name').innerHTML = "Please input text";
+      return false;
+  }
+  
+
+    //CREATING A CONDITION IF Email IS EMPTY
+    if (email == ""){
+      document.getElementById("error_email").innerHTML = "**Please fill out this field";
+      return false;
+    }
+
+
+
+    //CHECKING IF Email
+  if (email_validate.test(email) == false) {
+    document.getElementById('error_email').innerHTML = "Email invalid";
+    return false;
+  }
+  
+
+  //CREATING A CONDITION IF PHONE IS EMPTY
+  if (phone == ""){
+    document.getElementById("error_phone").innerHTML = "**Please fill out this field";
+    return false;
+  }
+
+
+  //CHECKING IF PHONE NUMBER IS IN NUMBERS
+  if (isNaN(phone)){
+    document.getElementById("error_phone").innerHTML="** Contact must be only digits";
+    return false;
+  }
+
+
+  //CHECKING IF PHONE NUMBER IS LESS THAN 10
+  if (phone.length<10){
+    document.getElementById("error_phone").innerHTML="** Phone Number must be 10 digits";
+    return false;
+  }
+
+
+  //CHECKING IF PHONE NUMBER IS MORE THAN 10
+  if (phone.length>10){
+    document.getElementById("error_phone").innerHTML="** Contact must be 10 digits";
+    return false;
+  }
+
+
+  //CHECKING IF THE FIRST DIGIT OF THE PHONE NUMBER IS NOT ZERO
+  if ((phone.charAt(0) != 0)){
+    document.getElementById("error_phone").innerHTML="** Contact must begin with 0";
+    return false;
+  }
+  
+  else{
+      alert("Registration Successfully");
+      //return register.html;
+  }
+  
+  
+  
+  }
+
+</script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <style>
+        /* Define your CSS styles here */
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .tab {
+            display: none;
+        }
+        .tab.active {
+            display: block;
+        }
+        /* Add more styles as needed */
+    </style>
+</head>
+<body>
+    <h1>User Dashboard</h1>
+
+    <button type="submit"><a href="http://localhost:8000/api/user/login-form"><i style="font-weight:bold;color:blue;float: right;">Logout</i></a></button>
+    
+    <br><br>
+
+    <div class="tabs">
+        <!-- Add tabs for each model not in admin dashboard -->
+	<button class="tablinks" onclick="openTab(event, 'bio_data')">Bio-Data</button>
+        <button class="tablinks" onclick="openTab(event, 'employment_details')">Employment Details</button>
+        <button class="tablinks" onclick="openTab(event, 'bank_details')">Bank Details</button>
+        <button class="tablinks" onclick="openTab(event, 'academics')">Academics</button>
+        <button class="tablinks" onclick="openTab(event, 'professional')">Professional</button>
+        <button class="tablinks" onclick="openTab(event, 'qualification')">Qualification</button>
+        <button class="tablinks" onclick="openTab(event, 'employment_history')">Employment History</button>
+        <button class="tablinks" onclick="openTab(event, 'family_info')">Family Info</button>
+        <button class="tablinks" onclick="openTab(event, 'emergency_contacts')">Emergency Contacts</button>
+        <button class="tablinks" onclick="openTab(event, 'next_of_kin')">Next of Kin</button>
+        <button class="tablinks" onclick="openTab(event, 'declaration')">Declaration</button>
+    </div>
+
+    <!-- BioData Tab -->
+    <div id="bio_data" class="tab">
+        <h2>Bio Data</h2>
+        <!-- Display admin-entered details here -->
+        <!-- BioData Form -->
+<form action="/user/create/bio_data" method="POST">
+    <label for="first_name">First Name:</label><br>
+    <input type="text" id="first_name" name="first_name" required><br>
+    <label for="other_names">Other Names:</label><br>
+    <input type="text" id="other_names" name="other_names"><br>
+    <label for="surname">Surname:</label><br>
+    <input type="text" id="surname" name="surname" required><br>
+    <label for="previous_name">Previous/Maiden Name:</label><br>
+    <input type="text" id="previous_name" name="previous_name"><br>
+    <label for="gender">Gender:</label><br>
+    <select id="gender" name="gender">
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+    </select><br>
+    <label for="date_of_birth">Date of Birth:</label><br>
+    <input type="date" id="date_of_birth" name="date_of_birth" required><br>
+    <label for="nationality">Nationality:</label><br>
+    <input type="text" id="nationality" name="nationality" required><br>
+    <label for="hometown">Hometown:</label><br>
+    <input type="text" id="hometown" name="hometown" required><br>
+    <!-- Add other fields as per your model -->
+    <button type="submit">Create Bio Data</button>
+</form>
+
+    </div>
+
+
+    
+        <!-- Employment Details Tab -->
+        <div id="employment_details" class="tab">
+            <h2>Employment Details</h2>
+           <form method="post">
+            <label for="bio_row_id">BioData Row ID:</label><br>
+    <input type="text" id="bio_row_id" name="bio_row_id" value="{{bio_row_id}}" readonly required><br><br>
+        <label for="date_of_first_appointment">Date of First Appointment:</label>
+        <input type="date" id="date_of_first_appointment" name="date_of_first_appointment" required>
+        <br><br/>
+        <label for="grade_on_first_appointment">Grade on First Appointment:</label>
+        <input type="text" id="grade_on_first_appointment" name="grade_on_first_appointment">
+        <br><br/>
+        <label for="grade_on_current_appointment">Grade on Current Appointment:</label>
+        <select id="grade_on_current_appointment" name="grade_on_current_appointment_id">
+            {% for grade in grades %}
+            <option value="{{ grade.id }}">{{ grade.name }}</option>
+            {% endfor %}
+        </select>
+        <br><br/>
+        <label for="directorate">Directorate:</label>
+        <select id="directorate" name="directorate_id">
+            {% for directorate in directorates %}
+            <option value="{{ directorate.id }}">{{ directorate.name }}</option>
+            {% endfor %}
+        </select>
+        <br><br/>
+        <label for="employee_number">Employee Number:</label>
+        <input type="text" id="employee_number" name="employee_number" required>
+        <br><br/>
+        <label for="employment_type">Employment Type:</label>
+        <select id="employment_type" name="employment_type_id">
+            {% for employment_type in employment_types %}
+            <option value="{{ employment_type.id }}">{{ employment_type.name }}</option>
+            {% endfor %}
+        </select>
+        <br><br/>
+        <label for="staff_category">Staff Category:</label>
+        <select id="staff_category" name="staff_category_id">
+            {% for staff_category in staff_categories %}
+            <option value="{{ staff_category.id }}">{{ staff_category.category }}</option>
+            {% endfor %}
+        </select>
+        <br><br/>
+        <button type="submit">Save</button>
+    </form>
+    
+            <!-- Add read forms and delete forms here -->
+        </div>
+
+
+
+    <!-- Bank Details Tab -->
+    <div id="bank_details" class="tab">
+        <h2>Bank Details</h2>
+        <form action="/user/create/bank_details" method="POST">
+            <!-- Fields for creating new BankDetails -->
+            <button type="submit">Create Bank Details</button>
+        </form>
+        <!-- Add read forms and delete forms here -->
+    </div>
+
+
+    <div id="declaration" class="tab">
+        <h2>Declaration</h2>
+        <!-- Display admin-entered details here -->
+        <!-- BioData Form -->
+<form action="http://localhost:8000/api/declaration" method="POST" enctype="multipart/form-data">
+    <label for="bio_row_id">BioData Row ID:</label><br>
+    <input type="text" id="bio_row_id" name="bio_row_id" value="{{bio_row_id}}" readonly required><br><br>
+    <label for="declaration_date">Declaration Date:</label><br>
+    <input type="date" id="declaration_date" name="declaration_date"><br><br>
+    <label for="label_employees_signature">Employee Signature:</label><br><br>
+    <input type="file" id="label_employees_signature" name="employees_signature" required><br><br>
+    <!-- Add other fields as per your model -->
+    <button type="submit">Create Declaration</button>
+</form>
+
+    </div>
+
+    <!-- Add other tabs similarly for each model -->
+
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+    </script>
+</body>
+</html>

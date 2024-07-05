@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        /* Define your CSS styles here */
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .tab {
+            display: none;
+        }
+        .tab.active {
+            display: block;
+        }
+        /* Add more styles as needed */
+    </style>
+</head>
+<body>
+    <h1>Admin Dashboard</h1>
+
+
+    <button type="submit"><a href="http://localhost:8000/api/user/login-form"><i style="font-weight:bold;color:blue;float: right;">Logout</i></a></button>
+    
+    <br><br>
+
+    <div class="tabs">
+        <button class="tablinks" onclick="openTab(event, 'centre')">Centre</button>
+        <button class="tablinks" onclick="openTab(event, 'directorate')">Directorate</button>
+        <button class="tablinks" onclick="openTab(event, 'grade')">Grade</button>
+        <button class="tablinks" onclick="openTab(event, 'employment_type')">Employment Type</button>
+        <button class="tablinks" onclick="openTab(event, 'staff_category')">Staff Category</button>
+        <button class="tablinks" onclick="openTab(event, 'user')">User</button>
+        <button class="tablinks" onclick="openTab(event, 'declaration')">Declaration</button>
+    </div>
+
+    <!-- Centre Tab -->
+    <div id="centre" class="tab">
+        <h2>Centre</h2>
+        <form action="/admin/create/centre" method="POST">
+            <label for="location">Location:</label><br>
+            <input type="text" id="location" name="location" required><br>
+            <label for="region">Region:</label><br>
+            <input type="text" id="region" name="region"><br>
+            <button type="submit">Create Centre</button>
+        </form>
+        <!-- Add read and delete forms here -->
+    </div>
+
+    <!-- Directorate Tab -->
+    <div id="directorate" class="tab">
+        <h2>Directorate</h2>
+        <form action="/admin/create/directorate" method="POST">
+            <label for="name">Name:</label><br>
+            <input type="text" id="name" name="name" required><br>
+            <label for="centre_id">Centre ID:</label><br>
+            <input type="text" id="centre_id" name="centre_id" required><br>
+            <button type="submit">Create Directorate</button>
+        </form>
+        <!-- Add read and delete forms here -->
+    </div>
+
+    <!-- Grade Tab -->
+    <div id="grade" class="tab">
+        <h2>Grade</h2>
+        <form action="/admin/create/grade" method="POST">
+            <label for="name">Name:</label><br>
+            <input type="text" id="name" name="name" required><br>
+            <label for="min_sal">Minimum Salary:</label><br>
+            <input type="text" id="min_sal" name="min_sal" required><br>
+            <label for="max_sal">Maximum Salary:</label><br>
+            <input type="text" id="max_sal" name="max_sal" required><br>
+            <button type="submit">Create Grade</button>
+        </form>
+        <!-- Add read and delete forms here -->
+    </div>
+
+    <!-- Employment Type Tab -->
+    <div id="employment_type" class="tab">
+        <h2>Employment Type</h2>
+        <form action="/admin/create/employment_type" method="POST">
+            <label for="name">Name:</label><br>
+            <input type="text" id="name" name="name" required><br>
+            <label for="description">Description:</label><br>
+            <input type="text" id="description" name="description"><br>
+            <label for="grade_id">Grade ID:</label><br>
+            <input type="text" id="grade_id" name="grade_id" required><br>
+            <button type="submit">Create Employment Type</button>
+        </form>
+        <!-- Add read and delete forms here -->
+    </div>
+
+    <!-- Staff Category Tab -->
+    <div id="staff_category" class="tab">
+        <h2>Staff Category</h2>
+        <form action="/admin/create/staff_category" method="POST">
+            <label for="category">Category:</label><br>
+            <input type="text" id="category" name="category" required><br>
+            <button type="submit">Create Staff Category</button>
+        </form>
+        <!-- Add read and delete forms here -->
+    </div>
+
+    <!-- User Tab -->
+    <div id="user" class="tab">
+        <h2>User</h2>
+        <form action="/admin/create/user" method="POST">
+            <label for="bio_row_id">Bio Data Row ID:</label><br>
+            <input type="text" id="bio_row_id" name="bio_row_id" required><br>
+            <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username" required><br>
+            <label for="email">Email:</label><br>
+            <input type="email" id="email" name="email"><br>
+            <label for="hashed_password">Password:</label><br>
+            <input type="password" id="hashed_password" name="hashed_password" required><br>
+            <label for="role">Role:</label><br>
+            <input type="text" id="role" name="role" value="user"><br>
+            <button type="submit">Create User</button>
+        </form>
+        <!-- Add read and delete forms here -->
+    </div>
+
+
+    <div id="declaration" class="tab">
+        <h2>Declaration</h2>
+        <!-- Display admin-entered details here -->
+        <!-- BioData Form -->
+<form action="http://localhost:8000/api/declaration" method="POST" enctype="multipart/form-data">
+    <label for="bio_row_id">BioData Row ID:</label><br>
+    <input type="text" id="bio_row_id" name="bio_row_id" value="{{bio_row_id}}" readonly required><br><br>
+    <label for="declaration_date">Declaration Date:</label><br>
+    <input type="date" id="declaration_date" name="declaration_date"><br><br>
+    <label for="label_employees_signature">Rep Signature:</label><br><br>
+    <input type="file" id="label_employees_signature" name="employees_signature" required><br><br>
+    <!-- Add other fields as per your model -->
+    <button type="submit">Create Declaration</button>
+</form>
+
+    </div>
+
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+    </script>
+</body>
+</html>

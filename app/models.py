@@ -2,7 +2,6 @@ from sqlalchemy import Column, String, Boolean, Date, DateTime, ForeignKey, DECI
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import validates, relationship, backref
-from sqlalchemy_utils import EmailType
 from datetime import datetime
 from enum import Enum
 import uuid
@@ -103,7 +102,7 @@ class BioData(BaseModel):
     marital_status = Column(String, default=MaritalStatus.Other.value, nullable=False)
     residential_addr = Column(String, nullable=False)
     active_phone_number = Column(String, nullable=False)
-    email = Column(EmailType, nullable=False)
+    email = Column(String, nullable=False)
     ssnit_number = Column(String, nullable=False)
     ghana_card_number = Column(String, nullable=False)
     is_physically_challenged = Column(Boolean, nullable=False)
@@ -127,7 +126,7 @@ class User(BaseModel):
 
     bio_row_id = Column(UUID(as_uuid=True), ForeignKey('bio_data.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     username = Column(String, unique=True, nullable=False)
-    email = Column(EmailType, nullable=True)
+    email = Column(String, nullable=True)
     hashed_password = Column(String, nullable=False)
     reset_pwd_token = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
@@ -235,7 +234,7 @@ class EmergencyContact(BaseModel):
     name = Column(String)
     phone_number = Column(String)
     address = Column(String)
-    email = Column(EmailType)
+    email = Column(String)
 
 
 class NextOfKin(BaseModel):
@@ -252,7 +251,7 @@ class NextOfKin(BaseModel):
     town = Column(String, nullable=False)
     region = Column(String, nullable=False)
     phone = Column(String, unique=True, nullable=False)
-    email = Column(EmailType, unique=True, nullable=False)
+    email = Column(String, unique=True, nullable=False)
 
 
 class Declaration(BaseModel):
