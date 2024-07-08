@@ -487,8 +487,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     
     
 
-    def create(self, db: Session, obj_in: CreateSchemaType, files: Dict[str, Any] = None) -> ModelType:
-        obj_in_data = obj_in.dict()
+    def create(self, db: Session, obj_in: CreateSchemaType, files: Dict[str, Any] = None, **kw) -> ModelType:
+        obj_in_data = jsonable_encoder(obj_in, **kw)
         obj_in_data = self.handle_image_fields(obj_in_data, files)
 
         try:

@@ -51,19 +51,19 @@
     
                             <div class="form-group">
                                 <label>EMAIL</label>
-                            <input type="email" name="email" id="email" class="form-control form-control-user" autocomplete="true" placeholder="Enter Email" required>	
+                            <input type="email" name="email" id="email" value="{{email}}" readonly="true" class="form-control form-control-user" autocomplete="true" placeholder="Enter Email" required>	
                                 </div>
         
         
                                 <div class="form-group">
                                   <label>PASSWORD</label>
-                              <input type="password" name="hash_password" id="phone" class="form-control form-control-user" autocomplete="true" placeholder="Enter password" required>	
+                              <input type="password" name="hashed_password" id="phone" class="form-control form-control-user" autocomplete="true" placeholder="Enter password" required>	
                                   </div>
 
 
 
 
-        <button type="submit" value="Register" class="btn btn-primary text-center btn-user btn-block" onclick="return validate()">Register</button>
+        <button type="submit" value="Create" class="btn btn-primary text-center btn-user btn-block" onclick="return validate()">Create</button>
      
         <hr>
         <i style="color:black;font-size:16px;">Already have an account?</i>  <a href="http://localhost:8000/api/user/login-form" style="float:right; color:black; "> <i style="font-weight:bold;color:blue;">Login Here</i></a>

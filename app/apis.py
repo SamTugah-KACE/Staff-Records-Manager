@@ -553,7 +553,7 @@ def create_bio_data(
     
     files = {"image_col": file}
     new_biodata = bio_data.create(db=db, obj_in=bio_data_in, files=files)
-    return templates.TemplateResponse("biodata-registration-success.html", {"request": request, "title": title, "first_name": first_name,"surname": surname, "bio_row_id": new_biodata.id,})
+    return templates.TemplateResponse("biodata-registration-success.html", {"request": request, "title": title, "first_name": first_name,"surname": surname,"email": email, "bio_row_id": new_biodata.id,})
     #return bio_data.create(db=db, obj_in=bio_data_in, files=files)
 
 @api_router.get("/staff_bio_data/", response_model=List[schemas.BioData], tags=["BioData"])
@@ -695,9 +695,11 @@ def user_auth(request: Request, username:str = Form(...), hash_password:str = Fo
 
 
 @api_router.get("/user/create", response_class=HTMLResponse)
-def user_registration(request: Request, bio_row_id: str):
+def user_registration(request: Request, bio_row_id: str, db: Session = Depends(get_db)):
 
-    return templates.TemplateResponse("user-create.html", {"request": request, "bio_row_id": bio_row_id})
+    email = db.query(BioData).filter(BioData.id == bio_row_id).first()
+
+    return templates.TemplateResponse("user-create.html", {"request": request, "bio_row_id": bio_row_id, "email": email.email})
 
 
 
