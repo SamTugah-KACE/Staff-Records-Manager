@@ -27,11 +27,17 @@ import tempfile
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi import Request,Form
-
+from passlib.context import CryptContext
 
 
 
 templates = Jinja2Templates(directory="templates")
+
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def get_password_hash(password: str):
+    return pwd_context.hash(password)
 
 
 # List of all models
@@ -111,23 +117,23 @@ def update_logo(
 def create_centre(
     *,
     db: Session = Depends(get_db),
-    centre_in: schemas.CentreCreate,
+    request: Request,
+    location: Optional[str] = Form(None),
+    region: Optional[str] = Form(None)
+    #centre_in: schemas.CentreCreate,
     
 ) -> Centre:
-    centre_obj = centre.get_by_field(db, "location", centre_in.location)
+    centre_obj = centre.get_by_field(db, "location", location)
     if centre_obj:
         raise HTTPException(status_code=400, detail="Centre already exists")
-    return centre.create(db=db, obj_in=centre_in)
-
-@api_router.get("/centres/", response_model=List[schemas.Centre],  tags=["Centre"])
-def read_centres(
-    db: Session = Depends(get_db),
-    skip: int = 0,
-    limit: int = 100,
     
-) -> List[Centre]:
-    centres = centre.get_multi(db, skip=skip, limit=limit)
-    return centres
+    centre_in = Centre()
+    centre_in.location=location
+    centre_in.region=region
+    db.add(centre_in)
+    db.commit()
+    db.refresh(centre_in)
+    return templates.TemplateResponse("admin-dashboard.html", {"request": request})
 
 @api_router.get("/centres/{id}", response_model=schemas.Centre,  tags=["Centre"])
 def read_centre(
@@ -171,14 +177,31 @@ def delete_centre(
 @api_router.post("/directorate/", response_model=schemas.Directorate, tags=["Directorate"])
 def create_directorate(
     *,
+    request: Request,
     db: Session = Depends(get_db),
-    directorate_in: schemas.DirectorateCreate,
+    name: Optional[str] = Form(None),
+    centre_id: Optional[str] = Form(None),
+    #directorate_in: schemas.DirectorateCreate,
     
 ) -> Directorate:
-    directorate_obj = directorate.get_by_field(db, "name", directorate_in.name)
+    directorate_obj = directorate.get_by_field(db, "name", name)
     if directorate_obj:
         raise HTTPException(status_code=400, detail="directorate already exists")
-    return directorate.create(db=db, obj_in=directorate_in)
+    
+    directorate_in = Directorate()
+    directorate_in.name=name
+    directorate_in.centre_id=centre_id
+    db.add(directorate_in)
+    db.commit()
+    db.refresh(directorate_in)
+
+    return templates.TemplateResponse("admin-dashboard.html", {"request": request})
+    #return directorate.create(db=db, obj_in=directorate_in)
+
+
+
+
+
 
 @api_router.get("/directorates/", response_model=List[schemas.Directorate],  tags=["Directorate"])
 def read_directorates(
@@ -233,13 +256,27 @@ def delete_directorate(
 def create_grade(
     *,
     db: Session = Depends(get_db),
-    grade_in: schemas.GradeCreate,
+    request: Request,
+    name: Optional[str] = Form(None),
+    min_sal: Optional[str] = Form(None),
+    max_sal: Optional[str] = Form(None)
+    #grade_in: schemas.GradeCreate,
     
 ) -> Grade:
-    grade_obj = grade.get_by_field(db, "name", grade_in.name)
+    grade_obj = grade.get_by_field(db, "name", name)
     if grade_obj:
         raise HTTPException(status_code=400, detail="grade already exists")
-    return grade.create(db=db, obj_in=grade_in)
+    
+    grade_in = Grade()
+    grade_in.name=name
+    grade_in.min_sal=min_sal
+    grade_in.max_sal=max_sal
+    db.add(grade_in)
+    db.commit()
+    db.refresh(grade_in)
+
+    return templates.TemplateResponse("admin-dashboard.html", {"request": request})
+    #return grade.create(db=db, obj_in=grade_in)
 
 @api_router.get("/grades/", response_model=List[schemas.Grade],  tags=["Grade"])
 def read_grades(
@@ -294,13 +331,26 @@ def delete_grade(
 def create_employment_type(
     *,
     db: Session = Depends(get_db),
-    employment_type_in: schemas.EmploymentTypeCreate,
+    request: Request,
+    name: Optional[str] = Form(None),
+    description: Optional[str] = Form(None),
+    grade_id: Optional[str] = Form(None),
+    #employment_type_in: schemas.EmploymentTypeCreate,
     
 ) -> EmploymentType:
-    employment_type_obj = employment_type.get_by_field(db, "name", employment_type_in.name)
+    employment_type_obj = employment_type.get_by_field(db, "name", name)
     if employment_type_obj:
         raise HTTPException(status_code=400, detail="employment_type already exists")
-    return employment_type.create(db=db, obj_in=employment_type_in)
+    
+    employment_type_in = EmploymentType()
+    employment_type_in.name=name
+    employment_type_in.description=description
+    employment_type_in.grade_id=grade_id
+    db.add(employment_type_in)
+    db.commit()
+    db.refresh(employment_type_in)
+    return templates.TemplateResponse("admin-dashboard.html", {"request": request})
+    # return employment_type.create(db=db, obj_in=employment_type_in)
 
 @api_router.get("/employment_types/", response_model=List[schemas.EmploymentType],  tags=["Employment Type"])
 def read_employment_types(
@@ -355,13 +405,22 @@ def delete_employment_type(
 def create_staff_category(
     *,
     db: Session = Depends(get_db),
-    staff_category_in: schemas.StaffCategoryCreate,
+    request: Request,
+    category: Optional[str] = Form(None),
+    #staff_category_in: schemas.StaffCategoryCreate,
     
 ) -> StaffCategory:
-    staff_category_obj = staff_category.get_by_field(db, "category", staff_category_in.category)
+    staff_category_obj = staff_category.get_by_field(db, "category", category)
     if staff_category_obj:
         raise HTTPException(status_code=400, detail="staff_category already exists")
-    return staff_category.create(db=db, obj_in=staff_category_in)
+    
+    staff_category_in = StaffCategory()
+    staff_category_in.category=category
+    db.add(staff_category_in)
+    db.commit()
+    db.refresh(staff_category_in)
+    return templates.TemplateResponse("admin-dashboard.html", {"request": request})
+    #return staff_category.create(db=db, obj_in=staff_category_in)
 
 @api_router.get("/staff_categories/", response_model=List[schemas.StaffCategory],  tags=["Staff Category"])
 def read_staff_categories(
@@ -623,9 +682,11 @@ def user_auth(request: Request, username:str = Form(...), hash_password:str = Fo
     directorates = db.query(Directorate).all()
     employment_types = db.query(EmploymentType).all()
     staff_categories = db.query(StaffCategory).all()
+    centres = db.query(Centre).all()
+    biodatas = db.query(BioData).all()
 
     if user.role == "admin":
-        return templates.TemplateResponse("admin-dashboard.html", {"request": request})
+        return templates.TemplateResponse("admin-dashboard.html", {"request": request, "grades": grades,"centres": centres, "biodatas": biodatas})
     else:
         return templates.TemplateResponse("user-dashboard.html", {"request": request, "bio_row_id": user.bio_row_id,
                                                                    "grades": grades,"directorates": directorates,"employment_types": employment_types,"staff_categories": staff_categories})
@@ -647,20 +708,30 @@ def user_registration(request: Request, bio_row_id: str):
 #     return crud.create_user(db=db, user=user)
 
 
+
 @api_router.post("/user",  tags=["Users"], status_code=status.HTTP_201_CREATED)
 def create_user(
     request: Request,
     bio_row_id: Optional[str] = Form(None),
     username: Optional[str] = Form(None),
     email: Optional[str] = Form(None),
-    hash_password: Optional[str] = Form(None),
-    db: Session = Depends(get_db) ):
+    hashed_password: Optional[str] = Form(...),
+    role: Optional[str] = Form(None),
+    db: Session = Depends(get_db) 
+    ):
 
+    # Create user with hashed password
+    hash_password = get_password_hash(hashed_password)
     db_user = User()
     db_user.bio_row_id=bio_row_id
     db_user.username=username
     db_user.email = email
-    db_user.hashed_password=hash_password
+    db_user.hashed_password=hashed_password
+    db_user.role=role,
+    db_user.is_active=True
+    # db.add(db_user)
+    # db.commit()
+    # db.refresh(db_user)
 
     new_user = crud.create_user(db=db, user=db_user)
     return templates.TemplateResponse("user-registration-success.html", {"request": request, "username": new_user.username})
@@ -860,8 +931,11 @@ def create_employment_detail(
     employment_detail_in.employee_number=employee_number
     employment_detail_in.employment_type_id=employment_type_id
     employment_detail_in.staff_category_id=staff_category_id
+    db.add(employment_detail_in)
+    db.commit()
+    db.refresh(employment_detail_in)
 
-    employment_detail.create(db=db, obj_in=employment_detail_in)
+    #employment_detail.create(db=db, obj_in=employment_detail_in)
     return templates.TemplateResponse("user-dashboard.html", {"request": request, "bio_row_id": bio_row_id})
 
 

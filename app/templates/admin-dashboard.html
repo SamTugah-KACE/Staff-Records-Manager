@@ -39,7 +39,7 @@
     <!-- Centre Tab -->
     <div id="centre" class="tab">
         <h2>Centre</h2>
-        <form action="/admin/create/centre" method="POST">
+        <form action="http://localhost:8000/api/centres" method="POST">
             <label for="location">Location:</label><br>
             <input type="text" id="location" name="location" required><br>
             <label for="region">Region:</label><br>
@@ -52,11 +52,15 @@
     <!-- Directorate Tab -->
     <div id="directorate" class="tab">
         <h2>Directorate</h2>
-        <form action="/admin/create/directorate" method="POST">
+        <form action="http://localhost:8000/api/directorate" method="POST">
             <label for="name">Name:</label><br>
             <input type="text" id="name" name="name" required><br>
             <label for="centre_id">Centre ID:</label><br>
-            <input type="text" id="centre_id" name="centre_id" required><br>
+            <select id="centre_id" name="centre_id" required><br>
+                {% for centre in centres %}
+                <option value="{{ centre.id }}">{{ centre.location }} -- {{ centre.region }}</option>
+                {% endfor %}
+            </select><br><br>
             <button type="submit">Create Directorate</button>
         </form>
         <!-- Add read and delete forms here -->
@@ -65,7 +69,7 @@
     <!-- Grade Tab -->
     <div id="grade" class="tab">
         <h2>Grade</h2>
-        <form action="/admin/create/grade" method="POST">
+        <form action="http://localhost:8000/api/grade" method="POST">
             <label for="name">Name:</label><br>
             <input type="text" id="name" name="name" required><br>
             <label for="min_sal">Minimum Salary:</label><br>
@@ -80,13 +84,17 @@
     <!-- Employment Type Tab -->
     <div id="employment_type" class="tab">
         <h2>Employment Type</h2>
-        <form action="/admin/create/employment_type" method="POST">
+        <form action="http://localhost:8000/api/employment_type" method="POST">
             <label for="name">Name:</label><br>
             <input type="text" id="name" name="name" required><br>
             <label for="description">Description:</label><br>
             <input type="text" id="description" name="description"><br>
             <label for="grade_id">Grade ID:</label><br>
-            <input type="text" id="grade_id" name="grade_id" required><br>
+            <select id="grade_id" name="grade_id">
+                {% for grade in grades %}
+                <option value="{{ grade.id }}">{{ grade.name }}</option>
+                {% endfor %}
+            </select><br><br>
             <button type="submit">Create Employment Type</button>
         </form>
         <!-- Add read and delete forms here -->
@@ -95,7 +103,7 @@
     <!-- Staff Category Tab -->
     <div id="staff_category" class="tab">
         <h2>Staff Category</h2>
-        <form action="/admin/create/staff_category" method="POST">
+        <form action="http://localhost:8000/api/staff_category" method="POST">
             <label for="category">Category:</label><br>
             <input type="text" id="category" name="category" required><br>
             <button type="submit">Create Staff Category</button>
@@ -106,9 +114,13 @@
     <!-- User Tab -->
     <div id="user" class="tab">
         <h2>User</h2>
-        <form action="/admin/create/user" method="POST">
-            <label for="bio_row_id">Bio Data Row ID:</label><br>
-            <input type="text" id="bio_row_id" name="bio_row_id" required><br>
+        <form action="http://localhost:8000/api/user" method="POST">
+            <label for="bio_row_id">Select BioData:</label><br>
+            <select id="bio_row_id" name="bio_row_id" required><br>
+                {% for biodata in biodatas %}
+                <option value="{{ biodata.id }}">{{ biodata.first_name }} {{ biodata.surname }}</option>
+                {% endfor %}
+            </select><br><br>
             <label for="username">Username:</label><br>
             <input type="text" id="username" name="username" required><br>
             <label for="email">Email:</label><br>
