@@ -24,10 +24,16 @@ class Gender(Enum):
 
 class Title(Enum):
     Prof = 'Prof.'
+    Phd = 'PhD'
     Dr = 'Dr.'
     Mr = 'Mr.'
     Mrs = 'Mrs.'
     Ms = 'Ms.'
+    Esq = 'Esq.'
+    Hon = 'Hon.'
+    Rev = 'Rev.'
+    Msgr = 'Msgr.'
+    Sr = 'Sr.'
     Other = 'Other'
 
 

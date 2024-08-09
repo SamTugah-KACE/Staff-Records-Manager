@@ -20,15 +20,24 @@ class Settings:
     RETRY_DELAY_BASE: int = 0  # Initial retry delay in seconds
     RETRY_DELAY_MULTIPLIER: int = 1  # Exponential backoff multiplier
 
-
+    
     POSTGRES_USER: str = os.getenv("POSTGRES_USER", "postgres")
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "password")
     POSTGRES_SERVER: str = os.getenv("POSTGRES_SERVER", "localhost")
     POSTGRES_PORT: str = os.getenv("POSTGRES_PORT", 5432)
-    POSTGRES_DB: str = os.getenv("POSTGRES_DB", "personal_records_db")
+    POSTGRES_DB: str = os.getenv("POSTGRES_DB", "staff_records_db")
 
 
     SQLALCHEMY_DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"
+
+    MySQL_USER: str = os.getenv("MySQL_USER", "samuelkusiduahAI")
+    MySQL_PASSWORD: str = os.getenv("MySQL_PASSWORD", "password_80")
+    MySQL_SERVER: str = os.getenv("MySQL_SERVER", "samuelkusiduahAITI.mysql.pythonanywhere-services.com")
+    MySQL_PORT: str = os.getenv("MySQL_PORT", 5432)
+    MySQL_DB: str = os.getenv("MySQL_DB", "samuelkusiduahAI$personal_records_db")
+
+    DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"
+    #DATABASE_URL = f"mysql+aiomysql://{MySQL_USER}:{MySQL_PASSWORD}@{MySQL_SERVER}/{MySQL_DB}"
 
     MAIL_USERNAME: str = os.getenv("MAIL_USERNAME")
     MAIL_PASSWORD: str = os.getenv("MAIL_PASSWORD")

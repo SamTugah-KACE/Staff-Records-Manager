@@ -1,5 +1,5 @@
 import io
-from database.db_session import get_db, Base
+from database.db_session import  Base
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import inspect
@@ -234,6 +234,8 @@ def search_all(db: Session, search_string: str, models: List[Type[Any]], current
     
     results = {}
     search_terms = search_string.lower().split()
+    # Sanitize and validate input
+    search_terms = re.sub(r'[^\w\s]', '', search_string.lower().strip())  # Remove special characters
 
     try:
         for model in models:
@@ -378,11 +380,11 @@ class TCRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def create(self, db: Session, obj_in: CreateSchemaType, file: UploadFile = None, file2: UploadFile = None) -> ModelType:
         obj_in_data = jsonable_encoder(obj_in)
         if file:
-            filename = f"{uuid.uuid4()}.jpg"
+            filename = f"{obj_in.name}_left.jpg" #f"{uuid.uuid4()}.jpg" 
             filepath = save_and_resize_image(file, filename)
             obj_in_data['left_logo'] = filepath
         if file2:
-            filename2 = f"{uuid.uuid4()}.jpg"
+            filename2 = f"{obj_in.name}_right.jpg"  #f"{uuid.uuid4()}.jpg"
             filepath2 = save_and_resize_image(file2, filename2)
             obj_in_data['right_logo'] = filepath2
 
@@ -408,11 +410,11 @@ class TCRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             update_data = obj_in.dict(exclude_unset=True)
 
         if file:
-            filename = f"{uuid.uuid4()}.jpg"
+            filename = f"{obj_in.name}_left.jpg"  #f"{uuid.uuid4()}.jpg"
             filepath = save_and_resize_image(file, filename)
             update_data['left_logo'] = filepath
         if file2:
-            filename2 = f"{uuid.uuid4()}.jpg"
+            filename2 = f"{obj_in.name}_left.jpg"  #f"{uuid.uuid4()}.jpg"
             filepath2 = save_and_resize_image(file2, filename2)
             update_data['right_logo'] = filepath2
 
@@ -431,6 +433,80 @@ class TCRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         except Exception as e:
             db.rollback()
             raise HTTPException(status_code=500, detail=str(e))
+    
+    def get_multi(self, db: Session, skip: int = 0, limit: int = 100) -> List[ModelType]:
+        objs = db.query(self.model).offset(skip).limit(limit).all()
+        
+        for obj in objs:
+            if obj.left_logo and obj.left_logo != '' and obj.left_logo != None:
+                obj.left_logo = image_to_base64(obj.left_logo)
+            
+            if obj.right_logo and obj.right_logo != '' and obj.right_logo != None:
+                obj.right_logo = image_to_base64(obj.right_logo)
+        return objs
+
+    # Define a function to delete the logo file if it exists
+    def delete_logo_file(self, name: str, logo_type: str) -> bool:
+        """
+        Delete the logo file if it exists on the disk.
+
+        Args:
+        - name (str): The base name used to construct the file path.
+        - logo_type (str): Either 'left' or 'right' to indicate which logo to delete.
+
+        Returns:
+        - bool: True if the file was successfully deleted, False otherwise.
+        """
+        # Construct the expected file path based on 'name' and 'logo_type'
+        filename = f"{name}_{logo_type}.jpg"
+        filepath = os.path.join("./uploads/images/", filename)
+        
+        if os.path.isfile(filepath):
+            try:
+                os.remove(filepath)  # Delete the file
+                return True
+            except OSError as e:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Error deleting file {filepath}: {str(e)}"
+                )
+        return False  # File doesn't exist, so nothing to delete
+                    
+
+    def delete_trademark(self, db: Session, trademark_id: UUID) -> str:
+        # Retrieve the trademark row from the database by its id
+        trademark = db.query(self.model).filter(self.model.id == trademark_id).first()
+        
+        # If no row is found, raise an HTTP exception
+        if not trademark:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Trademark with id {trademark_id} not found."
+            )
+        
+        # Attempt to delete both logos, prioritizing the left logo
+        errors = []
+
+        # Handle left logo
+        if trademark.left_logo:
+            if not self.delete_logo_file(trademark.name, 'left'):
+                errors.append(f"Error eliminating left logo: {trademark.left_logo}")
+        
+        # Handle right logo
+        if trademark.right_logo:
+            if not self.delete_logo_file(trademark.name, 'right'):
+                errors.append(f"Error eliminating right logo: {trademark.right_logo}")
+        
+        # Delete the trademark row from the database
+        db.delete(trademark)
+        db.commit()
+
+        # If any errors occurred during file deletion, return them
+        if errors:
+            return ", ".join(errors)
+
+        return f"Trademark with id {trademark_id} has been deleted successfully."
+
 
 
 trademark = TCRUDBase(Trademark)
@@ -594,13 +670,13 @@ class CRUDDeclaration(CRUDBase[schemas.Declaration, schemas.DeclarationCreate, s
     def get_multi_declarations(self, db: Session, skip: int = 0, limit: int = 100) -> List[ModelType]:
         objs = db.query(self.model).offset(skip).limit(limit).all()
         
-        # for obj in objs:
+        for obj in objs:
 
-        #     if obj.reps_signature:
-        #         obj.reps_signature = image_to_base64(obj.reps_signature)
+            if obj.reps_signature and obj.reps_signature != 'base64_representation_of_reps_signature_image' and obj.reps_signature != '' and obj.reps_signature != None:
+                obj.reps_signature = image_to_base64(obj.reps_signature)
             
-        #     if obj.employees_signature:
-        #         obj.employees_signature = image_to_base64(obj.employees_signature)
+            if obj.employees_signature and obj.employees_signature != 'base64_representation_of_employees_signature_image' and obj.employees_signature != '' and obj.employees_signature != None:
+                obj.employees_signature = image_to_base64(obj.employees_signature)
         return objs
     def create(self, db: Session, obj_in: schemas.DeclarationCreate, files: Dict[str, Any]) -> Declaration:
         obj_in_data = obj_in.dict()

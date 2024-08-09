@@ -15,6 +15,7 @@ load_dotenv(dotenv_path='Config/app.env')
 
 SQLALCHEMY_DATABASE_URL = settings.SQLALCHEMY_DATABASE_URL
 
+#SQLALCHEMY_DATABASE_URL = settings.DATABASE_URL
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 #print("engine: ", engine)

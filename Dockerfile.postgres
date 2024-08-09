@@ -1,0 +1,4 @@
+FROM postgres
+
+#COPY ./db/smart_conference_app.sql /docker-entrypoint-initdb.d/smart_conference_app.sql
+COPY ./app/database/db.sql /docker-entrypoint-initdb.d/db.sql

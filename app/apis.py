@@ -90,30 +90,52 @@ def read_logo(
 ) -> Trademark:
     trademark_obj = trademark.get(db=db, id=id)
     if not trademark_obj:
-        raise HTTPException(status_code=404, detail="Logo not found")
+        raise HTTPException(status_code=404, detail="Business logo not found")
     return trademark_obj
+
+@api_router.get("/logos/", response_model=List[schemas.Trademark],  tags=["Business Brand"])
+def read_logos(
+    *,
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100
+    
+) -> List[Trademark]:
+    trademark_obj = trademark.get_multi(db=db, skip=skip, limit=limit)
+    return trademark_obj
+
 
 @api_router.put("/logo/update/{id}", response_model=schemas.Trademark,  tags=["Business Brand"])
 def update_logo(
     *,
     db: Session = Depends(get_db),
     id: str,
-    trademark_in: schemas.TrademarkUpdate,
+    trademark_in: schemas.TrademarkUpdate= Depends(),
     left_logo: UploadFile = File(None),
     right_logo: UploadFile = File(None),
     
 ) -> Trademark:
     logo_obj = trademark.get(db=db, id=id)
     if not logo_obj:
-        raise HTTPException(status_code=404, detail="logo not found")
+        raise HTTPException(status_code=404, detail="Business logo not found")
     return trademark.update(db=db, db_obj=logo_obj, obj_in=trademark_in, file=left_logo, file2=right_logo)
 
-
+@api_router.delete("/logo/{id}",   tags=["Business Brand"])
+def delete_logo(
+    *,
+    db: Session = Depends(get_db),
+    id: str,
+    
+):
+    logo_obj = trademark.get(db=db, id=id)
+    if not logo_obj:
+        raise HTTPException(status_code=404, detail="Business logo not found")
+    return trademark.delete_trademark(db, id)
 
 
 
 #Centre
-@api_router.post("/centres/", response_model=schemas.Centre, tags=["Centre"])
+@api_router.post("/centre/", response_model=schemas.Centre, tags=["Centre"])
 def create_centre(
     *,
     db: Session = Depends(get_db),
@@ -135,7 +157,7 @@ def create_centre(
     db.refresh(centre_in)
     return templates.TemplateResponse("admin-dashboard.html", {"request": request})
 
-@api_router.get("/centres/{id}", response_model=schemas.Centre,  tags=["Centre"])
+@api_router.get("/centre/{id}", response_model=schemas.Centre,  tags=["Centre"])
 def read_centre(
     *,
     db: Session = Depends(get_db),
@@ -147,7 +169,20 @@ def read_centre(
         raise HTTPException(status_code=404, detail="Centre not found")
     return centre_obj
 
-@api_router.put("/centres/{id}", response_model=schemas.Centre,  tags=["Centre"])
+@api_router.get("/centres/", response_model=List[schemas.Centre],  tags=["Centre"])
+def read_centres(
+    *,
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100
+    
+) -> List[Centre]:
+    centre_obj = centre.get_multi(db, skip, limit)
+    
+    return centre_obj
+
+
+@api_router.put("/centre/{id}", response_model=schemas.Centre,  tags=["Centre"])
 def update_centre(
     *,
     db: Session = Depends(get_db),
@@ -160,7 +195,7 @@ def update_centre(
         raise HTTPException(status_code=404, detail="Centre not found")
     return centre.update(db=db, db_obj=centre_obj, obj_in=centre_in)
 
-@api_router.delete("/centres/{id}", response_model=schemas.Centre,  tags=["Centre"])
+@api_router.delete("/centre/{id}", response_model=schemas.Centre,  tags=["Centre"])
 def delete_centre(
     *,
     db: Session = Depends(get_db),
@@ -171,6 +206,11 @@ def delete_centre(
     if not centre_obj:
         raise HTTPException(status_code=404, detail="Centre not found")
     return centre.remove(db=db, id=id)
+
+
+
+
+
 
 
 #Directorate
@@ -748,7 +788,7 @@ def read_user(user_id: UUID, db: Session = Depends(get_db), ):
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
 
-@api_router.get("/get/allusers", tags=["Users"])
+@api_router.get("/users", tags=["Users"])
 def read_users(skip: int = 0, limit: int = 10, db: Session = Depends(get_db), ):
     users = crud.get_users(db, skip=skip, limit=limit)
     return users
@@ -801,6 +841,11 @@ def create_declaration(
     declaration = crud.declaration.create(db=db, obj_in=declaration_in, files=files)
     return templates.TemplateResponse("user-dashboard.html", {"request": request, "bio_row_id": bio_row_id})
 
+
+@api_router.get("/declarations", response_model=List[schemas.Declaration],  tags=["Declaration"])
+def read_declarations(skip: int = 0, limit: int = 10, db: Session = Depends(get_db), ) -> List[Declaration]:
+    decs = crud.declaration.get_multi_declarations(db, skip=skip, limit=limit)
+    return decs
 
 
 
