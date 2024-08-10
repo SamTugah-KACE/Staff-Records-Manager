@@ -43,17 +43,17 @@ def sanitize_json_data(data: Union[dict, list]) -> Union[dict, list]:
     return data
 
 
-def execute_sql_file(db: Session, file_path: str) -> None:
+def execute_sql_file(db: Session, file_: Any) -> None:
     """Executes a given SQL file securely."""
     # if not os.path.exists(file_path):
     #     raise HTTPException(status_code=404, detail="SQL file not found.")
     
     allowed_extensions = ['.sql']
-    if not validate_file_type(file_path, allowed_extensions):
+    if not validate_file_type(file_, allowed_extensions):
         raise ValueError("Invalid file type. Only .sql files is allowed.")
 
 
-    with open(file_path, 'r') as file:
+    with open(file_, 'r') as file:
         sql_commands = file.read()
         
         # Sanitize the SQL commands to prevent SQL injection
@@ -67,10 +67,11 @@ def execute_sql_file(db: Session, file_path: str) -> None:
             raise HTTPException(status_code=500, detail=f"Error executing SQL file: {str(e)}")
         
 
-def validate_file_type(file_path: str, allowed_extensions: list) -> bool:
+def validate_file_type(file_: Any, allowed_extensions: list) -> bool:
     """
     Validates the file type based on its extension.
     """
+    file_path = file_.filename
     _, ext = os.path.splitext(file_path)
     return ext.lower() in allowed_extensions
 
@@ -118,7 +119,7 @@ def sanitize_json_data(data: Union[dict, list]) -> Union[dict, list]:
     - Ensures data types are valid.
     """
 
-    allowed_extensions = ['.sql', '.json']
+    allowed_extensions = ['.json']
     if not validate_file_type(file_path, allowed_extensions):
         raise ValueError("Invalid file type. Only .json files is allowed.")
 

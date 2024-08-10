@@ -1,5 +1,5 @@
 from utils import sanitize_json_data, sanitize_sql, execute_sql_file, seed_data_from_json
-from fastapi import APIRouter, Depends, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from database.db_session import get_db
 from models import *  # Import your models here
@@ -16,10 +16,11 @@ router = APIRouter(prefix="/api")
 #api_router = APIRouter(prefix="/api/sys/")
 
 @router.post("/execute-sql/",tags=["System Admin Console"])
-def execute_sql(db: Session = Depends(get_db), file_path: str = None, current_user: User = Depends(current_active_admin)):
+def execute_sql(db: Session = Depends(get_db), file_: UploadFile = None, current_user: User = Depends(current_active_admin)):
     """Endpoint to execute SQL commands from a sanitized file."""
+    #file_path = file_
     try:
-        execute_sql_file(db, file_path)
+        execute_sql_file(db, file_)
         return {"detail": "SQL commands executed successfully."}
     except HTTPException as e:
         raise e
@@ -28,10 +29,10 @@ def execute_sql(db: Session = Depends(get_db), file_path: str = None, current_us
 
 
 @router.post("/seed-data/",tags=["System Admin Console"])
-def seed_data(db: Session = Depends(get_db), file_path: str = None, MyModel: Any = None, current_user: User = Depends(current_active_admin)):
+def seed_data(db: Session = Depends(get_db), file_path: UploadFile = None, Model: Any = None, current_user: User = Depends(current_active_admin)):
     """Endpoint to seed sanitized data from a JSON file."""
     try:
-        seed_data_from_json(db, file_path, MyModel)  # Replace MyModel with your model
+        seed_data_from_json(db, file_path, Model)  # Replace MyModel with your model
         return {"detail": "Data seeded successfully."}
     except HTTPException as e:
         raise e
