@@ -12,7 +12,7 @@ all_models = [
     BankDetail, Academic, Professional, Qualification, EmploymentHistory, FamilyInfo, EmergencyContact, NextOfKin, 
     Declaration, User
 ]
-router = APIRouter(prefix="/api/sys/")
+router = APIRouter(prefix="/api")
 #api_router = APIRouter(prefix="/api/sys/")
 
 @router.post("/execute-sql/",tags=["System Admin Console"])
