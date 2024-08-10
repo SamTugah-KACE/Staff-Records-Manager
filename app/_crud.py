@@ -62,16 +62,20 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             db.rollback()
             raise ValueError("Data update would conflict with existing unique fields") from e
 
-    def remove(self, db: Session, id: str) -> ModelType:
+    def remove(self, db: Session, id: str, force_delete: bool = False) -> ModelType:
         db_obj = db.query(self.model).get(id)
         if not db_obj:
-            raise ValueError("Data not found")
+            raise HTTPException(status_code=404, detail="Data not found")
 
         try:
-            self.check_integrity_constraints(db, db_obj)
+            if not force_delete:
+                # Perform the integrity check only if force_delete is False
+                self.check_integrity_constraints(db, db_obj)
+
             db.delete(db_obj)
             db.commit()
             return db_obj
+
         except IntegrityError as e:
             db.rollback()
             raise HTTPException(status_code=400, detail="Deleting this data violates integrity constraints") from e

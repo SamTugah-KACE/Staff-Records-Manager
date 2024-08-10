@@ -200,12 +200,12 @@ def delete_centre(
     *,
     db: Session = Depends(get_db),
     id: str,
-    
+    force_delete: bool = Query(False)  # Default is False, allowing normal delete
 ) -> Centre:
     centre_obj = centre.get(db=db, id=id)
     if not centre_obj:
         raise HTTPException(status_code=404, detail="Centre not found")
-    return centre.remove(db=db, id=id)
+    return centre.remove(db=db, id=id, force_delete=force_delete)
 
 
 
@@ -283,12 +283,12 @@ def delete_directorate(
     *,
     db: Session = Depends(get_db),
     id: str,
-    
+    force_delete: bool = Query(False)  # Default is False, allowing normal delete
 ) -> Directorate:
     directorate_obj = directorate.get(db=db, id=id)
     if not directorate_obj:
         raise HTTPException(status_code=404, detail="directorate not found")
-    return directorate.remove(db=db, id=id)
+    return directorate.remove(db=db, id=id, force_delete=force_delete)
 
 
 #Grade
@@ -358,12 +358,12 @@ def delete_grade(
     *,
     db: Session = Depends(get_db),
     id: str,
-    
+    force_delete: bool = Query(False)  # Default is False, allowing normal delete
 ) -> Grade:
     grade_obj = grade.get(db=db, id=id)
     if not grade_obj:
         raise HTTPException(status_code=404, detail="grade not found")
-    return grade.remove(db=db, id=id)
+    return grade.remove(db=db, id=id, force_delete=force_delete)
 
 
 #Employment Type
@@ -432,12 +432,12 @@ def delete_employment_type(
     *,
     db: Session = Depends(get_db),
     id: str,
-    
+    force_delete: bool = Query(False)  # Default is False, allowing normal delete
 ) -> EmploymentType:
     employment_type_obj = employment_type.get(db=db, id=id)
     if not employment_type_obj:
         raise HTTPException(status_code=404, detail="employment_type not found")
-    return employment_type.remove(db=db, id=id)
+    return employment_type.remove(db=db, id=id, force_delete=force_delete)
 
 
 #Staff Category
@@ -502,12 +502,12 @@ def delete_staff_category(
     *,
     db: Session = Depends(get_db),
     id: str,
-    
+    force_delete: bool = Query(False)  # Default is False, allowing normal delete
 ) -> StaffCategory:
     staff_category_obj = staff_category.get(db=db, id=id)
     if not staff_category_obj:
         raise HTTPException(status_code=404, detail="staff_category not found")
-    return staff_category.remove(db=db, id=id)
+    return staff_category.remove(db=db, id=id, force_delete=force_delete)
 
 
 
@@ -1033,12 +1033,12 @@ def delete_employment_detail(
     *,
     db: Session = Depends(get_db),
     id: str,
-    
+    force_delete: bool = Query(False)  # Default is False, allowing normal delete
 ) -> EmploymentDetail:
     employment_detail_obj = employment_detail.get(db=db, id=id)
     if not employment_detail_obj:
         raise HTTPException(status_code=404, detail="employment_detail not found")
-    return employment_detail.remove(db=db, id=id)
+    return employment_detail.remove(db=db, id=id, force_delete=force_delete)
 
 
 
@@ -1111,12 +1111,12 @@ def delete_bank_detail(
     *,
     db: Session = Depends(get_db),
     id: str,
-    
+    force_delete: bool = Query(False)  # Default is False, allowing normal delete
 ) -> BankDetail:
     bank_detail_obj = bank_detail.get(db=db, id=id)
     if not bank_detail_obj:
         raise HTTPException(status_code=404, detail="bank_detail not found")
-    return bank_detail.remove(db=db, id=id)
+    return bank_detail.remove(db=db, id=id, force_delete=force_delete)
 
 
 
@@ -1188,12 +1188,12 @@ def delete_academic(
     *,
     db: Session = Depends(get_db),
     id: str,
-    
+    force_delete: bool = Query(False)  # Default is False, allowing normal delete
 ) -> Academic:
     academic_obj = academic.get(db=db, id=id)
     if not academic_obj:
         raise HTTPException(status_code=404, detail="academic not found")
-    return academic.remove(db=db, id=id)
+    return academic.remove(db=db, id=id, force_delete=force_delete)
 
 
 
@@ -1261,12 +1261,12 @@ def delete_professional(
     *,
     db: Session = Depends(get_db),
     id: str,
-    
+    force_delete: bool = Query(False)  # Default is False, allowing normal delete
 ) -> Professional:
     professional_obj = professional.get(db=db, id=id)
     if not professional_obj:
         raise HTTPException(status_code=404, detail="professional not found")
-    return professional.remove(db=db, id=id)
+    return professional.remove(db=db, id=id, force_delete=force_delete)
 
 
 
@@ -1341,12 +1341,12 @@ def delete_qualification(
     *,
     db: Session = Depends(get_db),
     id: str,
-    
+    force_delete: bool = Query(False)  # Default is False, allowing normal delete
 ) -> Qualification:
     qualification_obj = qualification.get(db=db, id=id)
     if not qualification_obj:
         raise HTTPException(status_code=404, detail="qualification not found")
-    return qualification.remove(db=db, id=id)
+    return qualification.remove(db=db, id=id, force_delete=force_delete)
 
 
 
@@ -1413,12 +1413,12 @@ def delete_employment_history(
     *,
     db: Session = Depends(get_db),
     id: str,
-    
+    force_delete: bool = Query(False)  # Default is False, allowing normal delete
 ) -> EmploymentHistory:
     employment_history_obj = employment_history.get(db=db, id=id)
     if not employment_history_obj:
         raise HTTPException(status_code=404, detail="employment_history not found")
-    return employment_history.remove(db=db, id=id)
+    return employment_history.remove(db=db, id=id, force_delete=force_delete)
 
 
 
@@ -1499,12 +1499,12 @@ def delete_family_info(
     *,
     db: Session = Depends(get_db),
     id: str,
-    
+    force_delete: bool = Query(False)  # Default is False, allowing normal delete
 ) -> FamilyInfo:
     family_info_obj = family_info.get(db=db, id=id)
     if not family_info_obj:
         raise HTTPException(status_code=404, detail="family_info not found")
-    return family_info.remove(db=db, id=id)
+    return family_info.remove(db=db, id=id, force_delete=force_delete)
 
 
 
@@ -1583,12 +1583,12 @@ def delete_emergency_contact(
     *,
     db: Session = Depends(get_db),
     id: str,
-    
+    force_delete: bool = Query(False)  # Default is False, allowing normal delete
 ) -> EmergencyContact:
     emergency_contact_obj = emergency_contact.get(db=db, id=id)
     if not emergency_contact_obj:
         raise HTTPException(status_code=404, detail="emergency_contact not found")
-    return emergency_contact.remove(db=db, id=id)
+    return emergency_contact.remove(db=db, id=id, force_delete=force_delete)
 
 
 
@@ -1664,12 +1664,12 @@ def delete_next_of_kin(
     *,
     db: Session = Depends(get_db),
     id: str,
-    
+    force_delete: bool = Query(False)  # Default is False, allowing normal delete
 ) -> NextOfKin:
     next_of_kin_obj = next_of_kin.get(db=db, id=id)
     if not next_of_kin_obj:
         raise HTTPException(status_code=404, detail="next_of_kin not found")
-    return next_of_kin.remove(db=db, id=id)
+    return next_of_kin.remove(db=db, id=id, force_delete=force_delete)
 
 
 
