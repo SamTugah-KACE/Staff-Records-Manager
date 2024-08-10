@@ -3,12 +3,17 @@ import asyncpg
 from dotenv import load_dotenv
 from Config.config import settings
 
-DATABASE_NAME = os.getenv('DATABASE_NAME')
-DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD')
-HOST = os.getenv('DATABASE_HOST')
-DATABASE_USER = os.getenv('DATABASE_USER')
-PORT = os.getenv('DATABASE_PORT')
+# DATABASE_NAME = os.getenv('DATABASE_NAME')
+# DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD')
+# HOST = os.getenv('DATABASE_HOST')
+# DATABASE_USER = os.getenv('DATABASE_USER')
+# PORT = os.getenv('DATABASE_PORT')
 
+DATABASE_NAME = settings.DATABASE_NAME
+DATABASE_PASSWORD = settings.DATABASE_PASSWORD
+HOST = settings.DATABASE_HOST
+DATABASE_USER = settings.DATABASE_USER
+PORT = settings.DATABASE_PORT
 
 
 
