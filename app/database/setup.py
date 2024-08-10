@@ -9,7 +9,7 @@ from Config.config import settings
 
 async def execute_sql():
      ###using .env
-    load_dotenv(dotenv_path='Config/app.env')
+    #load_dotenv(dotenv_path='Config/app.env')
     
     DATABASE_NAME = os.getenv('DATABASE_NAME')
     DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD')
