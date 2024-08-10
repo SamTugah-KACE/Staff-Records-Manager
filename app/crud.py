@@ -361,15 +361,15 @@ class TCRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             obj.left_logo = image_to_base64(obj.left_logo)
         return obj
     
-    def get_multi(self, db: Session, skip: int = 0, limit: int = 100) -> List[ModelType]:
-        objs = db.query(self.model).offset(skip).limit(limit).all()
+    # def get_multi(self, db: Session, skip: int = 0, limit: int = 100) -> List[ModelType]:
+    #     objs = db.query(self.model).offset(skip).limit(limit).all()
         
-        for obj in objs:
-            if obj.left_logo:
-                obj.left_logo = image_to_base64(obj.left_logo)
-            if obj.right_logo:
-                obj.right_logo = image_to_base64(obj.right_logo)
-        return objs
+    #     for obj in objs:
+    #         if obj.left_logo:
+    #             obj.left_logo = image_to_base64(obj.left_logo)
+    #         if obj.right_logo:
+    #             obj.right_logo = image_to_base64(obj.right_logo)
+    #     return objs
     
     def get_by_field(self, db: Session, field: str, value: Any) -> Optional[ModelType]:
         obj = db.query(self.model).filter(getattr(self.model, field) == value).first()
