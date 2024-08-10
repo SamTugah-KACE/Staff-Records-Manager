@@ -16,6 +16,12 @@ from models import (NextOfKin, EmergencyContact,
 import schemas
 
 
+# Custom Exception for Integrity Constraint Violations
+class IntegrityConstraintViolation(Exception):
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
+
 
 ModelType = TypeVar('ModelType', bound=BaseModel)
 #ModelType = TypeVar("ModelType", bound=Base)
@@ -75,10 +81,12 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             db.delete(db_obj)
             db.commit()
             return db_obj
-
-        except IntegrityError as e:
+        except IntegrityConstraintViolation as e:
             db.rollback()
-            raise HTTPException(status_code=400, detail="Deleting this data violates integrity constraints") from e
+            raise HTTPException(status_code=400, detail=str(e))
+        # except IntegrityError as e:
+        #     db.rollback()
+        #     raise HTTPException(status_code=400, detail="Deleting this data violates integrity constraints") from e
 
     def check_unique_fields(self, db: Session, obj: ModelType, exclude_id: Optional[str] = None):
         unique_fields = self.model.__table__.indexes
@@ -89,7 +97,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                     query = query.filter(self.model.id != exclude_id)
                 existing_obj = query.first()
                 if existing_obj:
-                    raise IntegrityError("Conflicting unique field", obj, field.columns[0].name)
+                    raise IntegrityConstraintViolation("Conflicting unique field")
+                    #raise IntegrityError("Conflicting unique field", obj, field.columns[0].name)
 
     def check_integrity_constraints(self, db: Session, obj: ModelType):
         mapper = inspect(self.model)
@@ -102,12 +111,18 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                     if isinstance(related_objs, list):
                         for related_obj in related_objs:
                             if not self._check_relationship_integrity(db, related_obj):
-                                raise IntegrityError(f"Deleting this data violates integrity constraints with {related_class.__name__}")
+                                 raise IntegrityConstraintViolation(
+                                f"Deleting this data violates integrity constraints with {related_class.__name__}"
+                            )
+                                #raise IntegrityError(f"Deleting this data violates integrity constraints with {related_class.__name__}")
                                 #raise IntegrityError(f"Deleting this data violates integrity constraints with other related table(s)")
                                 
                     else:
                         if not self._check_relationship_integrity(db, related_objs):
-                            raise IntegrityError(f"Deleting this data violates integrity constraints with {related_class.__name__}")
+                             raise IntegrityConstraintViolation(
+                                f"Deleting this data violates integrity constraints with {related_class.__name__}"
+                            )
+                            #raise IntegrityError(f"Deleting this data violates integrity constraints with {related_class.__name__}")
                             #raise IntegrityError(f"Deleting this data violates integrity constraints with other related table(s)")
 
     def _check_relationship_integrity(self, db: Session, related_obj):
