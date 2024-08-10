@@ -97,10 +97,13 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                     if isinstance(related_objs, list):
                         for related_obj in related_objs:
                             if not self._check_relationship_integrity(db, related_obj):
-                                raise IntegrityError(f"Deleting this data violates integrity constraints with {related_class.__name__}")
+                                #raise IntegrityError(f"Deleting this data violates integrity constraints with {related_class.__name__}")
+                                raise IntegrityError(f"Deleting this data violates integrity constraints with other related table(s)")
+                                
                     else:
                         if not self._check_relationship_integrity(db, related_objs):
-                            raise IntegrityError(f"Deleting this data violates integrity constraints with {related_class.__name__}")
+                            #raise IntegrityError(f"Deleting this data violates integrity constraints with {related_class.__name__}")
+                            raise IntegrityError(f"Deleting this data violates integrity constraints with other related table(s)")
 
     def _check_relationship_integrity(self, db: Session, related_obj):
         related_class = type(related_obj)
