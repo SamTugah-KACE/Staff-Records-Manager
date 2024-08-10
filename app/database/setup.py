@@ -14,6 +14,8 @@ from Config.config import settings
 # HOST = settings.DATABASE_HOST
 # USER = settings.USER
 # PORT = settings.DATABASE_PORT
+ 
+load_dotenv(dotenv_path='Config/app.env')
 
 HOST = os.getenv("DATABASE_HOST")
 PORT = os.getenv("DATABASE_PORT")
@@ -23,7 +25,6 @@ DATABASE = os.getenv("DATABASE")
 
 async def execute_sql():
      ###using .env
-    load_dotenv(dotenv_path='Config/app.env')
     
    
     #DATABASE = settings.POSTGRES_DB

@@ -1,4 +1,4 @@
-#alembic
+alembic
 asyncpg
 aiomysql
 bcrypt==4.1.2
