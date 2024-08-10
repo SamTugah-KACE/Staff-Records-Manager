@@ -103,7 +103,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             # Check for existing records that would cause a conflict
             existing_obj = query.first()
             if existing_obj:
-                raise IntegrityConstraintViolation(f"Conflict found with unique field: {column.name}")
+                raise IntegrityConstraintViolation(f"Conflict found with unique field: '{column.name}'")
                         #raise IntegrityError("Conflicting unique field", obj, field.columns[0].name)
 
     def check_integrity_constraints(self, db: Session, obj: ModelType):
