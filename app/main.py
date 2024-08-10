@@ -13,7 +13,7 @@ from database.db_session import engine
 from database.admin import router
 from models import Base
 from auth import auth_router
-from app.main import include_router
+
 
 
 
