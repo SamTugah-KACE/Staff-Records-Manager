@@ -195,7 +195,7 @@ def update_centre(
         raise HTTPException(status_code=404, detail="Centre not found")
     return centre.update(db=db, db_obj=centre_obj, obj_in=centre_in)
 
-@api_router.delete("/centre/{id}", response_model=schemas.Centre,  tags=["Centre"])
+@api_router.delete("/centre/rm/{id}", response_model=schemas.Centre,  tags=["Centre"])
 def delete_centre(
     *,
     db: Session = Depends(get_db),
@@ -278,7 +278,7 @@ def update_directorate(
         raise HTTPException(status_code=404, detail="directorate not found")
     return directorate.update(db=db, db_obj=directorate_obj, obj_in=directorate_in)
 
-@api_router.delete("/directorate/{id}", response_model=schemas.Directorate,  tags=["Directorate"])
+@api_router.delete("/directorate/rm/{id}", response_model=schemas.Directorate,  tags=["Directorate"])
 def delete_directorate(
     *,
     db: Session = Depends(get_db),
@@ -353,7 +353,7 @@ def update_grade(
         raise HTTPException(status_code=404, detail="grade not found")
     return grade.update(db=db, db_obj=grade_obj, obj_in=grade_in)
 
-@api_router.delete("/grade/{id}", response_model=schemas.Grade,  tags=["Grade"])
+@api_router.delete("/grade/rm/{id}", response_model=schemas.Grade,  tags=["Grade"])
 def delete_grade(
     *,
     db: Session = Depends(get_db),
@@ -427,7 +427,7 @@ def update_employment_type(
         raise HTTPException(status_code=404, detail="employment_type not found")
     return employment_type.update(db=db, db_obj=employment_type_obj, obj_in=employment_type_in)
 
-@api_router.delete("/employment_type/{id}", response_model=schemas.EmploymentType,  tags=["Employment Type"])
+@api_router.delete("/employment_type/rm/{id}", response_model=schemas.EmploymentType,  tags=["Employment Type"])
 def delete_employment_type(
     *,
     db: Session = Depends(get_db),
@@ -497,7 +497,7 @@ def update_staff_category(
         raise HTTPException(status_code=404, detail="staff_category not found")
     return staff_category.update(db=db, db_obj=staff_category_obj, obj_in=staff_category_in)
 
-@api_router.delete("/staff_category/{id}", response_model=schemas.StaffCategory,  tags=["Staff Category"])
+@api_router.delete("/staff_category/rm/{id}", response_model=schemas.StaffCategory,  tags=["Staff Category"])
 def delete_staff_category(
     *,
     db: Session = Depends(get_db),
@@ -676,7 +676,7 @@ def update_bio_data(
 
 
 
-@api_router.delete("/bio_data/{id}", response_model=schemas.BioData,  tags=["BioData"])
+@api_router.delete("/bio_data/rm{id}", response_model=schemas.BioData,  tags=["BioData"])
 def delete_bio_data(
     *,
     db: Session = Depends(get_db),
@@ -799,7 +799,7 @@ def update_user(user_id: UUID, user_update: schemas.UserUpdate, db: Session = De
 
 
 
-@api_router.delete("/users/{user_id}", tags=["Users"])
+@api_router.delete("/users/rm/{user_id}", tags=["Users"])
 def delete_user(user_id: UUID, db: Session = Depends(get_db), ):
     db_user = user.remove(db, user_id)
     if db_user is None:
@@ -907,7 +907,7 @@ def update_declaration(
     declaratio = crud.declaration.update(db=db, db_obj=declarat, obj_in=declaration_in, files=files)
     return declaratio
 
-@api_router.delete("/declaration/{id}", response_model=schemas.Declaration, tags=["Declaration"])
+@api_router.delete("/declaration/rm/{id}", response_model=schemas.Declaration, tags=["Declaration"])
 def delete_declaration(
     *,
     db: Session = Depends(get_db),
@@ -1028,7 +1028,7 @@ def update_employment_detail(
         raise HTTPException(status_code=404, detail="employment_detail not found")
     return employment_detail.update(db=db, db_obj=employment_detail_obj, obj_in=employment_detail_in)
 
-@api_router.delete("/employment_detail/{id}", response_model=schemas.EmploymentDetail,  tags=["Employment Detail"])
+@api_router.delete("/employment_detail/rm/{id}", response_model=schemas.EmploymentDetail,  tags=["Employment Detail"])
 def delete_employment_detail(
     *,
     db: Session = Depends(get_db),
@@ -1106,7 +1106,7 @@ def update_bank_detail(
         raise HTTPException(status_code=404, detail="bank_detail not found")
     return bank_detail.update(db=db, db_obj=bank_detail_obj, obj_in=bank_detail_in)
 
-@api_router.delete("/bank_detail/{id}", response_model=schemas.BankDetail,  tags=["Bank Detail"])
+@api_router.delete("/bank_detail/rm/{id}", response_model=schemas.BankDetail,  tags=["Bank Detail"])
 def delete_bank_detail(
     *,
     db: Session = Depends(get_db),
@@ -1183,7 +1183,7 @@ def update_academic(
         raise HTTPException(status_code=404, detail="academic not found")
     return academic.update(db=db, db_obj=academic_obj, obj_in=academic_in)
 
-@api_router.delete("/academic/{id}", response_model=schemas.Academic,  tags=["Academics"])
+@api_router.delete("/academic/rm/{id}", response_model=schemas.Academic,  tags=["Academics"])
 def delete_academic(
     *,
     db: Session = Depends(get_db),
@@ -1256,7 +1256,7 @@ def update_professional(
         raise HTTPException(status_code=404, detail="professional not found")
     return professional.update(db=db, db_obj=professional_obj, obj_in=professional_in)
 
-@api_router.delete("/professional/{id}", response_model=schemas.Professional,  tags=["Professional Details"])
+@api_router.delete("/professional/rm/{id}", response_model=schemas.Professional,  tags=["Professional Details"])
 def delete_professional(
     *,
     db: Session = Depends(get_db),
@@ -1336,7 +1336,7 @@ def update_qualification(
         raise HTTPException(status_code=404, detail="qualification not found")
     return qualification.update(db=db, db_obj=qualification_obj, obj_in=qualification_in)
 
-@api_router.delete("/qualification/{id}", response_model=schemas.Qualification,  tags=["Qualification"])
+@api_router.delete("/qualification/rm/{id}", response_model=schemas.Qualification,  tags=["Qualification"])
 def delete_qualification(
     *,
     db: Session = Depends(get_db),
@@ -1408,7 +1408,7 @@ def update_employment_history(
         raise HTTPException(status_code=404, detail="employment_history not found")
     return employment_history.update(db=db, db_obj=employment_history_obj, obj_in=employment_history_in)
 
-@api_router.delete("/employment_history/{id}", response_model=schemas.EmploymentHistory,  tags=["Employment History"])
+@api_router.delete("/employment_history/rm/{id}", response_model=schemas.EmploymentHistory,  tags=["Employment History"])
 def delete_employment_history(
     *,
     db: Session = Depends(get_db),
@@ -1494,7 +1494,7 @@ def update_family_info(
         raise HTTPException(status_code=404, detail="family_info not found")
     return family_info.update(db=db, db_obj=family_info_obj, obj_in=family_info_in)
 
-@api_router.delete("/family_info/{id}", response_model=schemas.FamilyInfo,  tags=["Family Info"])
+@api_router.delete("/family_info/rm/{id}", response_model=schemas.FamilyInfo,  tags=["Family Info"])
 def delete_family_info(
     *,
     db: Session = Depends(get_db),
@@ -1578,7 +1578,7 @@ def update_emergency_contact(
         raise HTTPException(status_code=404, detail="emergency_contact not found")
     return emergency_contact.update(db=db, db_obj=emergency_contact_obj, obj_in=emergency_contact_in)
 
-@api_router.delete("/emergency_contact/{id}", response_model=schemas.EmergencyContact,  tags=["Emergency Contact"])
+@api_router.delete("/emergency_contact/rm/{id}", response_model=schemas.EmergencyContact,  tags=["Emergency Contact"])
 def delete_emergency_contact(
     *,
     db: Session = Depends(get_db),
@@ -1659,7 +1659,7 @@ def update_next_of_kin(
         raise HTTPException(status_code=404, detail="next_of_kin not found")
     return next_of_kin.update(db=db, db_obj=next_of_kin_obj, obj_in=next_of_kin_in)
 
-@api_router.delete("/next_of_kin/{id}", response_model=schemas.NextOfKin,  tags=["Next Of Kin"])
+@api_router.delete("/next_of_kin/rm/{id}", response_model=schemas.NextOfKin,  tags=["Next Of Kin"])
 def delete_next_of_kin(
     *,
     db: Session = Depends(get_db),
