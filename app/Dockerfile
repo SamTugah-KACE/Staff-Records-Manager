@@ -39,10 +39,12 @@ RUN mkdir -p ./uploads/images/ && chmod -R 755 ./uploads/images/
 RUN mkdir -p ./downloads/documents/  && chmod -R 755 ./downloads/documents/
 
 # Expose the port that the application listens on
-EXPOSE 8080
+#EXPOSE 8080
+EXPOSE 1000
 
 # Run the application with wait-for-it.sh to wait for the database
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+#CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "1000"]
 #CMD ["./wait-for-it.sh", "auth_sys:5432", "--", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
 
 # Run Alembic migrations before starting the app
