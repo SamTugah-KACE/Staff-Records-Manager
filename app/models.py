@@ -53,7 +53,7 @@ class BaseModel(Base):
 class Centre(BaseModel):
     __tablename__ = "centre"
 
-    location = Column(String, nullable=False)
+    location = Column(String, unique=True, nullable=False)
     region = Column(String, nullable=True)
     directorates = relationship('Directorate', backref='centre', cascade='all, delete-orphan')
 
@@ -61,7 +61,7 @@ class Centre(BaseModel):
 class Directorate(BaseModel):
     __tablename__ = "directorate"
 
-    name = Column(String, nullable=False)
+    name = Column(String,  unique=True, nullable=False)
     centre_id = Column(UUID(as_uuid=True), ForeignKey('centre.id', ondelete='SET NULL', onupdate='CASCADE'), nullable=False)
     employment_details = relationship('EmploymentDetail', backref='directorate', cascade='all, delete-orphan')
 
@@ -69,7 +69,7 @@ class Directorate(BaseModel):
 class Grade(BaseModel):
     __tablename__ = "grade"
 
-    name = Column(String, nullable=False)
+    name = Column(String,  unique=True, nullable=False)
     min_sal = Column(DECIMAL(precision=10, scale=2), nullable=False,  default=0.00)
     max_sal = Column(DECIMAL(precision=10, scale=2), nullable=False,  default=0.00)
     employment_types = relationship('EmploymentType', backref='grade', cascade='all, delete-orphan')
@@ -79,7 +79,7 @@ class Grade(BaseModel):
 class EmploymentType(BaseModel):
     __tablename__ = "employment_type"
 
-    name = Column(String, nullable=False)
+    name = Column(String,  unique=True, nullable=False)
     description = Column(String)
     grade_id = Column(UUID(as_uuid=True), ForeignKey('grade.id', ondelete='SET NULL', onupdate='CASCADE'), nullable=False)
     employment_details = relationship('EmploymentDetail', backref='employment_type', cascade='all, delete-orphan')
@@ -88,7 +88,7 @@ class EmploymentType(BaseModel):
 class StaffCategory(BaseModel):
     __tablename__ = "staff_category"
 
-    category = Column(String, nullable=False)
+    category = Column(String,  unique=True, nullable=False)
     employment_details = relationship('EmploymentDetail', backref='staff_category', cascade='all, delete-orphan')
 
 
@@ -107,13 +107,13 @@ class BioData(BaseModel):
     religion = Column(String, nullable=True)
     marital_status = Column(String, default=MaritalStatus.Other.value, nullable=False)
     residential_addr = Column(String, nullable=False)
-    active_phone_number = Column(String, nullable=False)
-    email = Column(String, nullable=False)
-    ssnit_number = Column(String, nullable=False)
-    ghana_card_number = Column(String, nullable=False)
+    active_phone_number = Column(String,  unique=True, nullable=False)
+    email = Column(String, unique=True, nullable=False)
+    ssnit_number = Column(String, unique=True, nullable=False)
+    ghana_card_number = Column(String,  unique=True, nullable=False)
     is_physically_challenged = Column(Boolean, nullable=False)
     disability = Column(String, nullable=True)
-    image_col = Column(String, nullable=True)
+    image_col = Column(String, unique=True, nullable=True)
     user = relationship('User', backref='bio_data', uselist=False, cascade='all, delete-orphan')
     employment_detail = relationship('EmploymentDetail', backref='bio_data', uselist=False, cascade='all, delete-orphan')
     bank_details = relationship('BankDetail', backref='bio_data', cascade='all, delete-orphan')
@@ -132,7 +132,7 @@ class User(BaseModel):
 
     bio_row_id = Column(UUID(as_uuid=True), ForeignKey('bio_data.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     username = Column(String, unique=True, nullable=False)
-    email = Column(String, nullable=True)
+    email = Column(String,  unique=True, nullable=True)
     hashed_password = Column(String, nullable=False)
     reset_pwd_token = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
@@ -219,7 +219,7 @@ class FamilyInfo(BaseModel):
     bio_row_id = Column(UUID(as_uuid=True), ForeignKey('bio_data.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     name_of_spouse = Column(String, nullable=True)
     occupation = Column(String, nullable=True)
-    phone_number = Column(String, nullable=True)
+    phone_number = Column(String, unique=True, nullable=True)
     address = Column(String, nullable=True)
     name_of_father_guardian = Column(String, nullable=True)
     fathers_occupation = Column(String, nullable=True)
@@ -238,7 +238,7 @@ class EmergencyContact(BaseModel):
 
     bio_row_id = Column(UUID(as_uuid=True), ForeignKey('bio_data.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     name = Column(String)
-    phone_number = Column(String)
+    phone_number = Column(String, unique=True)
     address = Column(String)
     email = Column(String)
 
@@ -265,8 +265,8 @@ class Declaration(BaseModel):
 
     bio_row_id = Column(UUID(as_uuid=True), ForeignKey('bio_data.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     status = Column(Boolean, default=False)
-    reps_signature = Column(String, nullable=True)
-    employees_signature = Column(String, nullable=True)
+    reps_signature = Column(String, unique=True,nullable=True)
+    employees_signature = Column(String, unique=True, nullable=True)
     declaration_date = Column(Date, default=func.now())
 
 class Trademark(BaseModel):

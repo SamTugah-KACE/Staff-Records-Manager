@@ -89,16 +89,22 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         #     raise HTTPException(status_code=400, detail="Deleting this data violates integrity constraints") from e
 
     def check_unique_fields(self, db: Session, obj: ModelType, exclude_id: Optional[str] = None):
-        unique_fields = self.model.__table__.indexes
-        for field in unique_fields:
-            if field.unique:
-                query = db.query(self.model).filter(getattr(self.model, field.columns[0].name) == getattr(obj, field.columns[0].name))
-                if exclude_id:
-                    query = query.filter(self.model.id != exclude_id)
-                existing_obj = query.first()
-                if existing_obj:
-                    raise IntegrityConstraintViolation("Conflicting unique field")
-                    #raise IntegrityError("Conflicting unique field", obj, field.columns[0].name)
+        # Iterate over all columns to find unique ones
+        unique_columns = [col for col in self.model.__table__.columns if col.unique]
+        
+        for column in unique_columns:
+            # Build the query for each unique field
+            query = db.query(self.model).filter(getattr(self.model, column.name) == getattr(obj, column.name))
+            
+            # Exclude the current object by ID if exclude_id is provided
+            if exclude_id:
+                query = query.filter(self.model.id != exclude_id)
+            
+            # Check for existing records that would cause a conflict
+            existing_obj = query.first()
+            if existing_obj:
+                raise IntegrityConstraintViolation(f"Conflict found with unique field: {column.name}")
+                        #raise IntegrityError("Conflicting unique field", obj, field.columns[0].name)
 
     def check_integrity_constraints(self, db: Session, obj: ModelType):
         mapper = inspect(self.model)
