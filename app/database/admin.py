@@ -1,4 +1,4 @@
-from app.utils import sanitize_json_data, sanitize_sql, execute_sql_file, seed_data_from_json
+from utils import sanitize_json_data, sanitize_sql, execute_sql_file, seed_data_from_json
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 from database.db_session import get_db
