@@ -93,6 +93,9 @@ def save_and_resize_image(file: UploadFile, filename: str) -> str:
     return filepath
 
 def image_to_base64(filepath: str) -> str:
+    if not os.path.exists(filepath):
+        return filepath
+    
     with open(filepath, "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
     
