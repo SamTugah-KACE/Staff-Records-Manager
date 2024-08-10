@@ -3,17 +3,17 @@ import asyncpg
 from dotenv import load_dotenv
 from Config.config import settings
 
-# DATABASE_NAME = os.getenv('DATABASE_NAME')
+# DATABASE = os.getenv('DATABASE')
 # DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD')
 # HOST = os.getenv('DATABASE_HOST')
-# DATABASE_USER = os.getenv('DATABASE_USER')
+# USER = os.getenv('USER')
 # PORT = os.getenv('DATABASE_PORT')
 
-DATABASE_NAME = settings.POSTGRES_DB
-DATABASE_PASSWORD = settings.POSTGRES_PASSWORD
-HOST = settings.POSTGRES_SERVER
-DATABASE_USER = settings.POSTGRES_USER
-PORT = settings.POSTGRES_PORT
+DATABASE = settings.DATABASE
+DATABASE_PASSWORD = settings.DATABASE_PASSWORD
+HOST = settings.DATABASE_HOST
+USER = settings.USER
+PORT = settings.DATABASE_PORT
 
 
 
@@ -22,17 +22,17 @@ async def execute_sql():
     #load_dotenv(dotenv_path='Config/app.env')
     
    
-    #DATABASE_NAME = settings.POSTGRES_DB
-    print("DATABASE_NAME -> ",DATABASE_NAME)
+    #DATABASE = settings.POSTGRES_DB
+    print("DATABASE -> ",DATABASE)
     #DATABASE_PASSWORD = settings.POSTGRES_PASSWORD
     print("DATABASE_PASSWORD -> ",DATABASE_PASSWORD)
     #HOST = settings.POSTGRES_SERVER
     print("HOST -> ",HOST)
-    # DATABASE_USER = settings.POSTGRES_USER
-    print("DATABASE_USER -> ",DATABASE_USER)
+    # USER = settings.POSTGRES_USER
+    print("USER -> ",USER)
     try:
 
-        conn2 = await asyncpg.connect(user=f"{DATABASE_USER}", password=f"{DATABASE_PASSWORD}", database=f"{DATABASE_NAME}", host=f"{HOST}")
+        conn2 = await asyncpg.connect(user=f"{USER}", password=f"{DATABASE_PASSWORD}", database=f"{DATABASE}", host=f"{HOST}")
         print("conn2: ", conn2)
         db_sql_path = os.path.join(os.path.dirname(__file__), "db.sql")
         
@@ -73,7 +73,7 @@ async def check_and_create_database():
         
         
         conn = await asyncpg.connect(
-            user=DATABASE_USER,
+            user=USER,
             password=DATABASE_PASSWORD,
             host= HOST,
             port=PORT
@@ -89,7 +89,7 @@ async def check_and_create_database():
         # Connect to PostgreSQL server
         
         # Connect to PostgreSQL server
-        db_name = os.getenv("DATABASE_NAME")
+        db_name = os.getenv("DATABASE")
         #db_name =settings.POSTGRES_DB
         
         
