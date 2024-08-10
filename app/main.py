@@ -10,8 +10,11 @@ from contextlib import asynccontextmanager
 from database.setup import check_and_create_database
 from fastapi.responses import JSONResponse
 from database.db_session import engine
+from database.admin import router
 from models import Base
 from auth import auth_router
+from app.main import include_router
+
 
 
 def create_tables():
@@ -23,6 +26,7 @@ def create_tables():
 def include_router(app):
     app.include_router(auth_router)
     app.include_router(api_router)
+    app.include_router(router)
     
     
 

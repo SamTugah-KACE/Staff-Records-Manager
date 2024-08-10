@@ -9,8 +9,158 @@ from sqlalchemy.orm import Session
 from models import BioData
 from fastapi import FastAPI, HTTPException, status
 from sqlalchemy import inspect
+import html
+from typing import Union, Any
+import re
+import os
+import json
+from models import *  # Import your models here
 
 
+# List of all models
+all_models = [
+    Centre, Directorate, Grade, EmploymentType, StaffCategory, BioData, EmploymentDetail, 
+    BankDetail, Academic, Professional, Qualification, EmploymentHistory, FamilyInfo, EmergencyContact, NextOfKin, 
+    Declaration, User
+]
+
+
+
+
+def sanitize_json_data(data: Union[dict, list]) -> Union[dict, list]:
+    """
+    Sanitizes JSON data to prevent XSS or injection attacks.
+    """
+    if isinstance(data, dict):
+        for key, value in data.items():
+            if isinstance(value, str):
+                data[key] = re.sub(r'[<>]', '', value)  # Removing characters that could be used in XSS
+            elif isinstance(value, (dict, list)):
+                data[key] = sanitize_json_data(value)
+    elif isinstance(data, list):
+        data = [sanitize_json_data(item) for item in data]
+    
+    return data
+
+
+def execute_sql_file(db: Session, file_path: str) -> None:
+    """Executes a given SQL file securely."""
+    # if not os.path.exists(file_path):
+    #     raise HTTPException(status_code=404, detail="SQL file not found.")
+    
+    allowed_extensions = ['.sql']
+    if not validate_file_type(file_path, allowed_extensions):
+        raise ValueError("Invalid file type. Only .sql files is allowed.")
+
+
+    with open(file_path, 'r') as file:
+        sql_commands = file.read()
+        
+        # Sanitize the SQL commands to prevent SQL injection
+        sanitized_sql_commands = sanitize_sql(sql_commands)
+        
+        try:
+            db.execute(sanitized_sql_commands)
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(status_code=500, detail=f"Error executing SQL file: {str(e)}")
+        
+
+def validate_file_type(file_path: str, allowed_extensions: list) -> bool:
+    """
+    Validates the file type based on its extension.
+    """
+    _, ext = os.path.splitext(file_path)
+    return ext.lower() in allowed_extensions
+
+# Example usage
+allowed_extensions = ['.sql', '.json']
+file_path = '/path/to/uploaded/file.sql'
+
+if not validate_file_type(file_path, allowed_extensions):
+    raise ValueError("Invalid file type. Only .sql and .json files are allowed.")
+
+
+
+
+def sanitize_sql(sql_commands: str) -> str:
+    """
+    Sanitizes SQL commands to prevent SQL injection.
+    - Removes comments and unnecessary whitespaces.
+    - Blocks risky SQL keywords.
+    - Escapes potentially dangerous characters.
+    """
+    # Remove SQL comments
+    sql_commands = re.sub(r'(--[^\n]*\n)|(/\*.*?\*/)', '', sql_commands, flags=re.DOTALL)
+    
+    # Normalize whitespace
+    sql_commands = re.sub(r'\s+', ' ', sql_commands).strip()
+
+    # Block risky SQL keywords (you can expand this list as needed)
+    risky_keywords = ['DROP', 'TRUNCATE', 'ALTER', 'DELETE', 'INSERT', 'UPDATE']
+    pattern = re.compile(r'\b(' + '|'.join(risky_keywords) + r')\b', re.IGNORECASE)
+    if pattern.search(sql_commands):
+        raise ValueError("SQL contains risky operations that are not allowed.")
+    
+    # Escaping potentially dangerous characters (like single quotes)
+    sql_commands = sql_commands.replace("'", "''")
+
+    return sql_commands
+
+
+
+def sanitize_json_data(data: Union[dict, list]) -> Union[dict, list]:
+    """
+    Sanitizes JSON data to prevent XSS or injection attacks.
+    - Removes potentially dangerous characters and HTML tags.
+    - Escapes HTML entities to prevent XSS.
+    - Ensures data types are valid.
+    """
+
+    allowed_extensions = ['.sql', '.json']
+    if not validate_file_type(file_path, allowed_extensions):
+        raise ValueError("Invalid file type. Only .json files is allowed.")
+
+    if isinstance(data, dict):
+        for key, value in data.items():
+            if isinstance(value, str):
+                # Escaping HTML entities to prevent XSS
+                sanitized_value = html.escape(value)
+                
+                # Removing any remaining potentially dangerous characters
+                data[key] = re.sub(r'[<>]', '', sanitized_value)
+                
+            elif isinstance(value, (dict, list)):
+                data[key] = sanitize_json_data(value)
+            elif not isinstance(value, (int, float, bool, type(None))):
+                # Ensure no unexpected data types
+                raise ValueError(f"Invalid data type detected: {type(value)}")
+    elif isinstance(data, list):
+        data = [sanitize_json_data(item) for item in data]
+    
+    return data
+
+def seed_data_from_json(db: Session, json_file_path: str, model: Any) -> None:
+    """Seeds data from a sanitized JSON file into the given model."""
+    # if not os.path.exists(json_file_path):
+    #     raise HTTPException(status_code=404, detail="JSON file not found.")
+    
+    with open(json_file_path, 'r') as file:
+        data = json.load(file)
+        
+        # Sanitize the JSON data to prevent XSS or injection attacks
+        sanitized_data = sanitize_json_data(data)
+        
+        try:
+            for item in sanitized_data:
+                db_obj = model(**item)
+                db.add(db_obj)
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(status_code=500, detail=f"Error seeding data from JSON file: {str(e)}")
+        
 
 def generate_pdf_for_bio_data(bio_data_id: str, db: Session):
     # Fetch all related data for the given bio_data_id
