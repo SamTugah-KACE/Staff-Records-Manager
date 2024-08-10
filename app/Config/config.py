@@ -38,7 +38,7 @@ class Settings:
     USER: str=os.getenv("USER","sam_tugah_kace")
     DATABASE_PASSWORD: str=os.getenv("DATABASE_PASSWORD","vjIDmbKK2KNpFm8h64JgK7jKW9bTpxP5")
     DATABASE: str=os.getenv("DATABASE","staff_records_db")
-    DATABASE_URL: str = "postgresql://sam_tugah_kace:vjIDmbKK2KNpFm8h64JgK7jKW9bTpxP5@dpg-cqrmj3ggph6c73a1u4k0-a/staff_records_db"
+    DATABASE_URL: str = os.getenv("DATABASE_URL","postgresql://sam_tugah_kace:vjIDmbKK2KNpFm8h64JgK7jKW9bTpxP5@dpg-cqrmj3ggph6c73a1u4k0-a/staff_records_db")
 
     MySQL_USER: str = os.getenv("MySQL_USER", "samuelkusiduahAI")
     MySQL_PASSWORD: str = os.getenv("MySQL_PASSWORD", "password_80")

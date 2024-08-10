@@ -9,17 +9,21 @@ from Config.config import settings
 # USER = os.getenv('USER')
 # PORT = os.getenv('DATABASE_PORT')
 
-DATABASE = settings.DATABASE
-DATABASE_PASSWORD = settings.DATABASE_PASSWORD
-HOST = settings.DATABASE_HOST
-USER = settings.USER
-PORT = settings.DATABASE_PORT
+# DATABASE = settings.DATABASE
+# DATABASE_PASSWORD = settings.DATABASE_PASSWORD
+# HOST = settings.DATABASE_HOST
+# USER = settings.USER
+# PORT = settings.DATABASE_PORT
 
-
+DATABASE_HOST = os.getenv("DATABASE_HOST")
+DATABASE_PORT = os.getenv("DATABASE_PORT")
+USER = os.getenv("USER")
+DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
+DATABASE = os.getenv("DATABASE")
 
 async def execute_sql():
      ###using .env
-    #load_dotenv(dotenv_path='Config/app.env')
+    load_dotenv(dotenv_path='Config/app.env')
     
    
     #DATABASE = settings.POSTGRES_DB
