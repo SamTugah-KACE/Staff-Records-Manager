@@ -3,6 +3,11 @@ import asyncpg
 from dotenv import load_dotenv
 from Config.config import settings
 
+DATABASE_NAME = os.getenv('DATABASE_NAME')
+DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD')
+HOST = os.getenv('DATABASE_HOST')
+DATABASE_USER = os.getenv('DATABASE_USER')
+PORT = os.getenv('DATABASE_PORT')
 
 
 
@@ -11,11 +16,7 @@ async def execute_sql():
      ###using .env
     #load_dotenv(dotenv_path='Config/app.env')
     
-    DATABASE_NAME = os.getenv('DATABASE_NAME')
-    DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD')
-    HOST = os.getenv('DATABASE_HOST')
-    DATABASE_USER = os.getenv('DATABASE_USER')
-
+   
     #DATABASE_NAME = settings.POSTGRES_DB
     print("DATABASE_NAME -> ",DATABASE_NAME)
     #DATABASE_PASSWORD = settings.POSTGRES_PASSWORD
@@ -67,10 +68,10 @@ async def check_and_create_database():
         
         
         conn = await asyncpg.connect(
-            user=os.getenv("DATABASE_USER"),
-            password=os.getenv("DATABASE_PASSWORD"),
-            host=os.getenv("DATABASE_HOST"),
-            port=os.getenv("DATABASE_PORT")
+            user=DATABASE_USER,
+            password=DATABASE_PASSWORD,
+            host= HOST,
+            port=PORT
         )
         print("conn -> ", conn)
         # conn = await asyncpg.connect(
