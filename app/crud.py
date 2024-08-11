@@ -190,118 +190,66 @@ def create_user(db: Session, user: schemas.UserCreate):
 
 #----------------------------------------------
 
-def is_valid_uuid(value: str) -> bool:
-    try:
-        uuid.UUID(value)
-        return True
-    except ValueError:
-        return False
+# def is_valid_uuid(value: str) -> bool:
+#     try:
+#         uuid.UUID(value)
+#         return True
+#     except ValueError:
+#         return False
 
 
 
-def custom_jsonable_encoder(record):
-    try:
-        if isinstance(record, dict):
-            return {k: custom_jsonable_encoder(v) for k, v in record.items()}
-        elif isinstance(record, list):
-            return [custom_jsonable_encoder(v) for v in record]
-        elif isinstance(record, uuid.UUID):
-            return str(record)
-        elif hasattr(record, "__dict__"):
-            # Prevent recursion by excluding SQLAlchemy attributes
-            model_dict = {k: v for k, v in record.__dict__.items() if not k.startswith('_sa')}
-            return custom_jsonable_encoder(model_dict)
-        return jsonable_encoder(record)
-    except Exception as e:
-        print(f"Error in custom_jsonable_encoder: {e}")
-        raise e
+# def custom_jsonable_encoder(record):
+#     try:
+#         if isinstance(record, dict):
+#             return {k: custom_jsonable_encoder(v) for k, v in record.items()}
+#         elif isinstance(record, list):
+#             return [custom_jsonable_encoder(v) for v in record]
+#         elif isinstance(record, uuid.UUID):
+#             return str(record)
+#         elif hasattr(record, "__dict__"):
+#             # Prevent recursion by excluding SQLAlchemy attributes
+#             model_dict = {k: v for k, v in record.__dict__.items() if not k.startswith('_sa')}
+#             return custom_jsonable_encoder(model_dict)
+#         return jsonable_encoder(record)
+#     except Exception as e:
+#         print(f"Error in custom_jsonable_encoder: {e}")
+#         raise e
 
-def validate_input(input_string: str) -> bool:
-    # Basic SQL injection prevention
-    forbidden_patterns = [
-        r"(?i)\b(select|insert|update|delete|drop|truncate|exec|execute|union|create|alter|rename|revoke|grant|replace|shutdown|backup|restore)\b",
-        r"(--)|(/\*)|(\*/)|(;)"
-    ]
-    for pattern in forbidden_patterns:
-        if re.search(pattern, input_string):
-            return False
-    return True
+# def validate_input(input_string: str) -> bool:
+#     # Basic SQL injection prevention
+#     forbidden_patterns = [
+#         r"(?i)\b(select|insert|update|delete|drop|truncate|exec|execute|union|create|alter|rename|revoke|grant|replace|shutdown|backup|restore)\b",
+#         r"(--)|(/\*)|(\*/)|(;)"
+#     ]
+#     for pattern in forbidden_patterns:
+#         if re.search(pattern, input_string):
+#             return False
+#     return True
 
-def search_related_models(db: Session, related_model: Type[Any], search_terms: List[str]) -> List[Dict[str, Any]]:
-    conditions = []
-    for column in inspect(related_model).columns:
-        if isinstance(column.type, (String, Text)):
-            for term in search_terms:
-                conditions.append(getattr(related_model, column.name).ilike(f"%{term}%"))
-    if conditions:
-        related_query_results = db.query(related_model).options(joinedload('*')).filter(or_(*conditions)).all()
-        return [custom_jsonable_encoder(record) for record in related_query_results]
-    return []
-
-
-
-
-def search_all(db: Session, search_string: str, models: List[Type[Any]], current_user: User) -> Dict[str, List[Dict[str, Any]]]:
-    
-    if not validate_input(search_string):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid input detected")
-    
-    results = {}
-    search_terms = search_string.lower().split()
-    # Sanitize and validate input
-    search_terms = re.sub(r'[^\w\s]', '', search_string.lower().strip())  # Remove special characters
-
-    try:
-        for model in models:
-            query = db.query(model)
-            conditions = []
-            for column in inspect(model).columns:
-                if isinstance(column.type, (String, Text)):
-                    for term in search_terms:
-                        conditions.append(getattr(model, column.name).ilike(f"%{term}%"))
-                elif isinstance(column.type, (PostgreSQL_UUID, uuid.UUID)):
-                    if is_valid_uuid(search_string):
-                        conditions.append(getattr(model, column.name) == uuid.UUID(search_string))
-                elif isinstance(column.type, (DateTime, Boolean, Date)):
-                    pass  # Skip these types for search
-                else:
-                    continue  # Skip any other types
-            if conditions:
-                query_results = query.filter(or_(*conditions)).all()
-                if query_results:
-                    if current_user.role == "admin":
-                        model_results = [custom_jsonable_encoder(record) for record in query_results]
-                    else:
-                        model_results = []
-                        for record in query_results:
-                            if record.id == current_user.bio_row_id:
-                                model_results.append(custom_jsonable_encoder(record))
-                            else:
-                                basic_details = {
-                                    'Name': getattr(record, 'name', None),
-                                    'Staff Category': getattr(record, 'staff_category', None),
-                                    'Employment Type': getattr(record, 'employment_type', None),
-                                    'Qualification': getattr(record, 'qualification', None),
-                                    'Image': getattr(record, 'image_col', None)
-                                }
-                                model_results.append(basic_details)
-                    if model_results:
-                        results[model.__name__] = model_results
-        return results
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Error in search_all: {str(e)}")
-
+# def search_related_models(db: Session, related_model: Type[Any], search_terms: List[str]) -> List[Dict[str, Any]]:
+#     conditions = []
+#     for column in inspect(related_model).columns:
+#         if isinstance(column.type, (String, Text)):
+#             for term in search_terms:
+#                 conditions.append(getattr(related_model, column.name).ilike(f"%{term}%"))
+#     if conditions:
+#         related_query_results = db.query(related_model).options(joinedload('*')).filter(or_(*conditions)).all()
+#         return [custom_jsonable_encoder(record) for record in related_query_results]
+#     return []
 
 
 
 
 # def search_all(db: Session, search_string: str, models: List[Type[Any]], current_user: User) -> Dict[str, List[Dict[str, Any]]]:
+    
 #     if not validate_input(search_string):
 #         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid input detected")
-
+    
 #     results = {}
 #     search_terms = search_string.lower().split()
+#     # Sanitize and validate input
+#     search_terms = re.sub(r'[^\w\s]', '', search_string.lower().strip())  # Remove special characters
 
 #     try:
 #         for model in models:
@@ -314,55 +262,138 @@ def search_all(db: Session, search_string: str, models: List[Type[Any]], current
 #                 elif isinstance(column.type, (PostgreSQL_UUID, uuid.UUID)):
 #                     if is_valid_uuid(search_string):
 #                         conditions.append(getattr(model, column.name) == uuid.UUID(search_string))
-#                 elif isinstance(column.type, (EmailStr)):
-#                     for term in search_terms:
-#                         conditions.append(getattr(model, column.name) == term)
 #                 elif isinstance(column.type, (DateTime, Boolean, Date)):
 #                     pass  # Skip these types for search
 #                 else:
 #                     continue  # Skip any other types
 #             if conditions:
-#                 query_results = query.options(joinedload('*')).filter(or_(*conditions)).all()
-#                 model_results = [custom_jsonable_encoder(record) for record in query_results]
-
-#                 if model_results:
-#                     results[model.__name__] = model_results
-#                 # Query related models
-#                 # for result in model_results:
-#                 #     for related_field in inspect(model).relationships:
-#                 #         related_model = related_field.mapper.class_
-#                 #         related_results = search_related_models(db, related_model, search_terms)
-#                 #         if related_results:
-#                 #             result[related_field.key] = related_results
-
-#                 # results[model.__name__] = model_results
-#         return results
-#     except SQLAlchemyError as e:
-#         db.rollback()
-#         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
-
-# Example usage
-
-
-
-
-#--------------------------------
-# def search_all(db: Session, search_string: str, models: List[Type[ModelType]]) -> Dict[str, List[Dict[str, Any]]]:
-#     results = {}
-#     try:
-#         for model in models:
-#             query = db.query(model)
-#             conditions = []
-#             for column in inspect(model).columns:
-#                 if isinstance(column.type, (String, Text)):
-#                     conditions.append(getattr(model, column.name).ilike(f"%{search_string}%"))
-#             if conditions:
 #                 query_results = query.filter(or_(*conditions)).all()
-#                 results[model.__name__] = [jsonable_encoder(record) for record in query_results]
+#                 if query_results:
+#                     if current_user.role == "admin":
+#                         model_results = [custom_jsonable_encoder(record) for record in query_results]
+#                     else:
+#                         model_results = []
+#                         for record in query_results:
+#                             if record.id == current_user.bio_row_id:
+#                                 model_results.append(custom_jsonable_encoder(record))
+#                             else:
+#                                 basic_details = {
+#                                     'Name': getattr(record, 'name', None),
+#                                     'Staff Category': getattr(record, 'staff_category', None),
+#                                     'Employment Type': getattr(record, 'employment_type', None),
+#                                     'Qualification': getattr(record, 'qualification', None),
+#                                     'Image': getattr(record, 'image_col', None)
+#                                 }
+#                                 model_results.append(basic_details)
+#                     if model_results:
+#                         results[model.__name__] = model_results
 #         return results
 #     except Exception as e:
 #         db.rollback()
-#         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+#         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Error in search_all: {str(e)}")
+
+
+
+
+
+################# new search engine
+def is_valid_uuid(value: str) -> bool:
+    try:
+        uuid.UUID(value)
+        return True
+    except ValueError:
+        return False
+
+def custom_jsonable_encoder(record):
+    try:
+        if isinstance(record, dict):
+            return {k: custom_jsonable_encoder(v) for k, v in record.items()}
+        elif isinstance(record, list):
+            return [custom_jsonable_encoder(v) for v in record]
+        elif isinstance(record, uuid.UUID):
+            return str(record)
+        elif hasattr(record, "__dict__"):
+            model_dict = {k: v for k, v in record.__dict__.items() if not k.startswith('_sa')}
+            return custom_jsonable_encoder(model_dict)
+        return jsonable_encoder(record)
+    except Exception as e:
+        raise ValueError(f"Error in custom_jsonable_encoder: {e}")
+
+def validate_input(input_string: str) -> bool:
+    forbidden_patterns = [
+        r"(?i)\b(select|insert|update|delete|drop|truncate|exec|execute|union|create|alter|rename|revoke|grant|replace|shutdown|backup|restore)\b",
+        r"(--)|(/\*)|(\*/)|(;)"
+    ]
+    return not any(re.search(pattern, input_string) for pattern in forbidden_patterns)
+
+def search_related_models(db: Session, related_model: Type[Any], search_terms: List[str]) -> List[Dict[str, Any]]:
+    conditions = []
+    for column in inspect(related_model).columns:
+        if isinstance(column.type, (String, Text)):
+            for term in search_terms:
+                conditions.append(getattr(related_model, column.name).ilike(f"%{term}%"))
+    if conditions:
+        related_query_results = db.query(related_model).options(joinedload('*')).filter(or_(*conditions)).all()
+        return [custom_jsonable_encoder(record) for record in related_query_results]
+    return []
+
+def search_all(db: Session, search_string: str, models: List[Type[Any]], current_user: User) -> Dict[str, List[Dict[str, Any]]]:
+    # Sanitize and validate input
+    search_string = search_string.lower().strip()
+    if not validate_input(search_string):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid input detected")
+
+    search_terms = re.sub(r'[^\w\s]', '', search_string).split()
+    results = {}
+
+    try:
+        for model in models:
+            conditions = []
+            for column in inspect(model).columns:
+                if isinstance(column.type, (String, Text)):
+                    conditions.extend([getattr(model, column.name).ilike(f"%{term}%") for term in search_terms])
+                elif isinstance(column.type, (PostgreSQL_UUID, uuid.UUID)):
+                    if is_valid_uuid(search_string):
+                        conditions.append(getattr(model, column.name) == uuid.UUID(search_string))
+                # Skip non-searchable types
+
+            if conditions:
+                query = db.query(model).filter(or_(*conditions))
+                query_results = query.all()
+
+                if query_results:
+                    if current_user.role == "admin":
+                        model_results = [custom_jsonable_encoder(record) for record in query_results]
+                    else:
+                        model_results = [
+                            custom_jsonable_encoder(record) if record.id == current_user.bio_row_id else {
+                                'Name': getattr(record, 'name', None),
+                                'Staff Category': getattr(record, 'staff_category', None),
+                                'Employment Type': getattr(record, 'employment_type', None),
+                                'Qualification': getattr(record, 'qualification', None),
+                                'Image': getattr(record, 'image_col', None)
+                            }
+                            for record in query_results
+                        ]
+
+                    if model_results:
+                        results[model.__name__] = model_results
+
+        return results
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Database error in search_all: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Error in search_all: {str(e)}")
+
+
+
+# Custom Exception for Integrity Constraint Violations
+class IntegrityConstraintViolation(Exception):
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
+
 
 
 class TCRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
@@ -375,16 +406,6 @@ class TCRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             obj.left_logo = image_to_base64(obj.left_logo)
         return obj
     
-    # def get_multi(self, db: Session, skip: int = 0, limit: int = 100) -> List[ModelType]:
-    #     objs = db.query(self.model).offset(skip).limit(limit).all()
-        
-    #     for obj in objs:
-    #         if obj.left_logo:
-    #             obj.left_logo = image_to_base64(obj.left_logo)
-    #         if obj.right_logo:
-    #             obj.right_logo = image_to_base64(obj.right_logo)
-    #     return objs
-    
     def get_by_field(self, db: Session, field: str, value: Any) -> Optional[ModelType]:
         obj = db.query(self.model).filter(getattr(self.model, field) == value).first()
         if obj and obj.left_logo:
@@ -394,24 +415,24 @@ class TCRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def create(self, db: Session, obj_in: CreateSchemaType, file: UploadFile = None, file2: UploadFile = None) -> ModelType:
         obj_in_data = jsonable_encoder(obj_in)
         if file:
-            filename = f"{obj_in.name}_left.jpg" #f"{uuid.uuid4()}.jpg" 
+            filename = f"{obj_in.name}_left.jpg"
             filepath = save_and_resize_image(file, filename)
             obj_in_data['left_logo'] = filepath
         if file2:
-            filename2 = f"{obj_in.name}_right.jpg"  #f"{uuid.uuid4()}.jpg"
+            filename2 = f"{obj_in.name}_right.jpg"
             filepath2 = save_and_resize_image(file2, filename2)
             obj_in_data['right_logo'] = filepath2
 
         try:
+            self.check_unique_fields(db, obj_in)  # Check for unique fields before creation
             db_obj = self.model(**obj_in_data)
             db.add(db_obj)
             db.commit()
             db.refresh(db_obj)
-            # if db_obj.left_logo:
-            #     db_obj.left_logo = image_to_base64(db_obj.left_logo)
-            # if db_obj.right_logo:
-            #     db_obj.right_logo = image_to_base64(db_obj.right_logo)
             return db_obj
+        except IntegrityError as e:
+            db.rollback()
+            raise HTTPException(status_code=500, detail="Data already exists with conflicting unique fields") from e
         except Exception as e:
             db.rollback()
             raise HTTPException(status_code=500, detail=str(e))
@@ -424,26 +445,26 @@ class TCRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             update_data = obj_in.dict(exclude_unset=True)
 
         if file:
-            filename = f"{obj_in.name}_left.jpg"  #f"{uuid.uuid4()}.jpg"
+            filename = f"{obj_in.name}_left.jpg"
             filepath = save_and_resize_image(file, filename)
             update_data['left_logo'] = filepath
         if file2:
-            filename2 = f"{obj_in.name}_left.jpg"  #f"{uuid.uuid4()}.jpg"
+            filename2 = f"{obj_in.name}_right.jpg"
             filepath2 = save_and_resize_image(file2, filename2)
             update_data['right_logo'] = filepath2
 
         try:
+            self.check_unique_fields(db, obj_in, exclude_id=db_obj.id)  # Check for unique fields before updating
             for field in obj_data:
                 if field in update_data:
                     setattr(db_obj, field, update_data[field])
             db.add(db_obj)
             db.commit()
             db.refresh(db_obj)
-            # if db_obj.left_logo:
-            #     db_obj.left_logo = image_to_base64(db_obj.left_logo)
-            # if db_obj.right_logo:
-            #     db_obj.right_logo = image_to_base64(db_obj.right_logo)
             return db_obj
+        except IntegrityError as e:
+            db.rollback()
+            raise HTTPException(status_code=500, detail="Data update would conflict with existing unique fields") from e
         except Exception as e:
             db.rollback()
             raise HTTPException(status_code=500, detail=str(e))
@@ -459,71 +480,255 @@ class TCRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                 obj.right_logo = image_to_base64(obj.right_logo)
         return objs
 
-    # Define a function to delete the logo file if it exists
     def delete_logo_file(self, name: str, logo_type: str) -> bool:
-        """
-        Delete the logo file if it exists on the disk.
-
-        Args:
-        - name (str): The base name used to construct the file path.
-        - logo_type (str): Either 'left' or 'right' to indicate which logo to delete.
-
-        Returns:
-        - bool: True if the file was successfully deleted, False otherwise.
-        """
-        # Construct the expected file path based on 'name' and 'logo_type'
         filename = f"{name}_{logo_type}.jpg"
         filepath = os.path.join("./uploads/images/", filename)
         
         if os.path.isfile(filepath):
             try:
-                os.remove(filepath)  # Delete the file
+                os.remove(filepath)
                 return True
             except OSError as e:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail=f"Error deleting file {filepath}: {str(e)}"
                 )
-        return False  # File doesn't exist, so nothing to delete
-                    
+        return False
 
-    def delete_trademark(self, db: Session, trademark_id: UUID) -> str:
-        # Retrieve the trademark row from the database by its id
+    def delete_trademark(self, db: Session, trademark_id: UUID, force_delete: bool = False) -> str:
         trademark = db.query(self.model).filter(self.model.id == trademark_id).first()
         
-        # If no row is found, raise an HTTP exception
         if not trademark:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Trademark with id {trademark_id} not found."
             )
         
-        # Attempt to delete both logos, prioritizing the left logo
         errors = []
 
-        # Handle left logo
+        if not force_delete:
+            self.check_integrity_constraints(db, trademark)  # Check integrity constraints before deletion
+
         if trademark.left_logo:
             if not self.delete_logo_file(trademark.name, 'left'):
                 errors.append(f"Error eliminating left logo: {trademark.left_logo}")
         
-        # Handle right logo
         if trademark.right_logo:
             if not self.delete_logo_file(trademark.name, 'right'):
                 errors.append(f"Error eliminating right logo: {trademark.right_logo}")
         
-        # Delete the trademark row from the database
         db.delete(trademark)
         db.commit()
 
-        # If any errors occurred during file deletion, return them
         if errors:
             return ", ".join(errors)
 
         return f"Trademark with id {trademark_id} has been deleted successfully."
 
+    def check_unique_fields(self, db: Session, obj: ModelType, exclude_id: Optional[str] = None):
+        unique_columns = [col for col in self.model.__table__.columns if col.unique]
+        
+        for column in unique_columns:
+            query = db.query(self.model).filter(getattr(self.model, column.name) == getattr(obj, column.name))
+            
+            if exclude_id:
+                query = query.filter(self.model.id != exclude_id)
+            
+            existing_obj = query.first()
+            if existing_obj:
+                raise IntegrityConstraintViolation(f"Conflict found with unique field: '{column.name}'")
 
+    def check_integrity_constraints(self, db: Session, obj: ModelType):
+        mapper = inspect(self.model)
+        for relationship in mapper.relationships:
+            related_class = relationship.mapper.class_
+            related_attr = getattr(self.model, relationship.key)
+            if isinstance(related_attr.property, RelationshipProperty):
+                related_objs = getattr(obj, relationship.key)
+                if related_objs is not None:
+                    if isinstance(related_objs, list):
+                        for related_obj in related_objs:
+                            if not self._check_relationship_integrity(db, related_obj):
+                                raise IntegrityConstraintViolation(
+                                    f"Deleting this data violates integrity constraints with {related_class.__name__}"
+                                )
+                    else:
+                        if not self._check_relationship_integrity(db, related_objs):
+                            raise IntegrityConstraintViolation(
+                                f"Deleting this data violates integrity constraints with {related_class.__name__}"
+                            )
+
+    def _check_relationship_integrity(self, db: Session, related_obj):
+        related_class = type(related_obj)
+        related_primary_keys = inspect(related_class).primary_key
+        query = db.query(related_class)
+        for pk in related_primary_keys:
+            query = query.filter(pk == getattr(related_obj, pk.name))
+        return query.first() is None
 
 trademark = TCRUDBase(Trademark)
+
+
+############# old mod ########################################################
+# class TCRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
+#     def __init__(self, model: Type[ModelType]):
+#         self.model = model
+
+#     def get(self, db: Session, id: Any) -> Optional[ModelType]:
+#         obj = db.query(self.model).filter(self.model.id == id).first()
+#         if obj and obj.left_logo:
+#             obj.left_logo = image_to_base64(obj.left_logo)
+#         return obj
+    
+#     # def get_multi(self, db: Session, skip: int = 0, limit: int = 100) -> List[ModelType]:
+#     #     objs = db.query(self.model).offset(skip).limit(limit).all()
+        
+#     #     for obj in objs:
+#     #         if obj.left_logo:
+#     #             obj.left_logo = image_to_base64(obj.left_logo)
+#     #         if obj.right_logo:
+#     #             obj.right_logo = image_to_base64(obj.right_logo)
+#     #     return objs
+    
+#     def get_by_field(self, db: Session, field: str, value: Any) -> Optional[ModelType]:
+#         obj = db.query(self.model).filter(getattr(self.model, field) == value).first()
+#         if obj and obj.left_logo:
+#             obj.left_logo = image_to_base64(obj.left_logo)
+#         return obj
+
+#     def create(self, db: Session, obj_in: CreateSchemaType, file: UploadFile = None, file2: UploadFile = None) -> ModelType:
+#         obj_in_data = jsonable_encoder(obj_in)
+#         if file:
+#             filename = f"{obj_in.name}_left.jpg" #f"{uuid.uuid4()}.jpg" 
+#             filepath = save_and_resize_image(file, filename)
+#             obj_in_data['left_logo'] = filepath
+#         if file2:
+#             filename2 = f"{obj_in.name}_right.jpg"  #f"{uuid.uuid4()}.jpg"
+#             filepath2 = save_and_resize_image(file2, filename2)
+#             obj_in_data['right_logo'] = filepath2
+
+#         try:
+#             db_obj = self.model(**obj_in_data)
+#             db.add(db_obj)
+#             db.commit()
+#             db.refresh(db_obj)
+#             # if db_obj.left_logo:
+#             #     db_obj.left_logo = image_to_base64(db_obj.left_logo)
+#             # if db_obj.right_logo:
+#             #     db_obj.right_logo = image_to_base64(db_obj.right_logo)
+#             return db_obj
+#         except Exception as e:
+#             db.rollback()
+#             raise HTTPException(status_code=500, detail=str(e))
+
+#     def update(self, db: Session, db_obj: ModelType, obj_in: Union[UpdateSchemaType, Dict[str, Any]], file: UploadFile = None, file2: UploadFile = None) -> ModelType:
+#         obj_data = jsonable_encoder(db_obj)
+#         if isinstance(obj_in, dict):
+#             update_data = obj_in
+#         else:
+#             update_data = obj_in.dict(exclude_unset=True)
+
+#         if file:
+#             filename = f"{obj_in.name}_left.jpg"  #f"{uuid.uuid4()}.jpg"
+#             filepath = save_and_resize_image(file, filename)
+#             update_data['left_logo'] = filepath
+#         if file2:
+#             filename2 = f"{obj_in.name}_left.jpg"  #f"{uuid.uuid4()}.jpg"
+#             filepath2 = save_and_resize_image(file2, filename2)
+#             update_data['right_logo'] = filepath2
+
+#         try:
+#             for field in obj_data:
+#                 if field in update_data:
+#                     setattr(db_obj, field, update_data[field])
+#             db.add(db_obj)
+#             db.commit()
+#             db.refresh(db_obj)
+#             # if db_obj.left_logo:
+#             #     db_obj.left_logo = image_to_base64(db_obj.left_logo)
+#             # if db_obj.right_logo:
+#             #     db_obj.right_logo = image_to_base64(db_obj.right_logo)
+#             return db_obj
+#         except Exception as e:
+#             db.rollback()
+#             raise HTTPException(status_code=500, detail=str(e))
+    
+#     def get_multi(self, db: Session, skip: int = 0, limit: int = 100) -> List[ModelType]:
+#         objs = db.query(self.model).offset(skip).limit(limit).all()
+        
+#         for obj in objs:
+#             if obj.left_logo and obj.left_logo != '' and obj.left_logo != None:
+#                 obj.left_logo = image_to_base64(obj.left_logo)
+            
+#             if obj.right_logo and obj.right_logo != '' and obj.right_logo != None:
+#                 obj.right_logo = image_to_base64(obj.right_logo)
+#         return objs
+
+#     # Define a function to delete the logo file if it exists
+#     def delete_logo_file(self, name: str, logo_type: str) -> bool:
+#         """
+#         Delete the logo file if it exists on the disk.
+
+#         Args:
+#         - name (str): The base name used to construct the file path.
+#         - logo_type (str): Either 'left' or 'right' to indicate which logo to delete.
+
+#         Returns:
+#         - bool: True if the file was successfully deleted, False otherwise.
+#         """
+#         # Construct the expected file path based on 'name' and 'logo_type'
+#         filename = f"{name}_{logo_type}.jpg"
+#         filepath = os.path.join("./uploads/images/", filename)
+        
+#         if os.path.isfile(filepath):
+#             try:
+#                 os.remove(filepath)  # Delete the file
+#                 return True
+#             except OSError as e:
+#                 raise HTTPException(
+#                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#                     detail=f"Error deleting file {filepath}: {str(e)}"
+#                 )
+#         return False  # File doesn't exist, so nothing to delete
+                    
+
+#     def delete_trademark(self, db: Session, trademark_id: UUID) -> str:
+#         # Retrieve the trademark row from the database by its id
+#         trademark = db.query(self.model).filter(self.model.id == trademark_id).first()
+        
+#         # If no row is found, raise an HTTP exception
+#         if not trademark:
+#             raise HTTPException(
+#                 status_code=status.HTTP_404_NOT_FOUND,
+#                 detail=f"Trademark with id {trademark_id} not found."
+#             )
+        
+#         # Attempt to delete both logos, prioritizing the left logo
+#         errors = []
+
+#         # Handle left logo
+#         if trademark.left_logo:
+#             if not self.delete_logo_file(trademark.name, 'left'):
+#                 errors.append(f"Error eliminating left logo: {trademark.left_logo}")
+        
+#         # Handle right logo
+#         if trademark.right_logo:
+#             if not self.delete_logo_file(trademark.name, 'right'):
+#                 errors.append(f"Error eliminating right logo: {trademark.right_logo}")
+        
+#         # Delete the trademark row from the database
+#         db.delete(trademark)
+#         db.commit()
+
+#         # If any errors occurred during file deletion, return them
+#         if errors:
+#             return ", ".join(errors)
+
+#         return f"Trademark with id {trademark_id} has been deleted successfully."
+
+
+
+# trademark = TCRUDBase(Trademark)
 
 
 class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
