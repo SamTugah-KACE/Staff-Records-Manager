@@ -14,7 +14,7 @@ from database.admin import router
 from models import Base, User, BioData
 from auth import auth_router
 from sqladmin import Admin, ModelView
-
+from dashboard import *
 
 
 
@@ -41,11 +41,7 @@ async def lifespan(app: FastAPI):
     finally:
         print("Startup completed!") 
 
-class UserAdmin(ModelView, model=User):
-    column_list = [User.id, User.bio_row_id, User.email, User.username, User.hashed_password, User.role]
 
-class Staff(ModelView, model=BioData):
-    column_list = [BioData.id, BioData.title, BioData.first_name, BioData.surname, BioData.active_phone_number, BioData.email]
 
 
 
@@ -68,8 +64,15 @@ app = start_application()
 
 
 admin = Admin(app, engine, title="System Console")
-admin.add_view(UserAdmin)
+admin.add_view(Center)
+admin.add_view(Directorate)
+admin.add_view(Grade)
+admin.add_view(EmploymentType)
+admin.add_view(StaffCategory)
 admin.add_view(Staff)
+admin.add_view(EmploymentDetail)
+admin.add_view(UserAdmin)
+
 
 
 @app.on_event("startup")
