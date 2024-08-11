@@ -34,29 +34,47 @@ import json
 from typing import Union, Any
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, UploadFile
+#from sqlalchemy.sql import text
+from sqlalchemy import text
+from fastapi import UploadFile
+import io
 
-def execute_sql_file(db: Session, file_: UploadFile) -> None:
-    """Executes a given SQL file securely."""
-    allowed_extensions = ['.sql']
-    if not validate_file_type(file_.filename, allowed_extensions):
-        raise ValueError("Invalid file type. Only .sql files are allowed.")
-    
-    try:
-        sql_commands = file_.file.read().decode('utf-8')
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error reading SQL file: {str(e)}")
-    finally:
-        file_.file.close()  # Ensure file is closed after reading
 
-    # Sanitize the SQL commands to prevent SQL injection
-    sanitized_sql_commands = sanitize_sql(sql_commands)
-    
-    try:
-        db.execute(sanitized_sql_commands)
-        db.commit()
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error executing SQL file: {str(e)}")
+
+
+def execute_sql_file(db: Session, file_: UploadFile):
+    """
+    Executes SQL commands from a file using the provided SQLAlchemy session.
+
+    Parameters:
+    - db: SQLAlchemy Session object.
+    - file_: FastAPI UploadFile object.
+    """
+    # Read SQL file content from UploadFile
+    file_content = io.StringIO(file_.file.read().decode('utf-8'))
+    sql_content = file_content.read()
+
+    # Split SQL commands by semicolon
+    sql_commands = sql_content.split(';')
+
+    # Remove empty commands
+    sql_commands = [command.strip() for command in sql_commands if command.strip()]
+
+    # Execute each command within a transaction
+    with db.begin():  # Using SQLAlchemy transaction management
+        try:
+            for command in sql_commands:
+                # Execute the command
+                db.execute(text(command))
+            print("SQL file executed successfully.")
+        except Exception as e:
+            # Log or print error details
+            print(f"An error occurred: {e}")
+            # Raising an exception to handle in the endpoint
+            raise e
+
+
+
 
 def validate_file_type(filename: str, allowed_extensions: list) -> bool:
     """Validates the file type based on its extension."""
