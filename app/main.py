@@ -68,7 +68,8 @@ app = start_application()
 
 
 admin = Admin(app, engine, title="System Console")
-admin.add_view(UserAdmin, Staff)
+admin.add_view(UserAdmin)
+admin.add_view(Staff)
 
 
 @app.on_event("startup")
