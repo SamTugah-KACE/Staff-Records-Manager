@@ -45,7 +45,7 @@ class UserAdmin(ModelView, model=User):
     column_list = [User.id, User.bio_row_id, User.email, User.username, User.hashed_password, User.role]
 
 class Staff(ModelView, model=BioData):
-    column_list = [BioData.id, BioData.title, BioData.first_name, BioData.surname, BioData, BioData.email]
+    column_list = [BioData.id, BioData.title, BioData.first_name, BioData.surname, BioData.active_phone_number, BioData.email]
 
 
 
