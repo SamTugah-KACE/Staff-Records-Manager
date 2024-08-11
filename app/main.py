@@ -11,8 +11,9 @@ from database.setup import check_and_create_database
 from fastapi.responses import JSONResponse
 from database.db_session import engine
 from database.admin import router
-from models import Base
+from models import Base, User
 from auth import auth_router
+from sqladmin import Admin, ModelView
 
 
 
@@ -40,6 +41,10 @@ async def lifespan(app: FastAPI):
     finally:
         print("Startup completed!") 
 
+class UserAdmin(ModelView, model=User):
+    column_list = [User.id, User.bio_row_id, User.email, User.username, User.hashed_password, User.role]
+
+
 
 def start_application():
     app = FastAPI(docs_url="/", title=settings.PROJECT_NAME, version=settings.PROJECT_VERSION)
@@ -53,9 +58,15 @@ def start_application():
     #create_tables()
     include_router(app)
     #lifespan(app)
+
     return app
 
 app = start_application()
+
+
+admin = Admin(app, engine, title="System Console")
+admin.add_view(UserAdmin)
+
 
 @app.on_event("startup")
 async def startup_event():

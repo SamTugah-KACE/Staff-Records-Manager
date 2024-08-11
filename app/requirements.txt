@@ -28,3 +28,4 @@ uvicorn
 #cloud-sql-python-connector==1.2.4
 functions-framework==3.3.0
 pg8000==1.29.8
+sqladmin[full]
