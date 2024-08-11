@@ -1,6 +1,6 @@
 from models import *
 from sqladmin import Admin, ModelView
-from .history.app.models_20240807120745 import EmploymentDetail
+from models import *
 
 
 
