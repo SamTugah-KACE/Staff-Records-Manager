@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from database.db_session import get_db
 from models import *  # Import your models here
 from typing import Any
-from auth import current_active_admin
+from auth import current_active_sys_admin
 
 # List of all models
 all_models = [
@@ -15,10 +15,9 @@ all_models = [
 router = APIRouter(prefix="/api")
 #api_router = APIRouter(prefix="/api/sys/")
 
-@router.post("/execute-sql/",tags=["System Admin Console"])
-def execute_sql(db: Session = Depends(get_db), file_: UploadFile = None, current_user: User = Depends(current_active_admin)):
+@router.post("/execute-sql/", tags=["System Admin Console"])
+def execute_sql(db: Session = Depends(get_db), file_: UploadFile = File(...), current_user: User = Depends(current_active_sys_admin)):
     """Endpoint to execute SQL commands from a sanitized file."""
-    #file_path = file_
     try:
         execute_sql_file(db, file_)
         return {"detail": "SQL commands executed successfully."}
@@ -28,11 +27,11 @@ def execute_sql(db: Session = Depends(get_db), file_: UploadFile = None, current
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 
-@router.post("/seed-data/",tags=["System Admin Console"])
-def seed_data(db: Session = Depends(get_db), file_path: UploadFile = None, Model: Any = None, current_user: User = Depends(current_active_admin)):
+@router.post("/seed-data/", tags=["System Admin Console"])
+def seed_data(db: Session = Depends(get_db), file_: UploadFile = File(...), model: Any = None, current_user: User = Depends(current_active_sys_admin)):
     """Endpoint to seed sanitized data from a JSON file."""
     try:
-        seed_data_from_json(db, file_path, Model)  # Replace MyModel with your model
+        seed_data_from_json(db, file_, model)  # Replace model with your specific model
         return {"detail": "Data seeded successfully."}
     except HTTPException as e:
         raise e

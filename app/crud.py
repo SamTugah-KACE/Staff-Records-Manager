@@ -114,15 +114,26 @@ def update_user(db: Session, user_id: uuid.UUID, user_update: schemas.UserUpdate
         raise HTTPException(status_code=404, detail="User not found")
 
     update_data = user_update.dict(exclude_unset=True)
-    
+
     if "password" in update_data:
+        # Hash the new password
         update_data["hashed_password"] = get_password_hash(update_data.pop("password"))
+    
+    if "hashed_password" in update_data:
+        # Re-hash the provided hashed_password if directly supplied
+        update_data["hashed_password"] = get_password_hash(update_data["hashed_password"])
 
     for key, value in update_data.items():
-        setattr(db_user, key, value)
+        if hasattr(db_user, key):
+            setattr(db_user, key, value)
 
-    db.commit()
-    db.refresh(db_user)
+    try:
+        db.commit()
+        db.refresh(db_user)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="An error occurred while updating the user")
+
     return db_user
 
 def get_user_by_username(db: Session, username: str):

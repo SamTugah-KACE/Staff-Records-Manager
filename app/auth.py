@@ -81,6 +81,11 @@ def current_active_admin(current_user: schemas.User = Depends(get_current_active
         raise HTTPException(status_code=403, detail="Admins Only")
     return current_user
 
+def current_active_sys_admin(current_user: schemas.User = Depends(get_current_active_user)):
+    if current_user.role != "Sys. Admin":
+        raise HTTPException(status_code=403, detail="Systems Admin Only")
+    return current_user
+
 def current_active_user(current_user: schemas.User = Depends(get_current_active_user)):
     if current_user.role != "user":
         raise HTTPException(status_code=403, detail="Users Only")

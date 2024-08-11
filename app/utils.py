@@ -7,7 +7,7 @@
 #from database.db_session import get_db
 from sqlalchemy.orm import Session
 from models import BioData
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, UploadFile
 #from sqlalchemy import inspect
 import html
 from typing import Union, Any
@@ -48,31 +48,32 @@ def execute_sql_file(db: Session, file_: Any) -> None:
     # if not os.path.exists(file_path):
     #     raise HTTPException(status_code=404, detail="SQL file not found.")
     
-    # allowed_extensions = ['.sql']
-    # if not validate_file_type(file_, allowed_extensions):
-    #     raise ValueError("Invalid file type. Only .sql files is allowed.")
+    allowed_extensions = ['.sql']
+    if not validate_file_type(file_.filename, allowed_extensions):
+        raise ValueError("Invalid file type. Only .sql files are allowed.")
+    
+    sql_commands = file_.file.read().decode('utf-8')
 
 
-    with open(file_, 'r') as file:
-        sql_commands = file.read()
+    #with open(file_, 'r') as file:
+    #    sql_commands = file.read()
         
-        # Sanitize the SQL commands to prevent SQL injection
-        sanitized_sql_commands = sanitize_sql(sql_commands)
-        
-        try:
-            db.execute(sanitized_sql_commands)
-            db.commit()
-        except Exception as e:
-            db.rollback()
-            raise HTTPException(status_code=500, detail=f"Error executing SQL file: {str(e)}")
+    # Sanitize the SQL commands to prevent SQL injection
+    sanitized_sql_commands = sanitize_sql(sql_commands)
+    
+    try:
+        db.execute(sanitized_sql_commands)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error executing SQL file: {str(e)}")
         
 
-def validate_file_type(file_: Any, allowed_extensions: list) -> bool:
+def validate_file_type(filename: str, allowed_extensions: list) -> bool:
     """
     Validates the file type based on its extension.
     """
-    #file_path = file_.filename
-    _, ext = os.path.splitext(file_path)
+    _, ext = os.path.splitext(filename)
     return ext.lower() in allowed_extensions
 
 # Example usage
@@ -142,25 +143,26 @@ def sanitize_json_data(data: Union[dict, list]) -> Union[dict, list]:
     
     return data
 
-def seed_data_from_json(db: Session, json_file_path: str, model: Any) -> None:
+def seed_data_from_json(db: Session, json_file: UploadFile, model: Any) -> None:
     """Seeds data from a sanitized JSON file into the given model."""
-    # if not os.path.exists(json_file_path):
-    #     raise HTTPException(status_code=404, detail="JSON file not found.")
+
+    allowed_extensions = ['.json']
+    if not validate_file_type(json_file.filename, allowed_extensions):
+        raise ValueError("Invalid file type. Only .json files are allowed.")
     
-    with open(json_file_path, 'r') as file:
-        data = json.load(file)
-        
-        # Sanitize the JSON data to prevent XSS or injection attacks
-        sanitized_data = sanitize_json_data(data)
-        
-        try:
-            for item in sanitized_data:
-                db_obj = model(**item)
-                db.add(db_obj)
-            db.commit()
-        except Exception as e:
-            db.rollback()
-            raise HTTPException(status_code=500, detail=f"Error seeding data from JSON file: {str(e)}")
+    data = json.load(json_file.file)
+    
+    # Sanitize the JSON data to prevent XSS or injection attacks
+    sanitized_data = sanitize_json_data(data)
+    
+    try:
+        for item in sanitized_data:
+            db_obj = model(**item)
+            db.add(db_obj)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error seeding data from JSON file: {str(e)}")
         
 
 # def generate_pdf_for_bio_data(bio_data_id: str, db: Session):
