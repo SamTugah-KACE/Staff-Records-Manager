@@ -30,7 +30,7 @@ class StaffCategory(ModelView, model=StaffCategory):
     column_list = [StaffCategory.id, StaffCategory.category,  StaffCategory.created_at]
 
 class EmploymentType(ModelView, model=EmploymentType):
-    column_list = [EmploymentType.id, EmploymentType.name, EmploymentType.description, EmploymentType.grade_id, EmploymentType.created_at]
+    column_list = [EmploymentType.name, EmploymentType.description, EmploymentType.grade_id, EmploymentType.created_at]
 
 class Staff(ModelView, model=BioData):
     column_list = [BioData.id, BioData.title, BioData.first_name, BioData.surname, BioData.active_phone_number, BioData.email]
