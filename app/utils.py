@@ -138,7 +138,7 @@ def sanitize_sql(sql_commands: str) -> str:
         raise ValueError("SQL contains risky operations that are not allowed.")
     
     # Escaping potentially dangerous characters (like single quotes)
-    sql_commands = sql_commands.replace("'", "''")
+    #sql_commands = sql_commands.replace("'", "''")
 
     return sql_commands
 

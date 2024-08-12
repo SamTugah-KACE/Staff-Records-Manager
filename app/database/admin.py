@@ -41,7 +41,7 @@ async def execute_sql(db: Session = Depends(get_db), file_: UploadFile = File(..
             await execute_sql_file(file_location)
         except HTTPException as e:
         # Return error details if SQL execution fails
-            return {"status": "error", "detail": e.detail}
+            raise e
     
         return {"status": "success", "detail": "SQL file executed successfully"}
     
