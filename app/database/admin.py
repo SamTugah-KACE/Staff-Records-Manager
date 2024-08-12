@@ -6,6 +6,8 @@ from models import *  # Import your models here
 from typing import Any
 from auth import current_active_sys_admin
 import os
+import logging
+
 
 # List of all models
 all_models = [
@@ -41,23 +43,30 @@ async def execute_sql(db: Session = Depends(get_db), file_: UploadFile = File(..
             await execute_sql_file(file_location)
         except HTTPException as e:
         # Return error details if SQL execution fails
+            logging.error(f"SQL execution failed: {e.detail}")
             raise e
-    
+        logging.info(f"SQL file '{file_.filename}' executed successfully")
         return {"status": "success", "detail": "SQL file executed successfully"}
     
 
     except Exception as ex:
+        logging.error(f"Unexpected error occurred while processing '{file_.filename}': {str(ex)}")
         raise HTTPException(status_code=500, detail=f"Unexpected error occured: {str(ex)}")
+    
+    finally:
+        # Optional: Clean up the file after execution if not needed
+        if os.path.exists(file_location):
+            os.remove(file_location)
     
 
 
-@router.post("/seed-data/", tags=["System Admin Console"])
-def seed_data(db: Session = Depends(get_db), file_: UploadFile = File(...), model: Any = None, current_user: User = Depends(current_active_sys_admin)):
-    """Endpoint to seed sanitized data from a JSON file."""
-    try:
-        seed_data_from_json(db, file_, model)  # Replace model with your specific model
-        return {"detail": "Data seeded successfully."}
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+# @router.post("/seed-data/", tags=["System Admin Console"])
+# def seed_data(db: Session = Depends(get_db), file_: UploadFile = File(...), model: Any = None, current_user: User = Depends(current_active_sys_admin)):
+#     """Endpoint to seed sanitized data from a JSON file."""
+#     try:
+#         seed_data_from_json(db, file_, model)  # Replace model with your specific model
+#         return {"detail": "Data seeded successfully."}
+#     except HTTPException as e:
+#         raise e
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
