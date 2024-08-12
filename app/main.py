@@ -82,6 +82,7 @@ admin.add_view(EmergencyContact)
 admin.add_view(NextOfKin)
 admin.add_view(EmploymentHistory)
 admin.add_view(Declaration)
+admin.add_view(DB)
 
 
 
