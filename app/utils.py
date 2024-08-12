@@ -56,8 +56,6 @@ def execute_sql_file(db: Session, file_: UploadFile):
     if not validate_file_type(file_.filename, ['.sql']):
         raise HTTPException(status_code=400, detail="Invalid file type. Only .sql files are allowed.")
 
-    # Start a new transaction
-    transaction = db.begin()
     try:
         # Read SQL file content from UploadFile
         file_content = io.StringIO(file_.file.read().decode('utf-8'))
@@ -68,42 +66,23 @@ def execute_sql_file(db: Session, file_: UploadFile):
 
         # Split SQL commands by semicolon, ensuring semicolons in strings or comments are not split
         sql_commands = sanitized_sql.split(';\n')  # Better splitting strategy
-        logging.debug(f"Sanitized SQL: {sanitized_sql}")
 
         # Remove empty commands
         sql_commands = [command.strip() for command in sql_commands if command.strip()]
 
-        # Execute each command
-        for command in sql_commands:
-            logging.debug(f"Executing command: {command}")
-            if command:  # Ensure the command is not empty
-                db.execute(text(command))
+        # Begin a new transaction explicitly
+        with db.begin():
+            # Execute each command within the transaction
+            for command in sql_commands:
+                if command:  # Ensure the command is not empty
+                    db.execute(text(command))
 
-        # Commit the transaction
-        db.commit()
-        logging.debug("Transaction committed successfully.")
-
-        # Commit the transaction if all commands are successful
-        transaction.commit()
-        logging.debug("Transaction committed successfully.")
+        # Commit is automatic with db.begin() if no exceptions occur
 
     except SQLAlchemyError as e:
-        # Rollback and raise HTTPException for SQLAlchemy errors
-        db.rollback()
-        logging.error(f"SQLAlchemy error: {str(e)}")
-
-        # Rollback in case of SQLAlchemy errors
-        transaction.rollback()
-        logging.error(f"SQLAlchemy error: {str(e)}")
+        # Rollback is automatic with db.begin() if an exception occurs
         raise HTTPException(status_code=400, detail=f"SQLAlchemy error: {str(e)}")
     except Exception as e:
-        # Rollback in case of other errors
-        db.rollback()
-        logging.error(f"Unexpected error: {str(e)}")
-        
-         # Rollback in case of unexpected errors
-        transaction.rollback()
-        logging.error(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 
