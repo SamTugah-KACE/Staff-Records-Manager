@@ -3,11 +3,11 @@ from sqladmin import ModelView
 from sqlalchemy import Column
 
 
-from fastapi_storages import FileSystemStorage
-from fastapi_storages.integrations.sqlalchemy import FileType
+# from fastapi_storages import FileSystemStorage
+# from fastapi_storages.integrations.sqlalchemy import FileType
 
 
-storage = FileSystemStorage(path="uploads/db_files")
+# storage = FileSystemStorage(path="uploads/db_files")
 
 # List of all models
 all_models = [
@@ -72,12 +72,12 @@ class Declaration(ModelView, model=Declaration):
     column_list = [Declaration.id, Declaration.bio_row_id, Declaration.status, Declaration.employees_signature, Declaration.reps_signature, Declaration.declaration_date, Declaration.created_at]
 
 
-class DB(Base):
-    __tablename__ = "db_sql"
+# class DB(Base):
+#     __tablename__ = "db_sql"
 
-    #id = Column(Integer, primary_key=True)    
-    file = Column(FileType(storage=storage))
+#     #id = Column(Integer, primary_key=True)    
+#     file = Column(FileType(storage=storage))
 
-class DB(ModelView, model=DB):
-    column_list = [DB.file]
+# class DB(ModelView, model=DB):
+#     column_list = [DB.file]
 
