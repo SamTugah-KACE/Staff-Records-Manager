@@ -10,7 +10,7 @@ all_models = [
     BankDetail, Academic, Professional, Qualification, EmploymentHistory, FamilyInfo, EmergencyContact, NextOfKin, 
     Declaration, User, Trademark
 ]
-
+ 
 class Trademark(ModelView, model=Trademark):
     column_list = [Trademark.id, Trademark.name, Trademark.left_logo, Trademark.right_logo, Trademark.created_at]
 
