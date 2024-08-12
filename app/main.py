@@ -64,14 +64,24 @@ app = start_application()
 
 
 admin = Admin(app, engine, title="System Console")
+admin.add_view(Trademark)
 admin.add_view(Center)
 admin.add_view(Directorate)
 admin.add_view(Grade)
 admin.add_view(EmploymentType)
 admin.add_view(StaffCategory)
 admin.add_view(Staff)
-admin.add_view(EmploymentDetail)
 admin.add_view(UserAdmin)
+admin.add_view(Academic)
+admin.add_view(Professional)
+admin.add_view(Qualification)
+admin.add_view(BankDetail)
+admin.add_view(EmploymentDetail)
+admin.add_view(FamilyInfo)
+admin.add_view(EmergencyContact)
+admin.add_view(NextOfKin)
+admin.add_view(EmploymentHistory)
+admin.add_view(Declaration)
 
 
 

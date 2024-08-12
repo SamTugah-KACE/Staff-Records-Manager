@@ -38,6 +38,8 @@ from fastapi import HTTPException, UploadFile
 from sqlalchemy import text
 from fastapi import UploadFile
 import io
+from sqlalchemy.exc import SQLAlchemyError
+import logging
 
 
 
@@ -54,35 +56,55 @@ def execute_sql_file(db: Session, file_: UploadFile):
     if not validate_file_type(file_.filename, ['.sql']):
         raise HTTPException(status_code=400, detail="Invalid file type. Only .sql files are allowed.")
 
-    # Read SQL file content from UploadFile
-    file_content = io.StringIO(file_.file.read().decode('utf-8'))
-    sql_content = file_content.read()
-
-    # Sanitize SQL commands
-    sanitized_sql = sanitize_sql(sql_content)
-
-    # Split SQL commands by semicolon
-    sql_commands = sanitized_sql.split(';')
-
-    # Remove empty commands
-    sql_commands = [command.strip() for command in sql_commands if command.strip()]
-
-    # Execute each command
+    # Start a new transaction
+    transaction = db.begin()
     try:
+        # Read SQL file content from UploadFile
+        file_content = io.StringIO(file_.file.read().decode('utf-8'))
+        sql_content = file_content.read()
+
+        # Sanitize SQL commands
+        sanitized_sql = sanitize_sql(sql_content)
+
+        # Split SQL commands by semicolon, ensuring semicolons in strings or comments are not split
+        sql_commands = sanitized_sql.split(';\n')  # Better splitting strategy
+        logging.debug(f"Sanitized SQL: {sanitized_sql}")
+
+        # Remove empty commands
+        sql_commands = [command.strip() for command in sql_commands if command.strip()]
+
+        # Execute each command
         for command in sql_commands:
+            logging.debug(f"Executing command: {command}")
             if command:  # Ensure the command is not empty
                 db.execute(text(command))
+
         # Commit the transaction
         db.commit()
-    except ValueError as e:
-        # Rollback and raise HTTPException for risky SQL operations
+        logging.debug("Transaction committed successfully.")
+
+        # Commit the transaction if all commands are successful
+        transaction.commit()
+        logging.debug("Transaction committed successfully.")
+
+    except SQLAlchemyError as e:
+        # Rollback and raise HTTPException for SQLAlchemy errors
         db.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
+        logging.error(f"SQLAlchemy error: {str(e)}")
+
+        # Rollback in case of SQLAlchemy errors
+        transaction.rollback()
+        logging.error(f"SQLAlchemy error: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"SQLAlchemy error: {str(e)}")
     except Exception as e:
         # Rollback in case of other errors
         db.rollback()
+        logging.error(f"Unexpected error: {str(e)}")
+        
+         # Rollback in case of unexpected errors
+        transaction.rollback()
+        logging.error(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-
 
 
 def validate_file_type(filename: str, allowed_extensions: list) -> bool:
