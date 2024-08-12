@@ -132,7 +132,7 @@ def sanitize_sql(sql_commands: str) -> str:
     sql_commands = re.sub(r'\s+', ' ', sql_commands).strip()
 
     # Block risky SQL keywords (you can expand this list as needed)
-    risky_keywords = ['DROP', 'TRUNCATE', 'DELETE', 'ALTER'. 'UPDATE']
+    risky_keywords = ['DROP', 'TRUNCATE', 'DELETE', 'ALTER', 'UPDATE']
     pattern = re.compile(r'\b(' + '|'.join(risky_keywords) + r')\b', re.IGNORECASE)
     if pattern.search(sql_commands):
         raise ValueError("SQL contains risky operations that are not allowed.")
