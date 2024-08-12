@@ -5,6 +5,7 @@ from database.db_session import get_db
 from models import *  # Import your models here
 from typing import Any
 from auth import current_active_sys_admin
+import os
 
 # List of all models
 all_models = [
@@ -15,16 +16,39 @@ all_models = [
 router = APIRouter(prefix="/api")
 #api_router = APIRouter(prefix="/api/sys/")
 
+
+
+# Directory to store uploaded SQL files
+UPLOAD_DIR = "uploads/db_files"
+
+# Ensure the upload directory exists
+#os.makedirs(UPLOAD_DIR, exist_ok=True)
+
 @router.post("/execute-sql/", tags=["System Admin Console"])
-def execute_sql(db: Session = Depends(get_db), file_: UploadFile = File(...), current_user: User = Depends(current_active_sys_admin)):
+async def execute_sql(db: Session = Depends(get_db), file_: UploadFile = File(...), current_user: User = Depends(current_active_sys_admin)):
     """Endpoint to execute SQL commands from a sanitized file."""
+
+    if not os.path.exists(UPLOAD_DIR):
+        os.makedirs(UPLOAD_DIR)
+    
+    file_location = os.path.join(UPLOAD_DIR, file_.filename)
+    
     try:
-        execute_sql_file(db, file_)
-        return {"detail": "SQL commands executed successfully."}
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+        # Save the uploaded file to the upload directory
+        with open(file_location, "wb") as buffer:
+            buffer.write(await file_.read())
+        try:
+            await execute_sql_file(file_location)
+        except HTTPException as e:
+        # Return error details if SQL execution fails
+            return {"status": "error", "detail": e.detail}
+    
+        return {"status": "success", "detail": "SQL file executed successfully"}
+    
+
+    except Exception as ex:
+        raise HTTPException(status_code=500, detail=f"Unexpected error occured: {str(ex)}")
+    
 
 
 @router.post("/seed-data/", tags=["System Admin Console"])

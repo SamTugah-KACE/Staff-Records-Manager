@@ -5,6 +5,7 @@
 # from io import BytesIO
 # from fpdf import FPDF
 #from database.db_session import get_db
+import asyncpg
 from sqlalchemy.orm import Session
 from models import BioData
 from fastapi import HTTPException, status, UploadFile
@@ -40,50 +41,81 @@ from fastapi import UploadFile
 import io
 from sqlalchemy.exc import SQLAlchemyError
 import logging
+from Config.config import settings
+
+
+# def execute_sql_file(db: Session, file_: UploadFile):
+#     """
+#     Executes SQL commands from a file using the provided SQLAlchemy session.
+
+#     Parameters:
+#     - db: SQLAlchemy Session object.
+#     - file_: FastAPI UploadFile object.
+#     """
+#     # Validate file type
+#     if not validate_file_type(file_.filename, ['.sql']):
+#         raise HTTPException(status_code=400, detail="Invalid file type. Only .sql files are allowed.")
+
+#     try:
+#         # Read SQL file content from UploadFile
+#         file_content = io.StringIO(file_.file.read().decode('utf-8'))
+#         sql_content = file_content.read()
+
+#         # Sanitize SQL commands
+#         sanitized_sql = sanitize_sql(sql_content)
+
+#         # Split SQL commands by semicolon, ensuring semicolons in strings or comments are not split
+#         sql_commands = sanitized_sql.split(';\n')  # Better splitting strategy
+
+#         # Remove empty commands
+#         sql_commands = [command.strip() for command in sql_commands if command.strip()]
+
+#         # Begin a new transaction explicitly
+#         with db.begin():
+#             # Execute each command within the transaction
+#             for command in sql_commands:
+#                 if command:  # Ensure the command is not empty
+#                     db.execute(text(command))
+
+#         # Commit is automatic with db.begin() if no exceptions occur
+
+#     except SQLAlchemyError as e:
+#         # Rollback is automatic with db.begin() if an exception occurs
+#         raise HTTPException(status_code=400, detail=f"SQLAlchemy error: {str(e)}")
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 
 
-
-def execute_sql_file(db: Session, file_: UploadFile):
-    """
-    Executes SQL commands from a file using the provided SQLAlchemy session.
-
-    Parameters:
-    - db: SQLAlchemy Session object.
-    - file_: FastAPI UploadFile object.
-    """
-    # Validate file type
-    if not validate_file_type(file_.filename, ['.sql']):
+async def execute_sql_file(file_path: str) -> str:
+    """Executes the SQL commands from a file after validating and sanitizing."""
+   #Validate file type
+    if not validate_file_type(file_path, ['.sql']):
         raise HTTPException(status_code=400, detail="Invalid file type. Only .sql files are allowed.")
 
+    conn = await asyncpg.connect(settings.DATABASE_URL)
     try:
-        # Read SQL file content from UploadFile
-        file_content = io.StringIO(file_.file.read().decode('utf-8'))
-        sql_content = file_content.read()
+        with open(file_path, 'r') as file:
+            sql_commands = file.read()
 
-        # Sanitize SQL commands
-        sanitized_sql = sanitize_sql(sql_content)
+        # Sanitize the SQL commands
+        sanitized_sql = sanitize_sql(sql_commands)
+        
+        
 
-        # Split SQL commands by semicolon, ensuring semicolons in strings or comments are not split
-        sql_commands = sanitized_sql.split(';\n')  # Better splitting strategy
+        # Execute the sanitized SQL commands
+        # with psycopg2.connect(**conn_params) as conn:
+        #     with conn.cursor() as cursor:
+        #         cursor.execute(sanitized_sql)
+        #         conn.commit()
 
-        # Remove empty commands
-        sql_commands = [command.strip() for command in sql_commands if command.strip()]
-
-        # Begin a new transaction explicitly
-        with db.begin():
-            # Execute each command within the transaction
-            for command in sql_commands:
-                if command:  # Ensure the command is not empty
-                    db.execute(text(command))
-
-        # Commit is automatic with db.begin() if no exceptions occur
-
-    except SQLAlchemyError as e:
-        # Rollback is automatic with db.begin() if an exception occurs
-        raise HTTPException(status_code=400, detail=f"SQLAlchemy error: {str(e)}")
+        await conn.execute(sanitized_sql)
+        
+        return "SQL file executed successfully."
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error executing SQL file: {e}")
+    finally:
+        await conn.close()
 
 
 def validate_file_type(filename: str, allowed_extensions: list) -> bool:
