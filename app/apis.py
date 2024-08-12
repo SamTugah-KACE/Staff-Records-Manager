@@ -676,7 +676,7 @@ def update_bio_data(
 
 
 
-@api_router.delete("/bio_data/rm{id}", response_model=schemas.BioData,  tags=["BioData"])
+@api_router.delete("/bio_data/rm/{id}", response_model=schemas.BioData,  tags=["BioData"])
 def delete_bio_data(
     *,
     db: Session = Depends(get_db),
