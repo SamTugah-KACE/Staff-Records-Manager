@@ -19,7 +19,7 @@ load_dotenv(dotenv_path='Config/app.env')
 
 HOST = os.getenv("DATABASE_HOST")
 PORT = os.getenv("DATABASE_PORT")
-USER = os.getenv("USER")
+DBUSER = os.getenv("DB_USER")
 DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
 DATABASE = os.getenv("DATABASE")
 
@@ -34,10 +34,10 @@ async def execute_sql():
     #HOST = settings.POSTGRES_SERVER
     print("HOST -> ",HOST)
     # USER = settings.POSTGRES_USER
-    print("USER -> ",USER)
+    print("USER -> ",DBUSER)
     try:
 
-        conn2 = await asyncpg.connect(user=f"{USER}", password=f"{DATABASE_PASSWORD}", database=f"{DATABASE}", host=f"{HOST}")
+        conn2 = await asyncpg.connect(user=f"{DBUSER}", password=f"{DATABASE_PASSWORD}", database=f"{DATABASE}", host=f"{HOST}")
         print("conn2: ", conn2)
         db_sql_path = os.path.join(os.path.dirname(__file__), "db.sql")
         
@@ -78,7 +78,7 @@ async def check_and_create_database():
         
         
         conn = await asyncpg.connect(
-            user=USER,
+            user=DBUSER,
             password=DATABASE_PASSWORD,
             host= HOST,
             port=PORT
