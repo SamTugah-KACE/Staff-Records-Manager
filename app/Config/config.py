@@ -6,7 +6,7 @@ import os
 #load_dotenv(dotenv_path='CONFIG/conf.env')
 
 class Settings:
-    PROJECT_NAME:str = "Staff Records Form"
+    PROJECT_NAME:str = "GI-KACE Staff Records Management System"
     PROJECT_VERSION: str = "1.0.0"
 
    
@@ -35,7 +35,7 @@ class Settings:
     
     DATABASE_HOST: str=os.getenv("DATABASE_HOST", "dpg-cqrmj3ggph6c73a1u4k0-a")
     DATABASE_PORT: str=os.getenv("DATABASE_PORT",5432)
-    USER: str=os.getenv("USER","sam_tugah_kace")
+    DBUSER: str=os.getenv("DB_USER","sam_tugah_kace")
     DATABASE_PASSWORD: str=os.getenv("DATABASE_PASSWORD","vjIDmbKK2KNpFm8h64JgK7jKW9bTpxP5")
     DATABASE: str=os.getenv("DATABASE","staff_records_db")
     DATABASE_URL: str = os.getenv("DATABASE_URL","postgresql://sam_tugah_kace:vjIDmbKK2KNpFm8h64JgK7jKW9bTpxP5@dpg-cqrmj3ggph6c73a1u4k0-a/staff_records_db")
