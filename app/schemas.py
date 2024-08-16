@@ -8,6 +8,7 @@ from re import Pattern
 from uuid import UUID
 
 
+
 # Enums
 class MaritalStatus(str, Enum):
     Single = 'Single'
@@ -113,6 +114,9 @@ class DirectorateInDBBase(DirectorateBase, BaseSchema):
 class Directorate(DirectorateInDBBase):
     pass
 
+class DirectorateResponse(Directorate):
+    locale:Optional[Centre]
+
 
 #Grade
 class GradeBase(BaseModel):
@@ -156,6 +160,9 @@ class EmploymentTypeInDBBase(EmploymentTypeBase, BaseSchema):
 
 class EmploymentType(EmploymentTypeInDBBase):
     pass
+
+class EmploymentTypeResponse(EmploymentType):
+    salary_grade: Optional[Grade]
 
 
 #StaffCategory
@@ -249,6 +256,9 @@ class UserInDBBase(UserBase, BaseSchema):
 class User(UserInDBBase):
     pass
 
+class UserResponse(User):
+    bio_row:Optional[BioData]
+
 
 #EmploymentDetail
 class EmploymentDetailBase(BaseModel):
@@ -276,6 +286,13 @@ class EmploymentDetailInDBBase(EmploymentDetailBase, BaseSchema):
 class EmploymentDetail(EmploymentDetailInDBBase):
     pass
 
+class EmploymentDetailResponse(EmploymentDetail):
+    bio_row: Optional[BioData]
+    current_grade: Optional[Grade]
+    department: Optional[Directorate]
+    emp_type: Optional[EmploymentType]
+    category:  Optional[StaffCategory]
+
 
 
 #BankDetail
@@ -302,6 +319,9 @@ class BankDetailInDBBase(BankDetailBase, BaseSchema):
 class BankDetail(BankDetailInDBBase):
     pass
 
+class BankDetailResponse(BankDetail):
+    bio_row: Optional[BioData]
+
 
 
 #Academic
@@ -327,6 +347,9 @@ class AcademicInDBBase(AcademicBase, BaseSchema):
 class Academic(AcademicInDBBase):
     pass
 
+class AcademicResponse(Academic):
+    bio_row:Optional[BioData]
+
 
 #Professional
 class ProfessionalBase(BaseModel):
@@ -351,6 +374,9 @@ class ProfessionalInDBBase(ProfessionalBase, BaseSchema):
 class Professional(ProfessionalInDBBase):
     pass
 
+class ProfessionalResponse(Professional):
+    bio_row:Optional[BioData]
+
 
 #Qualification
 class QualificationBase(BaseModel):
@@ -372,6 +398,13 @@ class QualificationInDBBase(QualificationBase, BaseSchema):
 
 class Qualification(QualificationInDBBase):
     pass
+
+class QualificationResponse(Qualification):
+    #id: UUID
+    bio_row: Optional[BioData]
+    academic_qualification: Optional[Academic]
+    professional_qualification: Optional[Professional]
+
 
 
 #EmploymentHistory
@@ -397,6 +430,8 @@ class EmploymentHistoryInDBBase(EmploymentHistoryBase, BaseSchema):
 class EmploymentHistory(EmploymentHistoryInDBBase):
     pass
 
+class EmploymentHistoryResponse(EmploymentHistory):
+    bio_row: Optional[BioData]
 
 
 #FamilyInfo
@@ -432,6 +467,9 @@ class FamilyInfoInDBBase(FamilyInfoBase, BaseSchema):
 class FamilyInfo(FamilyInfoInDBBase):
     pass
 
+class FamilyInfoResponse(FamilyInfo):
+    bio_row: Optional[BioData]
+
 
 
 #EmergencyContact
@@ -456,6 +494,9 @@ class EmergencyContactInDBBase(EmergencyContactBase, BaseSchema):
 
 class EmergencyContact(EmergencyContactInDBBase):
     pass
+
+class EmergencyContactResponse(EmergencyContact):
+    bio_row: Optional[BioData]
 
 
 
@@ -489,6 +530,9 @@ class NextOfKinInDBBase(NextOfKinBase, BaseSchema):
 class NextOfKin(NextOfKinInDBBase):
     pass
 
+class NextOfKinResponse(NextOfKin):
+    bio_row: Optional[BioData]
+
 
 #Declaration
 class DeclarationBase(BaseModel):
@@ -512,6 +556,9 @@ class DeclarationInDBBase(DeclarationBase, BaseSchema):
 
 class Declaration(DeclarationInDBBase):
     pass
+
+class DeclarationResponse(Declaration):
+    bio_row: Optional[BioData]
 
 
 class TrademarkBase(BaseModel):

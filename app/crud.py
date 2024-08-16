@@ -70,36 +70,49 @@ def save_and_resize_image(file: UploadFile, filename: str) -> str:
         # Check if the file is an image
         image = Image.open(file.file)
         file.file.seek(0)  # Reset file pointer after reading for validation
+
+        # Ensure the upload directory exists
+        if not os.path.exists(UPLOAD_DIR):
+            os.makedirs(UPLOAD_DIR)
+        filepath = os.path.join(UPLOAD_DIR, filename)
+
+        # Save the original image file
+        with open(filepath, 'wb') as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        # Reopen the saved image to resize it
+        image = Image.open(filepath)
+        image = image.resize(PASSPORT_SIZE)
+
+        # Convert image to RGB mode if necessary
+        if image.mode not in ['RGB', 'L']:  # Handles both RGB and grayscale images
+            image = image.convert('RGB')
+
+        # Save the resized image
+        image.save(filepath)
+
+        return filepath
+
     except UnidentifiedImageError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Uploaded file is not a valid image")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Uploaded file is not a valid image.")
+    except OSError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported image format. Please upload a different image.")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred while processing the image.")
 
-    if not os.path.exists(UPLOAD_DIR):
-        os.makedirs(UPLOAD_DIR)
-    filepath = os.path.join(UPLOAD_DIR, filename)
 
-    with open(filepath, 'wb') as buffer:
-        shutil.copyfileobj(file.file, buffer)
 
-    # Resize image
-    image = Image.open(filepath)
-    image = image.resize(PASSPORT_SIZE)
-
-     # Convert image to RGB mode if it is in RGBA mode
-    if image.mode == 'RGBA':
-        image = image.convert('RGB')
-
-    image.save(filepath)
-
-    return filepath
 
 def image_to_base64(filepath: str) -> str:
+    print("image_to_base path: ", filepath)
     if not os.path.exists(filepath):
         return filepath
     
     with open(filepath, "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
     
-    return f"data:image/png;base64,{encoded_string}"
+    return f"data:image/jpg;base64,{encoded_string}"
+
 
 def _image_to_base64(filepath: bytes) -> bytes:
     encoded_string = base64.b64encode(filepath).decode('utf-8')
@@ -107,6 +120,23 @@ def _image_to_base64(filepath: bytes) -> bytes:
 
 def get_user(db: Session, user_id: uuid.UUID):
     return db.query(User).filter(User.id == user_id).first()
+
+def get_detailed_crud(db:Session, model, id) -> Optional[ModelType]:
+        try:
+            # Start with the base query
+            query = db.query(model)
+            
+            # Loop through relationships and use class-bound attributes directly
+            for relationship in model.__mapper__.relationships:
+                # Get the class-bound attribute
+                relationship_attr = getattr(model, relationship.key)
+                query = query.options(joinedload(relationship_attr))
+
+            # Fetch the record by ID
+            return query.filter(model.id == id).first()
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
 
 def update_user(db: Session, user_id: uuid.UUID, user_update: schemas.UserUpdate):
     db_user = get_user(db, user_id)
@@ -159,6 +189,23 @@ def get_user_data(db: Session, user_id: uuid.UUID):
     return data
 
 
+def get_multi_users_with_model(db: Session, model: Type[ModelType], skip: int = 0, limit: int = 100) -> List[ModelType]:
+        try:
+            # Start with the base query
+            query = db.query(model)
+            
+            # Loop through relationships and use class-bound attributes directly
+            for relationship in model.__mapper__.relationships:
+                # Get the class-bound attribute
+                relationship_attr = getattr(model, relationship.key)
+                query = query.options(joinedload(relationship_attr))
+
+            # Fetch multiple records
+            return query.offset(skip).limit(limit).all()
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+
 
 def get_users(db: Session, skip: int = 0, limit: int = 100) -> List[User]:
     objs = db.query(User).offset(skip).limit(limit).all()
@@ -184,113 +231,6 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.commit()
     db.refresh(db_user)
     return db_user
-
-
-
-
-#----------------------------------------------
-
-# def is_valid_uuid(value: str) -> bool:
-#     try:
-#         uuid.UUID(value)
-#         return True
-#     except ValueError:
-#         return False
-
-
-
-# def custom_jsonable_encoder(record):
-#     try:
-#         if isinstance(record, dict):
-#             return {k: custom_jsonable_encoder(v) for k, v in record.items()}
-#         elif isinstance(record, list):
-#             return [custom_jsonable_encoder(v) for v in record]
-#         elif isinstance(record, uuid.UUID):
-#             return str(record)
-#         elif hasattr(record, "__dict__"):
-#             # Prevent recursion by excluding SQLAlchemy attributes
-#             model_dict = {k: v for k, v in record.__dict__.items() if not k.startswith('_sa')}
-#             return custom_jsonable_encoder(model_dict)
-#         return jsonable_encoder(record)
-#     except Exception as e:
-#         print(f"Error in custom_jsonable_encoder: {e}")
-#         raise e
-
-# def validate_input(input_string: str) -> bool:
-#     # Basic SQL injection prevention
-#     forbidden_patterns = [
-#         r"(?i)\b(select|insert|update|delete|drop|truncate|exec|execute|union|create|alter|rename|revoke|grant|replace|shutdown|backup|restore)\b",
-#         r"(--)|(/\*)|(\*/)|(;)"
-#     ]
-#     for pattern in forbidden_patterns:
-#         if re.search(pattern, input_string):
-#             return False
-#     return True
-
-# def search_related_models(db: Session, related_model: Type[Any], search_terms: List[str]) -> List[Dict[str, Any]]:
-#     conditions = []
-#     for column in inspect(related_model).columns:
-#         if isinstance(column.type, (String, Text)):
-#             for term in search_terms:
-#                 conditions.append(getattr(related_model, column.name).ilike(f"%{term}%"))
-#     if conditions:
-#         related_query_results = db.query(related_model).options(joinedload('*')).filter(or_(*conditions)).all()
-#         return [custom_jsonable_encoder(record) for record in related_query_results]
-#     return []
-
-
-
-
-# def search_all(db: Session, search_string: str, models: List[Type[Any]], current_user: User) -> Dict[str, List[Dict[str, Any]]]:
-    
-#     if not validate_input(search_string):
-#         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid input detected")
-    
-#     results = {}
-#     search_terms = search_string.lower().split()
-#     # Sanitize and validate input
-#     search_terms = re.sub(r'[^\w\s]', '', search_string.lower().strip())  # Remove special characters
-
-#     try:
-#         for model in models:
-#             query = db.query(model)
-#             conditions = []
-#             for column in inspect(model).columns:
-#                 if isinstance(column.type, (String, Text)):
-#                     for term in search_terms:
-#                         conditions.append(getattr(model, column.name).ilike(f"%{term}%"))
-#                 elif isinstance(column.type, (PostgreSQL_UUID, uuid.UUID)):
-#                     if is_valid_uuid(search_string):
-#                         conditions.append(getattr(model, column.name) == uuid.UUID(search_string))
-#                 elif isinstance(column.type, (DateTime, Boolean, Date)):
-#                     pass  # Skip these types for search
-#                 else:
-#                     continue  # Skip any other types
-#             if conditions:
-#                 query_results = query.filter(or_(*conditions)).all()
-#                 if query_results:
-#                     if current_user.role == "admin":
-#                         model_results = [custom_jsonable_encoder(record) for record in query_results]
-#                     else:
-#                         model_results = []
-#                         for record in query_results:
-#                             if record.id == current_user.bio_row_id:
-#                                 model_results.append(custom_jsonable_encoder(record))
-#                             else:
-#                                 basic_details = {
-#                                     'Name': getattr(record, 'name', None),
-#                                     'Staff Category': getattr(record, 'staff_category', None),
-#                                     'Employment Type': getattr(record, 'employment_type', None),
-#                                     'Qualification': getattr(record, 'qualification', None),
-#                                     'Image': getattr(record, 'image_col', None)
-#                                 }
-#                                 model_results.append(basic_details)
-#                     if model_results:
-#                         results[model.__name__] = model_results
-#         return results
-#     except Exception as e:
-#         db.rollback()
-#         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Error in search_all: {str(e)}")
 
 
 
@@ -569,166 +509,39 @@ class TCRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 trademark = TCRUDBase(Trademark)
 
 
-############# old mod ########################################################
-# class TCRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
-#     def __init__(self, model: Type[ModelType]):
-#         self.model = model
 
-#     def get(self, db: Session, id: Any) -> Optional[ModelType]:
-#         obj = db.query(self.model).filter(self.model.id == id).first()
-#         if obj and obj.left_logo:
-#             obj.left_logo = image_to_base64(obj.left_logo)
-#         return obj
+
+def update_image_col(
+    db: Session, 
+    identifier: Union[str, uuid.UUID], 
+    image_file: UploadFile,
+    identifier_field: str = 'id'
+) -> BioData:
+    try:
+        # Fetch the existing record by id or another unique identifier
+        if identifier_field == 'id':
+            record = db.query(BioData).filter(BioData.id == identifier).first()
+        else:
+            record = db.query(BioData).filter(getattr(BioData, identifier_field) == identifier).first()
+
+        if not record:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Record not found.")
+
+        # Process and save the image
+        filename = f"{uuid.uuid4()}.jpg"
+        filepath = save_and_resize_image(image_file, filename)
+
+        # Update the record's image_col with the new file path
+        record.image_col = filepath
+        db.add(record)
+        db.commit()
+        db.refresh(record)
+        return record
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     
-#     # def get_multi(self, db: Session, skip: int = 0, limit: int = 100) -> List[ModelType]:
-#     #     objs = db.query(self.model).offset(skip).limit(limit).all()
-        
-#     #     for obj in objs:
-#     #         if obj.left_logo:
-#     #             obj.left_logo = image_to_base64(obj.left_logo)
-#     #         if obj.right_logo:
-#     #             obj.right_logo = image_to_base64(obj.right_logo)
-#     #     return objs
-    
-#     def get_by_field(self, db: Session, field: str, value: Any) -> Optional[ModelType]:
-#         obj = db.query(self.model).filter(getattr(self.model, field) == value).first()
-#         if obj and obj.left_logo:
-#             obj.left_logo = image_to_base64(obj.left_logo)
-#         return obj
-
-#     def create(self, db: Session, obj_in: CreateSchemaType, file: UploadFile = None, file2: UploadFile = None) -> ModelType:
-#         obj_in_data = jsonable_encoder(obj_in)
-#         if file:
-#             filename = f"{obj_in.name}_left.jpg" #f"{uuid.uuid4()}.jpg" 
-#             filepath = save_and_resize_image(file, filename)
-#             obj_in_data['left_logo'] = filepath
-#         if file2:
-#             filename2 = f"{obj_in.name}_right.jpg"  #f"{uuid.uuid4()}.jpg"
-#             filepath2 = save_and_resize_image(file2, filename2)
-#             obj_in_data['right_logo'] = filepath2
-
-#         try:
-#             db_obj = self.model(**obj_in_data)
-#             db.add(db_obj)
-#             db.commit()
-#             db.refresh(db_obj)
-#             # if db_obj.left_logo:
-#             #     db_obj.left_logo = image_to_base64(db_obj.left_logo)
-#             # if db_obj.right_logo:
-#             #     db_obj.right_logo = image_to_base64(db_obj.right_logo)
-#             return db_obj
-#         except Exception as e:
-#             db.rollback()
-#             raise HTTPException(status_code=500, detail=str(e))
-
-#     def update(self, db: Session, db_obj: ModelType, obj_in: Union[UpdateSchemaType, Dict[str, Any]], file: UploadFile = None, file2: UploadFile = None) -> ModelType:
-#         obj_data = jsonable_encoder(db_obj)
-#         if isinstance(obj_in, dict):
-#             update_data = obj_in
-#         else:
-#             update_data = obj_in.dict(exclude_unset=True)
-
-#         if file:
-#             filename = f"{obj_in.name}_left.jpg"  #f"{uuid.uuid4()}.jpg"
-#             filepath = save_and_resize_image(file, filename)
-#             update_data['left_logo'] = filepath
-#         if file2:
-#             filename2 = f"{obj_in.name}_left.jpg"  #f"{uuid.uuid4()}.jpg"
-#             filepath2 = save_and_resize_image(file2, filename2)
-#             update_data['right_logo'] = filepath2
-
-#         try:
-#             for field in obj_data:
-#                 if field in update_data:
-#                     setattr(db_obj, field, update_data[field])
-#             db.add(db_obj)
-#             db.commit()
-#             db.refresh(db_obj)
-#             # if db_obj.left_logo:
-#             #     db_obj.left_logo = image_to_base64(db_obj.left_logo)
-#             # if db_obj.right_logo:
-#             #     db_obj.right_logo = image_to_base64(db_obj.right_logo)
-#             return db_obj
-#         except Exception as e:
-#             db.rollback()
-#             raise HTTPException(status_code=500, detail=str(e))
-    
-#     def get_multi(self, db: Session, skip: int = 0, limit: int = 100) -> List[ModelType]:
-#         objs = db.query(self.model).offset(skip).limit(limit).all()
-        
-#         for obj in objs:
-#             if obj.left_logo and obj.left_logo != '' and obj.left_logo != None:
-#                 obj.left_logo = image_to_base64(obj.left_logo)
-            
-#             if obj.right_logo and obj.right_logo != '' and obj.right_logo != None:
-#                 obj.right_logo = image_to_base64(obj.right_logo)
-#         return objs
-
-#     # Define a function to delete the logo file if it exists
-#     def delete_logo_file(self, name: str, logo_type: str) -> bool:
-#         """
-#         Delete the logo file if it exists on the disk.
-
-#         Args:
-#         - name (str): The base name used to construct the file path.
-#         - logo_type (str): Either 'left' or 'right' to indicate which logo to delete.
-
-#         Returns:
-#         - bool: True if the file was successfully deleted, False otherwise.
-#         """
-#         # Construct the expected file path based on 'name' and 'logo_type'
-#         filename = f"{name}_{logo_type}.jpg"
-#         filepath = os.path.join("./uploads/images/", filename)
-        
-#         if os.path.isfile(filepath):
-#             try:
-#                 os.remove(filepath)  # Delete the file
-#                 return True
-#             except OSError as e:
-#                 raise HTTPException(
-#                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-#                     detail=f"Error deleting file {filepath}: {str(e)}"
-#                 )
-#         return False  # File doesn't exist, so nothing to delete
-                    
-
-#     def delete_trademark(self, db: Session, trademark_id: UUID) -> str:
-#         # Retrieve the trademark row from the database by its id
-#         trademark = db.query(self.model).filter(self.model.id == trademark_id).first()
-        
-#         # If no row is found, raise an HTTP exception
-#         if not trademark:
-#             raise HTTPException(
-#                 status_code=status.HTTP_404_NOT_FOUND,
-#                 detail=f"Trademark with id {trademark_id} not found."
-#             )
-        
-#         # Attempt to delete both logos, prioritizing the left logo
-#         errors = []
-
-#         # Handle left logo
-#         if trademark.left_logo:
-#             if not self.delete_logo_file(trademark.name, 'left'):
-#                 errors.append(f"Error eliminating left logo: {trademark.left_logo}")
-        
-#         # Handle right logo
-#         if trademark.right_logo:
-#             if not self.delete_logo_file(trademark.name, 'right'):
-#                 errors.append(f"Error eliminating right logo: {trademark.right_logo}")
-        
-#         # Delete the trademark row from the database
-#         db.delete(trademark)
-#         db.commit()
-
-#         # If any errors occurred during file deletion, return them
-#         if errors:
-#             return ", ".join(errors)
-
-#         return f"Trademark with id {trademark_id} has been deleted successfully."
-
-
-
-# trademark = TCRUDBase(Trademark)
 
 
 class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
@@ -756,15 +569,24 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                     filepath = save_and_resize_image(file, filename)
                     data[key] = filepath
                 elif self.model == Declaration and key in ['reps_signature', 'employees_signature']:
-                    data[key] = self.process_image(file)
+                    filename = f"{uuid.uuid4()}.jpg"
+                    filepath = save_and_resize_image(file, filename)
+                    #data[key] = self.process_image(file)
+                    data[key] = filepath
         
         return data
 
     def get(self, db: Session, id: Any) -> Optional[ModelType]:
         obj = db.query(self.model).filter(self.model.id == id).first()
-       
-            
+        
+        if obj and obj.image_col:
+            obj.image_col = image_to_base64(obj.image_col)
+        
+        
         return obj
+    
+            
+
 
     def get_by_field(self, db: Session, field: str, value: Any) -> Optional[ModelType]:
         obj = db.query(self.model).filter(getattr(self.model, field) == value).first()
@@ -778,6 +600,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         for obj in objs:
             if obj.image_col:
                 obj.image_col = image_to_base64(obj.image_col)
+            
+
         return objs
     
     
@@ -886,6 +710,20 @@ user = CRUDUser(User)
 
 #declaration
 class CRUDDeclaration(CRUDBase[schemas.Declaration, schemas.DeclarationCreate, schemas.DeclarationUpdate]):
+
+
+    def get_declaration(self, db: Session, id: Any) -> Optional[ModelType]:
+        obj = db.query(self.model).filter(self.model.id == id).first()
+        
+        if obj and obj.reps_signature:
+            obj.reps_signature = image_to_base64(obj.reps_signature)
+        elif obj and obj.employees_signature:
+            obj.employees_signature = image_to_base64(obj.employees_signature)
+        
+        
+        return obj
+
+
     def get_multi_declarations(self, db: Session, skip: int = 0, limit: int = 100) -> List[ModelType]:
         objs = db.query(self.model).offset(skip).limit(limit).all()
         
@@ -896,7 +734,11 @@ class CRUDDeclaration(CRUDBase[schemas.Declaration, schemas.DeclarationCreate, s
             
             if obj.employees_signature and obj.employees_signature != 'base64_representation_of_employees_signature_image' and obj.employees_signature != '' and obj.employees_signature != None:
                 obj.employees_signature = image_to_base64(obj.employees_signature)
+
         return objs
+    
+
+
     def create(self, db: Session, obj_in: schemas.DeclarationCreate, files: Dict[str, Any]) -> Declaration:
         obj_in_data = obj_in.dict()
         if 'reps_signature' in files and files['reps_signature']:
@@ -909,17 +751,29 @@ class CRUDDeclaration(CRUDBase[schemas.Declaration, schemas.DeclarationCreate, s
     def update(self, db: Session, db_obj: Declaration, obj_in: Union[schemas.DeclarationUpdate, Dict[str, Any]], files: Dict[str, Any]) -> Declaration:
         update_data = obj_in.dict(exclude_unset=True)
         if 'reps_signature' in files and files['reps_signature']:
-            update_data['reps_signature'] = self.process_image(files['reps_signature'])
+             # Process and save the image
+            filename = f"{uuid.uuid4()}.jpg"
+            #filepath = save_and_resize_image(image_file, filename)
+
+            # Update the record's image_col with the new file path
+            #record.image_col = filepath
+            #update_data['reps_signature'] = self.process_image(files['reps_signature'])
+
+            update_data['reps_signature'] = save_and_resize_image(files['reps_signature'], filename)
+
         if 'employees_signature' in files and files['employees_signature']:
-            update_data['employees_signature'] = self.process_image(files['employees_signature'])
+            #update_data['employees_signature'] = self.process_image(files['employees_signature'])
+            filename = f"{uuid.uuid4()}.jpg"
+            update_data['employees_signature'] = save_and_resize_image(files['employees_signature'], filename)
         
         return super().update(db, db_obj, update_data, files=files)
+
 
     def process_image(self, image_file: Any) -> str:
         image = Image.open(io.BytesIO(image_file))
         image = image.resize((100, 100))
         byte_arr = io.BytesIO()
-        image.save(byte_arr, format='JPEG')
+        image.save(byte_arr, format='JPG')  #format='JPG' | 'PNG' or default is the file's extension
         return base64.b64encode(byte_arr.getvalue()).decode()
 
     def remove(self, db: Session, id: UUID, force_delete: bool = False) -> Declaration:
@@ -962,9 +816,40 @@ declaration = CRUDDeclaration(Declaration)
 
 
 
-#------------------------------------------------------------------------------
+from PIL import Image, ImageDraw, ImageFont
 
-def generate_pdf_for_bio_data(bio_data, trademark, declarations, academics, professionals, employment_histories, emergency_contacts, next_of_kin, file_path):
+
+def add_padding_to_base64(data):
+    """Adds padding to base64 string if necessary."""
+    missing_padding = len(data) % 4
+    if missing_padding:
+        data += '=' * (4 - missing_padding)
+    return data
+
+#------------------------------------------------------------------------------
+def create_placeholder_image(text, size=(50, 50)):
+    """Creates a placeholder image with a watermark text."""
+    image = Image.new('RGB', size, color=(255, 255, 255))
+    draw = ImageDraw.Draw(image)
+    font = ImageFont.load_default()
+
+
+    # Calculate the bounding box of the text
+    bbox = draw.textbbox((0, 0), text, font=font)
+    textwidth = bbox[2] - bbox[0]
+    textheight = bbox[3] - bbox[1]
+
+    # Center the text in the image
+    x = (size[0] - textwidth) / 2
+    y = (size[1] - textheight) / 2
+    draw.text((x, y), text, font=font, fill=(150, 150, 150))
+
+    return image
+
+
+
+
+def generate_pdf_for_bio_data(bio_data, trademark, declarations, academics, professionals, employment_histories, emergency_contacts, next_of_kin, grade_name, directorate_name, employment_type_name, staff_category_name, file_path):
     try:
         # Create the base directory if it doesn't exist
         base_dir = 'downloads/documents/'
@@ -979,26 +864,105 @@ def generate_pdf_for_bio_data(bio_data, trademark, declarations, academics, prof
             pdf = FPDF()
             pdf.add_page()
 
-            # Add organization logo
-            if trademark.left_logo:
-                pdf.image(trademark.left_logo, x=95, y=10, w=20, h=20)
+
+            
+          
+            # Add organization logos with placeholders if logos are None
+            def add_image_or_placeholder(image_path, x, y, w, h, placeholder_text):
+                print("image_path: ", image_path)
+                if image_path:
+                    try:
+                        pdf.image(image_path, x=x, y=y, w=w, h=h)
+                    except Exception as e:
+                        print(f"Error loading image: {e}")
+                        placeholder_path = os.path.join(tmpdirname, f'{placeholder_text}_placeholder.jpg')
+                        create_placeholder_image(placeholder_text).save(placeholder_path)
+                        pdf.image(placeholder_path, x=x, y=y, w=w, h=h)
+                else:
+                    placeholder_path = os.path.join(tmpdirname, f'{placeholder_text}_placeholder.jpg')
+                    create_placeholder_image(placeholder_text).save(placeholder_path)
+                    pdf.image(placeholder_path, x=x, y=y, w=w, h=h)
+
+            
+
+            # # Add and center the left logo (if it exists) or right logo (if left logo doesn't exist)
+            # if trademark.left_logo or trademark.right_logo:
+            #     logo_path = trademark.left_logo if trademark.left_logo else trademark.right_logo
+            #     logo_x_position = (210 - logo_width) / 2  # Center the logo
+            #     add_image_or_placeholder(logo_path, x=logo_x_position, y=logo_y_position, w=logo_width, h=logo_height, placeholder_text="Logo")
+
+            #      # Add bio_data image at the far right
+            #     bio_image_width = 60
+            #     bio_image_height = 60
+            #     bio_image_x_position = 210 - bio_image_width - 10  # Align to the far right
+            #     add_image_or_placeholder(bio_data.image_col, x=bio_image_x_position, y=logo_y_position, w=bio_image_width, h=bio_image_height, placeholder_text="Passport Image")
+
+            # elif trademark.left_logo and trademark.right_logo:
+            #     #Left Logo
+            #     add_image_or_placeholder(trademark.left_logo, x=10, y=10, w=20, h=20, placeholder_text="Left Logo")
+            
+            #     #Right Logo
+            #     add_image_or_placeholder(trademark.right_logo, x=180, y=10, w=20, h=20, placeholder_text="Right Logo")
+
+            #      # BioData Image (passport size)
+            #     add_image_or_placeholder(bio_data.image_col, x=180, y=40, w=20, h=20, placeholder_text="Passport Image")
+
+            # Define logo dimensions and position
+            logo_width = 100  # Adjust width to stretch the logo(s)
+            logo_height = 30
+            logo_y_position = 10  # Top margin
 
 
-            # Add title
-            pdf.set_font("Arial", size=14)
-            pdf.ln(20)  # Adjust space after the logo
-            pdf.cell(200, 10, txt=f"{trademark.name}".upper(), ln=True, align='C')
+            # Determine the layout based on the available logos and bio_data image
+            if trademark.left_logo and trademark.right_logo:
+                # Left Logo
+                add_image_or_placeholder(trademark.left_logo, x=10, y=logo_y_position, w=60, h=25, placeholder_text="Left Logo")
+                
+                # Right Logo
+                add_image_or_placeholder(trademark.right_logo, x=140, y=logo_y_position, w=60, h=25, placeholder_text="Right Logo")
 
-            pdf.set_font("Arial", size=12)
-            pdf.ln()  # Adjust space after the logo
-            pdf.cell(200, 10, txt="Personal Record Form", ln=True, align='C')
+                # BioData Image (passport size)
+                add_image_or_placeholder(bio_data.image_col, x=170, y=40, w=20, h=20, placeholder_text="Passport Image")
+
+                # Add title
+                #pdf.set_font("Arial", size=14)
+                pdf.ln(35)  # Adjust space after the logo
+                #pdf.cell(200, 10, txt=f"{trademark.name}".upper(), ln=True, align='C')
+
+                pdf.set_font("Arial", size=16)
+                pdf.ln()  # Adjust space after the logo
+                pdf.cell(200, 10, txt="Personal Record Form", ln=True, align='C')
+            
+            elif trademark.left_logo or trademark.right_logo:
+                logo_path = trademark.left_logo if trademark.left_logo else trademark.right_logo
+                logo_x_position = 50  # Adjusted to leave space for bio_data image
+                add_image_or_placeholder(logo_path, x=logo_x_position, y=logo_y_position, w=logo_width, h=logo_height, placeholder_text="Logo")
+
+                # Add bio_data image at the far right with some spacing
+                bio_image_width = 40
+                bio_image_height = 40
+                bio_image_x_position = 210 - bio_image_width - 10  # Align to the far right with spacing
+                add_image_or_placeholder(bio_data.image_col, x=bio_image_x_position, y=logo_y_position, w=bio_image_width, h=bio_image_height, placeholder_text="Passport Image")
+                # Add title
+                pdf.set_font("Arial", size=14)
+                pdf.ln(40)  # Adjust space after the logo
+                #pdf.cell(200, 10, txt=f"{trademark.name}".upper(), ln=True, align='C')
+
+                pdf.set_font("Arial", size=16)
+                pdf.ln(5)  # Adjust space after the logo
+                pdf.cell(200, 10, txt="Personal Record Form", ln=True, align='C')
+            
+
+            
 
             # Add bio data image (passport size) at the top extreme right corner
-            if bio_data.image_col:
-                bio_image_path = os.path.join(tmpdirname, 'bio_image.jpg')
-                with Image.open(bio_data.image_col) as img:
-                    img.resize((100, 100), Image.LANCZOS).save(bio_image_path)  # Correct resizing method
-                pdf.image(bio_image_path, x=180, y=10, w=20, h=20)
+            print(f"\nimage_col: {bio_data.image_col}\n\n")
+
+
+
+
+            
+           
 
             # Add tags and bio data information
             pdf.set_font("Arial", size=10)
@@ -1034,12 +998,17 @@ def generate_pdf_for_bio_data(bio_data, trademark, declarations, academics, prof
             employment_info = [
                 f"Date of First Appointment: {bio_data.employment_detail.date_of_first_appointment}",
                 f"Grade on First Appointment: {bio_data.employment_detail.grade_on_first_appointment}",
-                f"Grade on Current Appointment: {bio_data.employment_detail.grade_on_current_appointment_id}",
-                f"Directorate: {bio_data.employment_detail.directorate_id}",
+                f"Grade on Current Appointment: {grade_name}",
+                #f"Grade on Current Appointment: {bio_data.employment_detail.grade_on_current_appointment_id}",
+                # f"Directorate: {bio_data.employment_detail.directorate_id}",
+                f"Directorate: {directorate_name}",
+            #     f"Employee Number: {bio_data.employment_detail.employee_number}",
+            #     f"Employment Type: {bio_data.employment_detail.employment_type_id}",
+            #     f"Staff Category: {bio_data.employment_detail.staff_category_id}"
                 f"Employee Number: {bio_data.employment_detail.employee_number}",
-                f"Employment Type: {bio_data.employment_detail.employment_type_id}",
-                f"Staff Category: {bio_data.employment_detail.staff_category_id}"
-            ]
+                f"Employment Type: {employment_type_name}",
+                f"Staff Category: {staff_category_name}"
+             ]
 
             for emp_info in employment_info:
                 pdf.cell(200, 10, txt=emp_info, ln=True, align='L')
@@ -1090,7 +1059,7 @@ def generate_pdf_for_bio_data(bio_data, trademark, declarations, academics, prof
 
             # Add employment history in tabular form
             pdf.ln(10)
-            pdf.cell(200, 10, txt="G. Employment History", ln=True, align='L')
+            pdf.cell(200, 10, txt="F. Employment History", ln=True, align='L')
             pdf.cell(60, 10, txt="Institution", border=1, align='C')
             pdf.cell(30, 10, txt="Date Employed", border=1, align='C')
             pdf.cell(50, 10, txt="Position", border=1, align='C')
@@ -1105,7 +1074,7 @@ def generate_pdf_for_bio_data(bio_data, trademark, declarations, academics, prof
 
             # Add emergency contacts
             pdf.ln(10)
-            pdf.cell(200, 10, txt="H. Emergency Contacts", ln=True, align='L')
+            pdf.cell(200, 10, txt="G. Emergency Contacts", ln=True, align='L')
             for contact in emergency_contacts:
                 emergency_info = [
                     f"Name: {contact.name}",
@@ -1118,7 +1087,7 @@ def generate_pdf_for_bio_data(bio_data, trademark, declarations, academics, prof
 
             # Add next of kin
             pdf.ln(10)
-            pdf.cell(200, 10, txt="I. Next of Kin", ln=True, align='L')
+            pdf.cell(200, 10, txt="H. Next of Kin", ln=True, align='L')
             for kin in next_of_kin:
                 kin_info = [
                     f"Title: {kin.title}",
@@ -1140,27 +1109,32 @@ def generate_pdf_for_bio_data(bio_data, trademark, declarations, academics, prof
             # Add declarations signatures and dates
             if declarations:
                 pdf.ln(10)
-                pdf.cell(200, 10, txt="F. Declarations", ln=True, align='L')
+                pdf.cell(200, 10, txt="I. Declarations", ln=True, align='L')
 
                 signatures_dir = 'downloads/signatures'
+                signatures_dir = 'uploads/images'
                 os.makedirs(signatures_dir, exist_ok=True)
 
                 for declaration in declarations:
-                    if declaration.reps_signature:
+                    if declaration.reps_signature and   declaration.reps_signature.strip() != "base64_representation_of_reps_signature_image":
                         reps_signature_img_path = os.path.join(signatures_dir, 'reps_signature.png')
                         with Image.open(BytesIO(base64.b64decode(declaration.reps_signature))) as img:
                             img.resize((100, 100), Image.LANCZOS).save(reps_signature_img_path)
                         
                         pdf.image(reps_signature_img_path, x=10, y=pdf.get_y(), w=40, h=20)
-                    
+                    else:
+                        add_image_or_placeholder(None,x=10, y=pdf.get_y(), w=40, h=20, placeholder_text="Rep's Signature: ")
                     
 
-                    if declaration.employees_signature:
+                    if declaration.employees_signature and  declaration.employees_signature.strip() != "base64_representation_of_employees_signature_image":
                         employees_signature_img_path = os.path.join(signatures_dir, 'employees_signature.png')
                         with Image.open(BytesIO(base64.b64decode(declaration.employees_signature))) as img:
                             img.resize((100, 100), Image.LANCZOS).save(employees_signature_img_path)
                      
                         pdf.image(employees_signature_img_path, x=165, y=pdf.get_y(), w=40, h=20)
+                    else:
+                        add_image_or_placeholder(None, x=165, y=pdf.get_y(), w=40, h=20, placeholder_text="Employee's Signature: ")
+                    
                     
                     pdf.ln(20)
                     pdf.cell(100, 10, txt="Rep's Signature", ln=False, align='L')
@@ -1176,6 +1150,18 @@ def generate_pdf_for_bio_data(bio_data, trademark, declarations, academics, prof
                     #pdf.ln(10)
                     #pdf.cell(200, 10, txt=f"Declaration Date: {declaration.declaration_date}", ln=True, align='R')
 
+
+
+            # Add page numbers
+            # pdf.set_auto_page_break(auto=True, margin=15)
+            # total_pages = pdf.page_no()
+            # for i in range(1, total_pages + 1):
+            #     pdf.page = i
+            #     pdf.set_y(1)
+            #     #pdf.add_page()
+            #     pdf.set_font("Arial", size=8)
+            #     pdf.cell(0, 10, f'Page {i} of {total_pages}', align='C')
+# 
             # Add page numbers
             # pdf.set_auto_page_break(auto=True, margin=15)
             # pdf_alias_nb = pdf.alias_nb_pages()
@@ -1188,10 +1174,11 @@ def generate_pdf_for_bio_data(bio_data, trademark, declarations, academics, prof
 
         # Save the PDF
         pdf.output(file_path)
+        print(f"PDF generated and saved at: {file_path}")
         return file_path
 
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"An error occurred generating PDF: {e}")
         return None
 
 

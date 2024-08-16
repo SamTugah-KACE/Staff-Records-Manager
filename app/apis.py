@@ -243,24 +243,24 @@ def create_directorate(
 
 
 
-@api_router.get("/directorates/", response_model=List[schemas.Directorate],  tags=["Directorate"])
+@api_router.get("/directorates/", response_model=List[schemas.DirectorateResponse],  tags=["Directorate"])
 def read_directorates(
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
     
-) -> List[Directorate]:
-    directorate_obj = directorate.get_multi(db, skip=skip, limit=limit)
+) -> List[schemas.DirectorateResponse]:
+    directorate_obj = directorate.get_multi_with_model(db, model=Directorate, skip=skip, limit=limit)
     return directorate_obj
 
-@api_router.get("/directorate/{id}", response_model=schemas.Directorate,  tags=["Directorate"])
+@api_router.get("/directorate/{id}", response_model=schemas.DirectorateResponse,  tags=["Directorate"])
 def read_directorate(
     *,
     db: Session = Depends(get_db),
     id: str,
     
-) -> Directorate:
-    directorate_obj = directorate.get(db=db, id=id)
+) -> schemas.DirectorateResponse:
+    directorate_obj = directorate.get_detailed(db=db, model=Directorate, id=id)
     if not directorate_obj:
         raise HTTPException(status_code=404, detail="directorate not found")
     return directorate_obj
@@ -392,24 +392,24 @@ def create_employment_type(
     return templates.TemplateResponse("admin-dashboard.html", {"request": request})
     # return employment_type.create(db=db, obj_in=employment_type_in)
 
-@api_router.get("/employment_types/", response_model=List[schemas.EmploymentType],  tags=["Employment Type"])
+@api_router.get("/employment_types/", response_model=List[schemas.EmploymentTypeResponse],  tags=["Employment Type"])
 def read_employment_types(
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
     
-) -> List[EmploymentType]:
-    employment_type_obj = employment_type.get_multi(db, skip=skip, limit=limit)
+) -> List[schemas.EmploymentTypeResponse]:
+    employment_type_obj = employment_type.get_multi_with_model(db, model=EmploymentType, skip=skip, limit=limit)
     return employment_type_obj
 
-@api_router.get("/employment_type/{id}", response_model=schemas.EmploymentType,  tags=["Employment Type"])
+@api_router.get("/employment_type/{id}", response_model=schemas.EmploymentTypeResponse,  tags=["Employment Type"])
 def read_employment_type(
     *,
     db: Session = Depends(get_db),
     id: str,
     
-) -> EmploymentType:
-    employment_type_obj = employment_type.get(db=db, id=id)
+) -> schemas.EmploymentTypeResponse:
+    employment_type_obj = employment_type.get_detailed(db=db, model=EmploymentType, id=id)
     if not employment_type_obj:
         raise HTTPException(status_code=404, detail="employment_type not found")
     return employment_type_obj
@@ -675,6 +675,23 @@ def update_bio_data(
 
 
 
+@api_router.put("/bio_data/update_image/", response_model=schemas.BioData, tags=["BioData"])
+def update_image(
+    identifier: Union[str, UUID],
+    image_file: UploadFile = File(...),
+    identifier_field: str = 'id',
+    db: Session = Depends(get_db)
+):
+    """
+    Update only the image_col of a BioData record.
+    - `identifier`: The UUID or unique field value to identify the record.
+    - `identifier_field`: The field name used for identifying the record. Defaults to 'id'.
+    - `image_file`: The new image file to be uploaded.
+    """
+    obj = crud.update_image_col(db, identifier, image_file, identifier_field)
+    return obj
+
+
 
 @api_router.delete("/bio_data/rm/{id}", response_model=schemas.BioData,  tags=["BioData"])
 def delete_bio_data(
@@ -687,6 +704,9 @@ def delete_bio_data(
     if not bio_data_obj:
         raise HTTPException(status_code=404, detail="bio_data not found")
     return bio_data.remove(db=db, id=id)
+
+
+
 
 
 
@@ -781,16 +801,17 @@ def create_user(
 
 
 
-@api_router.get("/user/get/{user_id}", response_model=schemas.User, tags=["Users"])
+@api_router.get("/user/get/{user_id}", response_model=schemas.UserResponse, tags=["Users"])
 def read_user(user_id: UUID, db: Session = Depends(get_db), ):
-    db_user = crud.get_user(db, user_id)
+    db_user = crud.get_detailed_crud(db, model=User, id=user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
 
 @api_router.get("/users", tags=["Users"])
-def read_users(skip: int = 0, limit: int = 10, db: Session = Depends(get_db), ):
-    users = crud.get_users(db, skip=skip, limit=limit)
+def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), ) -> List[schemas.UserResponse]:
+    #users = crud.get_users(db, skip=skip, limit=limit)
+    users = crud.get_multi_users_with_model(db, model=User, skip=skip, limit=limit)
     return users
 
 @api_router.put("/user/update/{user_id}", response_model=schemas.User, tags=["Users"])
@@ -848,34 +869,13 @@ def read_declarations(skip: int = 0, limit: int = 10, db: Session = Depends(get_
     return decs
 
 
+@api_router.get("/declaration/{id}", response_model=schemas.DeclarationResponse, tags=["Declaration"])
+def read_declaration(declaration_id: UUID, db: Session = Depends(get_db), ):
+    db_declaration = crud.get_detailed_crud(db, model=Declaration, id=declaration_id)
+    if db_declaration is None:
+        raise HTTPException(status_code=404, detail="Declaration not found")
+    return db_declaration
 
-# @api_router.post("/declaration/", response_class=HTMLResponse, tags=["Declaration"])
-# def create_declaration(
-#     *,
-#     request: Request,
-#     db: Session = Depends(get_db),
-#     #declaration_in: schemas.DeclarationCreate,
-#     bio_row_id: Optional[str] = Form(None),
-#     declaration_date: Optional[date] = Form(None),
-#     reps_signature: UploadFile = File(None),
-#     employees_signature: UploadFile = File(None)
-# ):
-    
-#     #print("api employees_signature: ", employees_signature)
-#     declaration_in = Declaration()
-#     declaration_in.bio_row_id = bio_row_id,
-#     declaration_in.status=True,
-#     declaration_in.declaration_date=declaration_date
-    
-#     #files = {'employees_signature': employees_signature.file.read() if employees_signature else None}
-
-#     files = {
-#         'reps_signature': reps_signature.file.read() if reps_signature else None,
-#         'employees_signature': employees_signature.file.read() if employees_signature else None
-#     }
-
-#     declaration = crud.declaration.create(db=db, obj_in=declaration_in, files=files)
-#     return templates.TemplateResponse("user-dashboard.html", {"request": request, "bio_row_id": bio_row_id})
 
 @api_router.put("/update_declaration/{id}", response_model=schemas.Declaration, tags=["Declaration"])
 def update_declaration(
@@ -889,13 +889,18 @@ def update_declaration(
     declaration_date: Optional[date] = Form(None),
     
 ) -> Declaration:
-    declarat = crud.declaration.get(db=db, id=id)
+    declarat = crud.declaration.get_declaration(db=db, id=id)
     if not declarat:
         raise HTTPException(status_code=404, detail="Declaration not found")
 
+    # files = {
+    #     'reps_signature': reps_signature.file.read() if reps_signature else None,
+    #     'employees_signature': employees_signature.file.read() if employees_signature else None
+    # }
+
     files = {
-        'reps_signature': reps_signature.file.read() if reps_signature else None,
-        'employees_signature': employees_signature.file.read() if employees_signature else None
+        'reps_signature': reps_signature if reps_signature else None,
+        'employees_signature': employees_signature if employees_signature else None
     }
 
     declaration_in = schemas.DeclarationUpdate(
@@ -905,6 +910,7 @@ def update_declaration(
     )
 
     declaratio = crud.declaration.update(db=db, db_obj=declarat, obj_in=declaration_in, files=files)
+
     return declaratio
 
 @api_router.delete("/declaration/rm/{id}", response_model=schemas.Declaration, tags=["Declaration"])
@@ -925,22 +931,6 @@ def delete_declaration(
 
 
 
-#Employment Deatails
-# @api_router.post("/employment_detail/", response_model=schemas.EmploymentDetail, tags=["Employment Detail"])
-# def create_employment_detail(
-#     *,
-#     db: Session = Depends(get_db),
-#     employment_detail_in: schemas.EmploymentDetailCreate,
-    
-# ) -> EmploymentDetail:
-#     employment_detail_obj = employment_detail.get_by_field(db, "bio_row_id", employment_detail_in.bio_row_id)
-#     if employment_detail_obj:
-#         raise HTTPException(status_code=400, detail="BioData already exists")
-    
-#     employment_detail_obj = employment_detail.get_by_field(db, "employee_number", employment_detail_in.employee_number)
-#     if employment_detail_obj:
-#         raise HTTPException(status_code=400, detail="Employee Number already exists")
-#     return employment_detail.create(db=db, obj_in=employment_detail_in)
 
 @api_router.post("/employment_detail/", response_model=schemas.EmploymentDetail, tags=["Employment Detail"])
 def create_employment_detail(
@@ -993,24 +983,24 @@ def create_employment_detail(
 
 
 
-@api_router.get("/staff_employment_detail/", response_model=List[schemas.EmploymentDetail],  tags=["Employment Detail"])
+@api_router.get("/staff_employment_detail/", response_model=List[schemas.EmploymentDetailResponse],  tags=["Employment Detail"])
 def read_all_staff_employment_detail(
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
     
-) -> List[EmploymentDetail]:
-    employment_detail_obj = employment_detail.get_multi(db, skip=skip, limit=limit)
+) -> List[schemas.EmploymentDetailResponse]:
+    employment_detail_obj = employment_detail.get_multi_with_model(db, model=EmploymentDetail, skip=skip, limit=limit)
     return employment_detail_obj
 
-@api_router.get("/employment_detail/{id}", response_model=schemas.EmploymentDetail,  tags=["Employment Detail"])
+@api_router.get("/employment_detail/{id}", response_model=schemas.EmploymentDetailResponse,  tags=["Employment Detail"])
 def read_employment_detail(
     *,
     db: Session = Depends(get_db),
     id: str,
     
-) -> EmploymentDetail:
-    employment_detail_obj = employment_detail.get(db=db, id=id)
+) -> schemas.EmploymentDetailResponse:
+    employment_detail_obj = employment_detail.get_detailed(db=db, model=EmploymentDetail, id=id)
     if not employment_detail_obj:
         raise HTTPException(status_code=404, detail="employment_detail not found")
     return employment_detail_obj
@@ -1071,24 +1061,24 @@ def create_bank_detail(
     
     return bank_detail.create(db=db, obj_in=bank_detail_in)
 
-@api_router.get("/staff_bank_detail/", response_model=List[schemas.BankDetail],  tags=["Bank Detail"])
+@api_router.get("/staff_bank_detail/", response_model=List[schemas.BankDetailResponse],  tags=["Bank Detail"])
 def read_all_staff_bank_detail(
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
     
-) -> List[BankDetail]:
-    bank_detail_obj = bank_detail.get_multi(db, skip=skip, limit=limit)
+) -> List[schemas.BankDetailResponse]:
+    bank_detail_obj = bank_detail.get_multi_with_model(db, model=BankDetail, skip=skip, limit=limit)
     return bank_detail_obj
 
-@api_router.get("/bank_detail/{id}", response_model=schemas.BankDetail,  tags=["Bank Detail"])
+@api_router.get("/bank_detail/{id}", response_model=schemas.BankDetailResponse,  tags=["Bank Detail"])
 def read_bank_detail(
     *,
     db: Session = Depends(get_db),
     id: str,
     
-) -> BankDetail:
-    bank_detail_obj = bank_detail.get(db=db, id=id)
+) -> schemas.BankDetailResponse:
+    bank_detail_obj = bank_detail.get_detailed(db=db, model=BankDetail, id=id)
     if not bank_detail_obj:
         raise HTTPException(status_code=404, detail="bank_detail not found")
     return bank_detail_obj
@@ -1148,24 +1138,24 @@ def create_academic(
     
     return academic.create(db=db, obj_in=academic_in)
 
-@api_router.get("/staff_academic/", response_model=List[schemas.Academic],  tags=["Academics"])
+@api_router.get("/staff_academic/", response_model=List[schemas.AcademicResponse],  tags=["Academics"])
 def read_all_staff_academic(
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
     
-) -> List[Academic]:
-    academic_obj = academic.get_multi(db, skip=skip, limit=limit)
+) -> List[schemas.AcademicResponse]:
+    academic_obj = academic.get_multi_with_model(db, model=Academic, skip=skip, limit=limit)
     return academic_obj
 
-@api_router.get("/academic/{id}", response_model=schemas.Academic,  tags=["Academics"])
+@api_router.get("/academic/{id}", response_model=schemas.AcademicResponse,  tags=["Academics"])
 def read_academic(
     *,
     db: Session = Depends(get_db),
     id: str,
     
-) -> Academic:
-    academic_obj = academic.get(db=db, id=id)
+) -> schemas.AcademicResponse:
+    academic_obj = academic.get_detailed(db=db, model=Academic, id=id)
     if not academic_obj:
         raise HTTPException(status_code=404, detail="academic not found")
     return academic_obj
@@ -1221,24 +1211,24 @@ def create_professional(
     
     return professional.create(db=db, obj_in=professional_in)
 
-@api_router.get("/staff_professional/", response_model=List[schemas.Professional],  tags=["Professional Details"])
+@api_router.get("/staff_professional/", response_model=List[schemas.ProfessionalResponse],  tags=["Professional Details"])
 def read_all_staff_professional(
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
     
-) -> List[Professional]:
-    professional_obj = professional.get_multi(db, skip=skip, limit=limit)
+) -> List[schemas.ProfessionalResponse]:
+    professional_obj = professional.get_multi_with_model(db, model=Professional, skip=skip, limit=limit)
     return professional_obj
 
-@api_router.get("/professional/{id}", response_model=schemas.Professional,  tags=["Professional Details"])
+@api_router.get("/professional/{id}", response_model=schemas.ProfessionalResponse,  tags=["Professional Details"])
 def read_professional(
     *,
     db: Session = Depends(get_db),
     id: str,
     
-) -> Professional:
-    professional_obj = professional.get(db=db, id=id)
+) -> schemas.ProfessionalResponse:
+    professional_obj = professional.get_detailed(db=db, model=Professional, id=id)
     if not professional_obj:
         raise HTTPException(status_code=404, detail="professional not found")
     return professional_obj
@@ -1301,27 +1291,31 @@ def create_qualification(
     
     return qualification.create(db=db, obj_in=qualification_in)
 
-@api_router.get("/staff_qualification/", response_model=List[schemas.Qualification],  tags=["Qualification"])
+@api_router.get("/staff_qualification/", response_model=List[schemas.QualificationResponse],  tags=["Qualification"])
 def read_all_staff_qualification(
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
     
-) -> List[Qualification]:
-    qualification_obj = qualification.get_multi(db, skip=skip, limit=limit)
+) -> List[schemas.QualificationResponse]:
+    qualification_obj = qualification.get_multi_with_model(db, model=Qualification, skip=skip, limit=limit)
     return qualification_obj
 
-@api_router.get("/qualification/{id}", response_model=schemas.Qualification,  tags=["Qualification"])
+@api_router.get("/qualification/{id}", response_model=schemas.QualificationResponse,  tags=["Qualification"])
 def read_qualification(
     *,
     db: Session = Depends(get_db),
     id: str,
     
-) -> Qualification:
-    qualification_obj = qualification.get(db=db, id=id)
+) -> schemas.QualificationResponse:
+    # qualification_obj = qualification.get(db=db, id=id)
+    qualification_obj = qualification.get_detailed(db=db, model=Qualification, id=id)
+
     if not qualification_obj:
         raise HTTPException(status_code=404, detail="qualification not found")
-    return qualification_obj
+   
+    return qualification_obj #profile
+
 
 @api_router.put("/qualification/{id}", response_model=schemas.Qualification,  tags=["Qualification"])
 def update_qualification(
@@ -1373,14 +1367,14 @@ def create_employment_history(
     
     return employment_history.create(db=db, obj_in=employment_history_in)
 
-@api_router.get("/staff_employment_history/", response_model=List[schemas.EmploymentHistory],  tags=["Employment History"])
+@api_router.get("/staff_employment_history/", response_model=List[schemas.EmploymentHistoryResponse],  tags=["Employment History"])
 def read_all_staff_employment_history(
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
     
-) -> List[EmploymentHistory]:
-    employment_history_obj = employment_history.get_multi(db, skip=skip, limit=limit)
+) -> List[schemas.EmploymentHistoryResponse]:
+    employment_history_obj = employment_history.get_multi_with_model(db, model=EmploymentHistory, skip=skip, limit=limit)
     return employment_history_obj
 
 @api_router.get("/employment_history/{id}", response_model=schemas.EmploymentHistory,  tags=["Employment History"])
@@ -1389,8 +1383,8 @@ def read_employment_history(
     db: Session = Depends(get_db),
     id: str,
     
-) -> EmploymentHistory:
-    employment_history_obj = employment_history.get(db=db, id=id)
+) -> schemas.EmploymentHistoryResponse:
+    employment_history_obj = employment_history.get_detailed(db=db, model=EmploymentHistory, id=id)
     if not employment_history_obj:
         raise HTTPException(status_code=404, detail="employment_history not found")
     return employment_history_obj
@@ -1459,24 +1453,24 @@ def create_family_info(
     
     return family_info.create(db=db, obj_in=family_info_in)
 
-@api_router.get("/staff_family_info/", response_model=List[schemas.FamilyInfo],  tags=["Family Info"])
+@api_router.get("/staff_family_info/", response_model=List[schemas.FamilyInfoResponse],  tags=["Family Info"])
 def read_all_staff_family_info(
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
     
-) -> List[FamilyInfo]:
-    family_info_obj = family_info.get_multi(db, skip=skip, limit=limit)
+) -> List[schemas.FamilyInfoResponse]:
+    family_info_obj = family_info.get_multi_with_model(db, model=FamilyInfo, skip=skip, limit=limit)
     return family_info_obj
 
-@api_router.get("/family_info/{id}", response_model=schemas.FamilyInfo,  tags=["Family Info"])
+@api_router.get("/family_info/{id}", response_model=schemas.FamilyInfoResponse,  tags=["Family Info"])
 def read_family_info(
     *,
     db: Session = Depends(get_db),
     id: str,
     
-) -> FamilyInfo:
-    family_info_obj = family_info.get(db=db, id=id)
+) -> schemas.FamilyInfoResponse:
+    family_info_obj = family_info.get_detailed(db=db, model=FamilyInfo, id=id)
     if not family_info_obj:
         raise HTTPException(status_code=404, detail="family_info not found")
     return family_info_obj
@@ -1543,24 +1537,24 @@ def create_emergency_contact(
     
     return emergency_contact.create(db=db, obj_in=emergency_contact_in)
 
-@api_router.get("/staff_emergency_contact/", response_model=List[schemas.EmergencyContact],  tags=["Emergency Contact"])
+@api_router.get("/staff_emergency_contact/", response_model=List[schemas.EmergencyContactResponse],  tags=["Emergency Contact"])
 def read_all_staff_emergency_contact(
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
     
-) -> List[EmergencyContact]:
-    emergency_contact_obj = emergency_contact.get_multi(db, skip=skip, limit=limit)
+) -> List[schemas.EmergencyContactResponse]:
+    emergency_contact_obj = emergency_contact.get_multi_with_model(db, model=EmergencyContact, skip=skip, limit=limit)
     return emergency_contact_obj
 
-@api_router.get("/emergency_contact/{id}", response_model=schemas.EmergencyContact,  tags=["Emergency Contact"])
+@api_router.get("/emergency_contact/{id}", response_model=schemas.EmergencyContactResponse,  tags=["Emergency Contact"])
 def read_emergency_contact(
     *,
     db: Session = Depends(get_db),
     id: str,
     
-) -> EmergencyContact:
-    emergency_contact_obj = emergency_contact.get(db=db, id=id)
+) -> schemas.EmergencyContactResponse:
+    emergency_contact_obj = emergency_contact.get_detailed(db=db, model=EmergencyContact, id=id)
     if not emergency_contact_obj:
         raise HTTPException(status_code=404, detail="emergency_contact not found")
     return emergency_contact_obj
@@ -1624,24 +1618,24 @@ def create_next_of_kin(
     
     return next_of_kin.create(db=db, obj_in=next_of_kin_in)
 
-@api_router.get("/staff_next_of_kin/", response_model=List[schemas.NextOfKin],  tags=["Next Of Kin"])
+@api_router.get("/staff_next_of_kin/", response_model=List[schemas.NextOfKinResponse],  tags=["Next Of Kin"])
 def read_all_staff_next_of_kin(
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
     
-) -> List[NextOfKin]:
-    next_of_kin_obj = next_of_kin.get_multi(db, skip=skip, limit=limit)
+) -> List[schemas.NextOfKinResponse]:
+    next_of_kin_obj = next_of_kin.get_multi_with_model(db, model=NextOfKin, skip=skip, limit=limit)
     return next_of_kin_obj
 
-@api_router.get("/next_of_kin/{id}", response_model=schemas.NextOfKin,  tags=["Next Of Kin"])
+@api_router.get("/next_of_kin/{id}", response_model=schemas.NextOfKinResponse,  tags=["Next Of Kin"])
 def read_next_of_kin(
     *,
     db: Session = Depends(get_db),
     id: str,
     
-) -> NextOfKin:
-    next_of_kin_obj = next_of_kin.get(db=db, id=id)
+) -> schemas.NextOfKinResponse:
+    next_of_kin_obj = next_of_kin.get_detailed(db=db, model=NextOfKin, id=id)
     if not next_of_kin_obj:
         raise HTTPException(status_code=404, detail="next_of_kin not found")
     return next_of_kin_obj
@@ -1684,6 +1678,8 @@ def delete_next_of_kin(
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 import logging
 
+#from .history.app.schemas_20240814124601 import QualificationResponse
+
 logger = logging.getLogger(__name__)
 
 @api_router.get("/download-form/{bio_data_id}", response_description="Generate PDF for BioData", tags=["Download Records"])
@@ -1721,14 +1717,30 @@ def generate_records_data_pdf(bio_data_id: str, db: Session = Depends(get_db)):
     if not next_of_kins:
         raise HTTPException(status_code=404, detail="Next of Kin not found")
 
+    # Fetch related names for employment details
+    grade_name = db.query(Grade.name).filter(Grade.id == bio_data.employment_detail.grade_on_current_appointment_id).scalar()
+    directorate_name = db.query(Directorate.name).filter(Directorate.id == bio_data.employment_detail.directorate_id).scalar()
+    employment_type_name = db.query(EmploymentType.name).filter(EmploymentType.id == bio_data.employment_detail.employment_type_id).scalar()
+    staff_category_name = db.query(StaffCategory.category).filter(StaffCategory.id == bio_data.employment_detail.staff_category_id).scalar()
     
     # Create temporary file path
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
         file_path = tmp_file.name
         #file_path = f"/uploads/images/bio_data_{bio_data_id}.pdf"
     try:
-        path = generate_pdf_for_bio_data(bio_data, trademark, declarations, academics, professionals,history_of_employment ,emergency_contacts, next_of_kins, file_path)
+        #path = generate_pdf_for_bio_data(bio_data, trademark, declarations, academics, professionals,history_of_employment ,emergency_contacts, next_of_kins, file_path)
+        print("biodata:: ",bio_data)
+        path = generate_pdf_for_bio_data(
+            bio_data, trademark, declarations, academics, professionals, 
+            history_of_employment, emergency_contacts, next_of_kins, 
+            grade_name, directorate_name, employment_type_name, staff_category_name, 
+            file_path
+        )
         print("path: ", path)
+        if not path or not os.path.exists(path):
+            raise HTTPException(status_code=404, detail="Failed to generate PDF file")
+        
+        print("file_path in api: ", file_path)
         return FileResponse(path, filename=f"bio_data_{bio_data_id}.pdf", media_type='application/pdf')
     except FileNotFoundError as e:
         logger.error(f"File not found error: {e}")

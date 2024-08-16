@@ -65,6 +65,8 @@ class Directorate(BaseModel):
     centre_id = Column(UUID(as_uuid=True), ForeignKey('centre.id', ondelete='SET NULL', onupdate='CASCADE'), nullable=False)
     employment_details = relationship('EmploymentDetail', backref='directorate', cascade='all, delete-orphan')
 
+    locale = relationship("Centre")
+
 
 class Grade(BaseModel):
     __tablename__ = "grade"
@@ -84,6 +86,7 @@ class EmploymentType(BaseModel):
     grade_id = Column(UUID(as_uuid=True), ForeignKey('grade.id', ondelete='SET NULL', onupdate='CASCADE'), nullable=False)
     employment_details = relationship('EmploymentDetail', backref='employment_type', cascade='all, delete-orphan')
 
+    salary_grade = relationship("Grade")
 
 class StaffCategory(BaseModel):
     __tablename__ = "staff_category"
@@ -138,6 +141,8 @@ class User(BaseModel):
     is_active = Column(Boolean, default=True)
     role = Column(String, default="user")
 
+    bio_row = relationship("BioData")
+
 
 class EmploymentDetail(BaseModel):
     __tablename__ = "employment_details"
@@ -151,6 +156,13 @@ class EmploymentDetail(BaseModel):
     employment_type_id = Column(UUID(as_uuid=True), ForeignKey('employment_type.id', ondelete='SET NULL', onupdate='CASCADE'), nullable=False)
     staff_category_id = Column(UUID(as_uuid=True), ForeignKey('staff_category.id', ondelete='SET NULL', onupdate='CASCADE'), nullable=False)
 
+    bio_row = relationship("BioData")
+    current_grade= relationship("Grade")
+    department = relationship("Directorate")
+    emp_type = relationship("EmploymentType")
+    category=relationship("StaffCategory")
+
+
 
 class BankDetail(BaseModel):
     __tablename__ = "bank_details"
@@ -161,6 +173,8 @@ class BankDetail(BaseModel):
     account_number = Column(String, unique=True, nullable=False)
     account_type = Column(String, nullable=False)
     account_status = Column(String, nullable=True)
+
+    bio_row = relationship("BioData")
 
 
 class Academic(BaseModel):
@@ -178,6 +192,8 @@ class Academic(BaseModel):
             raise ValueError(f"Year must be between {min_year} and {current_year}")
         return year
 
+    bio_row = relationship("BioData")
+
 
 class Professional(BaseModel):
     __tablename__ = "professional"
@@ -193,6 +209,8 @@ class Professional(BaseModel):
         if year.year < min_year or year.year > current_year:
             raise ValueError(f"Year must be between {min_year} and {current_year}")
         return year
+    
+    bio_row = relationship("BioData")
 
 
 class Qualification(BaseModel):
@@ -201,6 +219,10 @@ class Qualification(BaseModel):
     bio_row_id = Column(UUID(as_uuid=True), ForeignKey('bio_data.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     academic_qualification_id = Column(UUID(as_uuid=True), ForeignKey('academics.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     professional_qualification_id = Column(UUID(as_uuid=True), ForeignKey('professional.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
+
+    bio_row = relationship("BioData")
+    academic_qualification = relationship("Academic")
+    professional_qualification = relationship("Professional")
 
 
 class EmploymentHistory(BaseModel):
@@ -211,6 +233,8 @@ class EmploymentHistory(BaseModel):
     institution = Column(String, nullable=False)
     position = Column(String, nullable=False)
     end_date = Column(Date)
+
+    bio_row = relationship("BioData")
 
 
 class FamilyInfo(BaseModel):
@@ -232,6 +256,8 @@ class FamilyInfo(BaseModel):
     children_name = Column(String, nullable=True)
     children_dob = Column(String, nullable=True)
 
+    bio_row = relationship("BioData")
+
 
 class EmergencyContact(BaseModel):
     __tablename__ = "emergency_contacts"
@@ -241,6 +267,8 @@ class EmergencyContact(BaseModel):
     phone_number = Column(String, unique=True)
     address = Column(String)
     email = Column(String)
+
+    bio_row = relationship("BioData")
 
 
 class NextOfKin(BaseModel):
@@ -259,6 +287,8 @@ class NextOfKin(BaseModel):
     phone = Column(String, unique=True, nullable=False)
     email = Column(String, unique=True, nullable=False)
 
+    bio_row = relationship("BioData")
+
 
 class Declaration(BaseModel):
     __tablename__ = "declaration"
@@ -268,6 +298,8 @@ class Declaration(BaseModel):
     reps_signature = Column(String, unique=True,nullable=True)
     employees_signature = Column(String, unique=True, nullable=True)
     declaration_date = Column(Date, default=func.now())
+
+    bio_row = relationship("BioData")
 
 class Trademark(BaseModel):
     __tablename__ = "trademark"

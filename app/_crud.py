@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, contains_eager, aliased
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
 from sqlalchemy.ext.declarative import DeclarativeMeta
@@ -35,9 +35,54 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     def get(self, db: Session, id: str) -> Optional[ModelType]:
         return db.query(self.model).filter(self.model.id == id).first()
+    
+    def get_detailed(self, db:Session, model, id) -> Optional[ModelType]:
+        try:
+            # Start with the base query
+            query = db.query(model)
+            
+            # Loop through relationships and use class-bound attributes directly
+            for relationship in model.__mapper__.relationships:
+                # Get the class-bound attribute
+                relationship_attr = getattr(model, relationship.key)
+                query = query.options(joinedload(relationship_attr))
+
+            # Fetch the record by ID
+            return query.filter(model.id == id).first()
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+
 
     def get_multi(self, db: Session, skip: int = 0, limit: int = 100) -> List[ModelType]:
         return db.query(self.model).offset(skip).limit(limit).all()
+    
+    # def get_multi_with_join(self, db: Session, skip: int = 0, limit: int = 10) -> List[ModelType]:
+    #     query = db.query(self.model)
+    #     # Auto join related tables using joinedload
+    #     for rel in inspect(self.model).relationships:
+    #         query = query.options(joinedload(rel.key))
+    #     return query.offset(skip).limit(limit).all()
+    
+
+    def get_multi_with_model(self, db: Session, model: Type[ModelType], skip: int = 0, limit: int = 100) -> List[ModelType]:
+        try:
+            # Start with the base query
+            query = db.query(model)
+            
+            # Loop through relationships and use class-bound attributes directly
+            for relationship in model.__mapper__.relationships:
+                # Get the class-bound attribute
+                relationship_attr = getattr(model, relationship.key)
+                query = query.options(joinedload(relationship_attr))
+
+            # Fetch multiple records
+            return query.offset(skip).limit(limit).all()
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+        
+
 
     def get_by_field(self, db: Session, field: str, value: Any) -> Optional[ModelType]:
         obj = db.query(self.model).filter(getattr(self.model, field) == value).first()
