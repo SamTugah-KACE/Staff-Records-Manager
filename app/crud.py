@@ -1112,26 +1112,36 @@ def generate_pdf_for_bio_data(bio_data, trademark, declarations, academics, prof
                 pdf.cell(200, 10, txt="I. Declarations", ln=True, align='L')
 
                 signatures_dir = 'downloads/signatures'
-                signatures_dir = 'uploads/images'
+                #signatures_dir = 'uploads/images'
                 os.makedirs(signatures_dir, exist_ok=True)
 
                 for declaration in declarations:
                     if declaration.reps_signature and   declaration.reps_signature.strip() != "base64_representation_of_reps_signature_image":
                         reps_signature_img_path = os.path.join(signatures_dir, 'reps_signature.png')
-                        with Image.open(BytesIO(base64.b64decode(declaration.reps_signature))) as img:
+                       
+                        print("reps_signature prep. ", declaration.reps_signature)
+                        base64str = image_to_base64(declaration.reps_signature)
+                        base64_string = add_padding_to_base64(base64str)
+                        #print("base64String rep's signature padding: ", base64_string)
+                        with Image.open(declaration.reps_signature) as img:
+                            print("in with: ", img)
                             img.resize((100, 100), Image.LANCZOS).save(reps_signature_img_path)
                         
                         pdf.image(reps_signature_img_path, x=10, y=pdf.get_y(), w=40, h=20)
+                        print("rep's signature ready!")
                     else:
                         add_image_or_placeholder(None,x=10, y=pdf.get_y(), w=40, h=20, placeholder_text="Rep's Signature: ")
                     
 
                     if declaration.employees_signature and  declaration.employees_signature.strip() != "base64_representation_of_employees_signature_image":
                         employees_signature_img_path = os.path.join(signatures_dir, 'employees_signature.png')
-                        with Image.open(BytesIO(base64.b64decode(declaration.employees_signature))) as img:
+                        base64_string = add_padding_to_base64(declaration.employees_signature)
+                        print("base64String employee's signature padding: ", base64_string)
+                        with Image.open(declaration.employees_signature) as img:
                             img.resize((100, 100), Image.LANCZOS).save(employees_signature_img_path)
                      
                         pdf.image(employees_signature_img_path, x=165, y=pdf.get_y(), w=40, h=20)
+                        print("employee's signature ready!")
                     else:
                         add_image_or_placeholder(None, x=165, y=pdf.get_y(), w=40, h=20, placeholder_text="Employee's Signature: ")
                     

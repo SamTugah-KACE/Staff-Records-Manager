@@ -26,6 +26,18 @@ class Settings:
     POSTGRES_SERVER: str = os.getenv("POSTGRES_SERVER", "dpg-cqrmj3ggph6c73a1u4k0-a")
     POSTGRES_PORT: str = os.getenv("POSTGRES_PORT", 5432)
     POSTGRES_DB: str = os.getenv("POSTGRES_DB", "staff_records_db")
+    
+    # POSTGRES_USER: str = os.getenv("POSTGRES_USER", "postgres")
+    # POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "password")
+    # POSTGRES_SERVER: str = os.getenv("POSTGRES_SERVER", "localhost")
+    # POSTGRES_PORT: str = os.getenv("POSTGRES_PORT", 5432)
+    # POSTGRES_DB: str = os.getenv("POSTGRES_DB", "staff_records_db")
+
+
+
+
+
+
     # POSTGRES_USER: str = os.getenv("POSTGRES_USER", "sam_tugah_kace")
     # POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "vjIDmbKK2KNpFm8h64JgK7jKW9bTpxP5")
     # POSTGRES_SERVER: str = os.getenv("POSTGRES_SERVER", "dpg-cqrmj3ggph6c73a1u4k0-a")
