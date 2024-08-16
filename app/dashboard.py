@@ -23,7 +23,7 @@ class Center(ModelView, model=Centre):
     column_list = [Centre.id, Centre.location, Centre.region, Centre.created_at]
 
 class Directorate(ModelView, model=Directorate):
-    column_list = [Directorate.id, Directorate.locale.location, Directorate.name, Directorate.created_at]
+    column_list = [Directorate.id, Directorate.centre_id, Directorate.name, Directorate.created_at]
 
 class Grade(ModelView, model=Grade):
     column_list = [Grade.id, Grade.name, Grade.min_sal, Grade.max_sal, Grade.created_at]
