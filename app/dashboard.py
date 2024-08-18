@@ -1,7 +1,8 @@
 from models import *
 from sqladmin import ModelView
 from sqlalchemy import Column
-
+from wtforms import FileField
+from fastapi import UploadFile, File
 
 # from fastapi_storages import FileSystemStorage
 # from fastapi_storages.integrations.sqlalchemy import FileType
@@ -17,6 +18,27 @@ all_models = [
 ]
  
 class Trademark(ModelView, model=Trademark):
+    form_overrides = {
+        'left_logo': FileField,
+        'right_logo': FileField
+    }
+
+    form_args = {
+        'left_logo': {
+            'label': 'Upload File',
+            'validators': [],
+            'render_kw': {
+                'multiple': False
+            }},
+        'right_logo': {
+            'label': 'Upload File',
+            'validators': [],
+            'render_kw': {
+                'multiple': False
+            }
+        }
+        
+    }
     column_list = [Trademark.id, Trademark.name, Trademark.left_logo, Trademark.right_logo, Trademark.created_at]
 
 class Center(ModelView, model=Centre):
@@ -36,6 +58,20 @@ class StaffCategory(ModelView, model=StaffCategory):
 
 
 class Staff(ModelView, model=BioData):
+    form_overrides = {
+        'image_col': FileField
+    }
+
+    form_args = {
+        'image_col': {
+            'label': 'Upload File',
+            'validators': [],
+            'render_kw': {
+                'multiple': False
+            }}
+       
+        
+    }
     column_list = [BioData.id, BioData.title, BioData.first_name, BioData.surname, BioData.active_phone_number, BioData.email]
 
 class EmploymentDetail(ModelView, model=EmploymentDetail):
@@ -69,6 +105,27 @@ class EmploymentHistory(ModelView, model=EmploymentHistory):
     column_list = [EmploymentHistory.id, EmploymentHistory.bio_row_id, EmploymentHistory.date_employed, EmploymentHistory.institution, EmploymentHistory.position, EmploymentHistory.end_date, EmploymentHistory.created_at]
 
 class Declaration(ModelView, model=Declaration):
+    form_overrides = {
+        'reps_signature': FileField,
+        'employees_signature': FileField
+    }
+
+    form_args = {
+        'reps_signature': {
+            'label': 'Upload File',
+            'validators': [],
+            'render_kw': {
+                'multiple': False
+            }},
+        'employees_signature': {
+            'label': 'Upload File',
+            'validators': [],
+            'render_kw': {
+                'multiple': False
+            }
+        }
+        
+    }
     column_list = [Declaration.id, Declaration.bio_row_id, Declaration.status, Declaration.employees_signature, Declaration.reps_signature, Declaration.declaration_date, Declaration.created_at]
 
 

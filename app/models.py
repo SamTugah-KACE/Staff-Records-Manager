@@ -116,7 +116,7 @@ class BioData(BaseModel):
     ghana_card_number = Column(String,  unique=True, nullable=False)
     is_physically_challenged = Column(Boolean, nullable=False)
     disability = Column(String, nullable=True)
-    image_col = Column(String, unique=True, nullable=True)
+    image_col = Column(String, unique=True, nullable=True)  #accept image file upload and store the file path to the copied directory
     user = relationship('User', backref='bio_data', uselist=False, cascade='all, delete-orphan')
     employment_detail = relationship('EmploymentDetail', backref='bio_data', uselist=False, cascade='all, delete-orphan')
     bank_details = relationship('BankDetail', backref='bio_data', cascade='all, delete-orphan')
@@ -295,8 +295,8 @@ class Declaration(BaseModel):
 
     bio_row_id = Column(UUID(as_uuid=True), ForeignKey('bio_data.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     status = Column(Boolean, default=False)
-    reps_signature = Column(String, unique=True,nullable=True)
-    employees_signature = Column(String, unique=True, nullable=True)
+    reps_signature = Column(String, unique=True,nullable=True)  #accept image file upload (supervisor's signature image) and store the file path to the copied directory
+    employees_signature = Column(String, unique=True, nullable=True) #accept image file upload (employee's signature image) and store the file path to the copied directory
     declaration_date = Column(Date, default=func.now())
 
     bio_row = relationship("BioData")
@@ -305,7 +305,7 @@ class Trademark(BaseModel):
     __tablename__ = "trademark"
 
     name = Column(String, unique=True, nullable=False)
-    left_logo = Column(String, nullable=True)
-    right_logo = Column(String, nullable=True)
+    left_logo = Column(String, nullable=True) #accept image file upload and store the file path to the copied directory
+    right_logo = Column(String, nullable=True) #accept image file upload and store the file path to the copied directory
     
 
