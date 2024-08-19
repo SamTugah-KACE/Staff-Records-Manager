@@ -39,16 +39,19 @@ class Trademark(ModelView, model=Trademark):
                 'multiple': False
             }
         }
-        
     }
 
     def create_model(self, form):
         # Extract form data
         form_data = form.data
-        files = {
-            "left_logo": request.files.get("left_logo"),
-            "right_logo": request.files.get("right_logo")
-        }
+        left_logo = request.files.get("left_logo")
+        right_logo = request.files.get("right_logo")
+
+        files = {}
+        if left_logo:
+            files['left_logo'] = (left_logo.filename, left_logo.stream, left_logo.mimetype)
+        if right_logo:
+            files['right_logo'] = (right_logo.filename, right_logo.stream, right_logo.mimetype)
 
         # Prepare the payload for the POST request
         payload = {
@@ -63,22 +66,23 @@ class Trademark(ModelView, model=Trademark):
             data=payload,
             files=files
         )
-
         if response.status_code == 201:
-            # Handle successful creation
             return True
         else:
-            # Handle errors
             form.errors['api_error'] = response.json().get('detail', 'Unknown error')
             return False
 
     def update_model(self, form, model):
         # Extract form data
         form_data = form.data
-        files = {
-            "left_logo": request.files.get("left_logo"),
-            "right_logo": request.files.get("right_logo")
-        }
+        left_logo = request.files.get("left_logo")
+        right_logo = request.files.get("right_logo")
+
+        files = {}
+        if left_logo:
+            files['left_logo'] = (left_logo.filename, left_logo.stream, left_logo.mimetype)
+        if right_logo:
+            files['right_logo'] = (right_logo.filename, right_logo.stream, right_logo.mimetype)
 
         # Prepare the payload for the PUT request
         payload = {
@@ -95,10 +99,8 @@ class Trademark(ModelView, model=Trademark):
         )
 
         if response.status_code == 200:
-            # Handle successful update
             return True
         else:
-            # Handle errors
             form.errors['api_error'] = response.json().get('detail', 'Unknown error')
             return False
 
