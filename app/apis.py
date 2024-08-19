@@ -58,7 +58,7 @@ bio_data_related_models  = [
 ]
 
 
-api_router = APIRouter(prefix="/api")
+api_router = APIRouter()
 
 
 @api_router.get("/", response_class=HTMLResponse)

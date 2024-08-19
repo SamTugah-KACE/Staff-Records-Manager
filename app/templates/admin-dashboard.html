@@ -17,12 +17,21 @@
         }
         /* Add more styles as needed */
     </style>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+
+        <style>
+          .center {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+          }
+        </style>
 </head>
 <body>
     <h1>Admin Dashboard</h1>
 
 
-    <button type="submit"><a href="http://localhost:8000/api/user/login-form"><i style="font-weight:bold;color:blue;float: right;">Logout</i></a></button>
+    <button type="submit"><a href="http://localhost:8000/user/login-form"><i style="font-weight:bold;color:blue;float: right;">Logout</i></a></button>
     
     <br><br>
 
@@ -34,12 +43,13 @@
         <button class="tablinks" onclick="openTab(event, 'staff_category')">Staff Category</button>
         <button class="tablinks" onclick="openTab(event, 'user')">User</button>
         <button class="tablinks" onclick="openTab(event, 'declaration')">Declaration</button>
+        <button class="tablinks" onclick="openTab(event, 'biodata')">User Bio Data</button>
     </div>
 
     <!-- Centre Tab -->
     <div id="centre" class="tab">
         <h2>Centre</h2>
-        <form action="http://localhost:8000/api/centres" method="POST">
+        <form action="http://localhost:8000/centres" method="POST">
             <label for="location">Location:</label><br>
             <input type="text" id="location" name="location" required><br>
             <label for="region">Region:</label><br>
@@ -52,7 +62,7 @@
     <!-- Directorate Tab -->
     <div id="directorate" class="tab">
         <h2>Directorate</h2>
-        <form action="http://localhost:8000/api/directorate" method="POST">
+        <form action="http://localhost:8000/directorate" method="POST">
             <label for="name">Name:</label><br>
             <input type="text" id="name" name="name" required><br>
             <label for="centre_id">Centre ID:</label><br>
@@ -69,7 +79,7 @@
     <!-- Grade Tab -->
     <div id="grade" class="tab">
         <h2>Grade</h2>
-        <form action="http://localhost:8000/api/grade" method="POST">
+        <form action="http://localhost:8000/grade" method="POST">
             <label for="name">Name:</label><br>
             <input type="text" id="name" name="name" required><br>
             <label for="min_sal">Minimum Salary:</label><br>
@@ -84,7 +94,7 @@
     <!-- Employment Type Tab -->
     <div id="employment_type" class="tab">
         <h2>Employment Type</h2>
-        <form action="http://localhost:8000/api/employment_type" method="POST">
+        <form action="http://localhost:8000/employment_type" method="POST">
             <label for="name">Name:</label><br>
             <input type="text" id="name" name="name" required><br>
             <label for="description">Description:</label><br>
@@ -103,7 +113,7 @@
     <!-- Staff Category Tab -->
     <div id="staff_category" class="tab">
         <h2>Staff Category</h2>
-        <form action="http://localhost:8000/api/staff_category" method="POST">
+        <form action="http://localhost:8000/staff_category" method="POST">
             <label for="category">Category:</label><br>
             <input type="text" id="category" name="category" required><br>
             <button type="submit">Create Staff Category</button>
@@ -114,7 +124,7 @@
     <!-- User Tab -->
     <div id="user" class="tab">
         <h2>User</h2>
-        <form action="http://localhost:8000/api/user" method="POST">
+        <form action="http://localhost:8000/user" method="POST">
             <label for="bio_row_id">Select BioData:</label><br>
             <select id="bio_row_id" name="bio_row_id" required><br>
                 {% for biodata in biodatas %}
@@ -139,7 +149,7 @@
         <h2>Declaration</h2>
         <!-- Display admin-entered details here -->
         <!-- BioData Form -->
-<form action="http://localhost:8000/api/declaration" method="POST" enctype="multipart/form-data">
+<form action="http://localhost:8000/declaration" method="POST" enctype="multipart/form-data">
     <label for="bio_row_id">BioData Row ID:</label><br>
     <input type="text" id="bio_row_id" name="bio_row_id" value="{{bio_row_id}}" readonly required><br><br>
     <label for="declaration_date">Declaration Date:</label><br>
@@ -149,6 +159,285 @@
     <!-- Add other fields as per your model -->
     <button type="submit">Create Declaration</button>
 </form>
+
+    </div>
+
+    <div id="biodata" class="tab">
+        <h2>User Bio Data</h2>
+        <!-- Display admin-entered details here -->
+        <!-- BioData Form -->
+
+        <div class="container">
+
+
+      
+            <!-- <marquee behavior="" direction="" style="font-weight:bold;color:blue;">Welcome to Women-in-Tech Event Conference</marquee> -->
+              <div class="row justify-content-center">
+                  <div class="card shadow-lg my-5">
+                    <div class="card-body p-0">
+                      <div class="row">
+                          <div class="p-5">
+                            <div class="text-center">
+                              <h4 class="text-primary">BIODATA REGISTRATION FORM</h4>
+                            </div>
+                            <form class="user" action="http://localhost:8000/bio_data" method="POST" enctype="multipart/form-data">
+      
+      
+                              <div class="row">
+                                  <div class="col">
+                          <div class="form-group">
+                              <label>TITLE</label>
+                          <input type="text" name="title" id="name" class="form-control form-control-user" autocomplete="true" placeholder="Enter Title">	
+                          <span id="error_name" style="color: red;"></span>
+                              </div>
+                          </div>
+      
+                              <div class="col">
+                              <div class="form-group">
+                                  <label>FIRST NAME</label>
+                              <input type="text" name="first_name" id="name" class="form-control form-control-user" autocomplete="true" placeholder="Enter First Name">	
+                              <span id="error_name" style="color: red;"></span>
+                                  </div>
+      
+                              </div>
+                              </div>
+      
+      
+      
+      
+                              <div class="row">
+                                  <div class="col">
+                          <div class="form-group">
+                              <label>OTHER NAMES</label>
+                          <input type="text" name="other_names" id="name" class="form-control form-control-user" autocomplete="true" placeholder="Enter Other Names">	
+                          <span id="error_name" style="color: red;"></span>
+                              </div>
+                          </div>
+      
+                              <div class="col">
+                              <div class="form-group">
+                                  <label>SURNAME</label>
+                              <input type="text" name="surname" id="name" class="form-control form-control-user" autocomplete="true" placeholder="Enter Surname">	
+                              <span id="error_name" style="color: red;"></span>
+                                  </div>
+      
+                              </div>
+                              </div>
+      
+      
+      
+                              <div class="row">
+                                  <div class="col">
+                          <div class="form-group">
+                              <label>PREVIUOS NAME</label>
+                          <input type="text" name="previous_name" id="name" class="form-control form-control-user" autocomplete="true" placeholder="Enter Previous Name">	
+                          <span id="error_name" style="color: red;"></span>
+                              </div>
+                          </div>
+      
+                              <div class="col">
+      
+                                  <div class="form-group">
+                                      <label>SELECT GENDER</label>
+                                      <select name="gender" class="form-control form-control-user" required>
+                                        <option>Select Gender</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Male">Male</option>
+                                      </select>
+                                      </div>
+                              </div>
+                              </div>
+      
+      
+      
+      
+      
+      
+                              <div class="row">
+                                  <div class="col">
+                          <div class="form-group">
+                              <label>DATE OF BIRTH</label>
+                          <input type="date" name="date_of_birth" id="name" class="form-control form-control-user" autocomplete="true" placeholder="Enter Date of Birth">	
+                          <span id="error_name" style="color: red;"></span>
+                              </div>
+                          </div>
+      
+                              <div class="col">
+                              <div class="form-group">
+                                  <label>NATIONALITY</label>
+                              <input type="text" name="nationality" id="name" class="form-control form-control-user" autocomplete="true" placeholder="Enter NATIONALITY">	
+                              <span id="error_name" style="color: red;"></span>
+                                  </div>
+      
+                              </div>
+                              </div>
+      
+      
+      
+      
+      
+                              <div class="row">
+                                  <div class="col">
+                          <div class="form-group">
+                              <label>HOMETOWN</label>
+                          <input type="text" name="hometown" id="name" class="form-control form-control-user" autocomplete="true" placeholder="Enter HOMETOWN">	
+                          <span id="error_name" style="color: red;"></span>
+                              </div>
+                          </div>
+      
+                              <div class="col">
+                              <div class="form-group">
+                                  <label>RELIGION</label>
+                              <input type="text" name="religion" id="name" class="form-control form-control-user" autocomplete="true" placeholder="Enter RELIGION">	
+                              <span id="error_name" style="color: red;"></span>
+                                  </div>
+      
+                              </div>
+                              </div>
+      
+      
+      
+      
+      
+      
+      
+                              <div class="row">
+                                  <div class="col">
+                          <div class="form-group">
+                              <label>RESIDENTIAL ADDRESS</label>
+                          <input type="text" name="residential_addr" id="name" class="form-control form-control-user" autocomplete="true" placeholder="Enter Residential Address">	
+                          <span id="error_name" style="color: red;"></span>
+                              </div>
+                          </div>
+      
+                              <div class="col">
+      
+                                  <div class="form-group">
+                                      <label>MARITAL STATUS</label>
+                                      <select name="marital_status" class="form-control form-control-user">
+                                        <option>Select Marital Status</option>
+                                        <option value="Single">Single</option>
+                                        <option value="Married">Married</option>
+                                        <option value="Divorced">Divorced</option>
+                                        <option value="Separated">Separated</option>
+                                        <option value="Widowed">Widowed</option>
+                                        <option value="Other">Other</option>
+                                      </select>
+                                      </div>
+                              </div>
+                              </div>
+      
+      
+      
+      
+      
+      
+      
+                              <div class="row">
+                                  <div class="col">
+                                      <div class="form-group">
+                                          <label>PHONE NUMBER</label>
+                                      <input type="text" name="active_phone_number" id="phone" class="form-control form-control-user" autocomplete="true" placeholder="0***********">	
+                                      <span id="error_phone" style="color: red;"></span>
+                                          </div>
+                          </div>
+      
+                              <div class="col">
+                                  <div class="form-group">
+                                      <label>EMAIL</label>
+                                  <input type="email" name="email" id="email" class="form-control form-control-user" autocomplete="true" placeholder="Enter Email">	
+                                  <span id="error_email" style="color: red;"></span>
+                                      </div>
+      
+                              </div>
+                              </div>
+      
+      
+      
+      
+      
+      
+      
+                                  
+                              <div class="row">
+                                  <div class="col">
+                          <div class="form-group">
+                              <label>SSNIT NUMBER</label>
+                          <input type="text" name="ssnit_number" id="name" class="form-control form-control-user" autocomplete="true" placeholder="Enter SSNIT NUMBER">	
+                          <span id="error_name" style="color: red;"></span>
+                              </div>
+                          </div>
+      
+                              <div class="col">
+                              <div class="form-group">
+                                  <label>GHANA CARD NUMBER</label>
+                              <input type="text" name="ghana_card_number" id="name" class="form-control form-control-user" autocomplete="true" placeholder="Enter GHANA CARD NUMBER">	
+                              <span id="error_name" style="color: red;"></span>
+                                  </div>
+      
+                              </div>
+                              </div>
+      
+      
+      
+      
+      
+      
+                              <div class="row">
+                                  <div class="col">
+                                      <div class="form-group">
+                                          <label>ARE YOU DISABILED</label>
+                                          <select name="is_physically_challenged" class="form-control form-control-user">
+                                            <option>Select answer</option>
+                                            <option value="True">True</option>
+                                            <option value="False">False</option>
+                                          </select>
+                                          </div>
+                          </div>
+      
+                              <div class="col">
+                              <div class="form-group">
+                                  <label>DISABILITY</label>
+                              <input type="text" name="disability" id="name" class="form-control form-control-user" autocomplete="true" placeholder="If yes, specify">	
+                              <span id="error_name" style="color: red;"></span>
+                                  </div>
+      
+                              </div>
+                              </div>
+              
+                                     
+      
+                              <div class="form-group">
+                                  <label>UPLOAD PROFILE PICTURE</label>
+                              <input type="file" name="file" id="file" class="form-control form-control-user" autocomplete="true" placeholder="If yes, specify">	
+                              <span id="error_name" style="color: red;"></span>
+                                  </div>
+      
+      
+              <button type="submit" value="Create" class="btn btn-primary text-center btn-user btn-block" onclick="return validate()">Create</button>
+                              <hr>
+           
+                          </form>
+                           
+                            
+                          </div>
+                        </div>
+                      </div>
+                  </div>
+              
+              
+              
+              </div>
+              
+      
+      
+      
+      
+      
+      
+      
+          </div>
+      
 
     </div>
 

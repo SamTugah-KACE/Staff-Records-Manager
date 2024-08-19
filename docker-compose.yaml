@@ -8,9 +8,9 @@ services:
       dockerfile: Dockerfile.postgres
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: staff_records_db
     volumes:
       - postgres-data:/var/lib/postgresql/data
     ports:
@@ -42,14 +42,14 @@ services:
     env_file:
       - ./app/Config/app.env
     environment:
-      DATABASE_URL: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_SERVER}:${POSTGRES_PORT}/${POSTGRES_DB}"
+      DATABASE_URL: "postgresql://postgres:password@staff-records:5432/staff_records_db"
     restart: always
     depends_on:
       - staff-records
     volumes:
       - ./app:/app
     ports:
-      - 8081:8080
+      - 8000:8000
     networks:
       - test_network
 

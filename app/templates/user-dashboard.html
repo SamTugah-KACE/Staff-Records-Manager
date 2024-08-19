@@ -21,7 +21,7 @@
 <body>
     <h1>User Dashboard</h1>
 
-    <button type="submit"><a href="http://localhost:8000/api/user/login-form"><i style="font-weight:bold;color:blue;float: right;">Logout</i></a></button>
+    <button type="submit"><a href="http://localhost:8000/user/login-form"><i style="font-weight:bold;color:blue;float: right;">Logout</i></a></button>
     
     <br><br>
 
@@ -77,7 +77,7 @@
         <!-- Employment Details Tab -->
         <div id="employment_details" class="tab">
             <h2>Employment Details</h2>
-           <form action="http://localhost:8000/api/employment_detail" method="post">
+           <form action="http://localhost:8000/employment_detail" method="post">
             <label for="bio_row_id">BioData Row ID:</label><br>
     <input type="text" id="bio_row_id" name="bio_row_id" value="{{bio_row_id}}" readonly required><br><br>
         <label for="date_of_first_appointment">Date of First Appointment:</label>
@@ -140,7 +140,7 @@
         <h2>Declaration</h2>
         <!-- Display admin-entered details here -->
         <!-- BioData Form -->
-<form action="http://localhost:8000/api/declaration" method="POST" enctype="multipart/form-data">
+<form action="http://localhost:8000/declaration" method="POST" enctype="multipart/form-data">
     <label for="bio_row_id">BioData Row ID:</label><br>
     <input type="text" id="bio_row_id" name="bio_row_id" value="{{bio_row_id}}" readonly required><br><br>
     <label for="declaration_date">Declaration Date:</label><br>

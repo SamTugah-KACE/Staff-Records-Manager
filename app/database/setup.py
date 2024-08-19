@@ -15,20 +15,22 @@ from Config.config import settings
 # USER = settings.USER
 # PORT = settings.DATABASE_PORT
  
-HOST = os.getenv("DATABASE_HOST")
-PORT = os.getenv("DATABASE_PORT")
-DBUSER = os.getenv("DB_USER")
-DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
-DATABASE = os.getenv("DATABASE")
 
 
-load_dotenv(dotenv_path='Config/app.env')
+
+#load_dotenv(dotenv_path='Config/app.env')
 
 
 
 async def execute_sql():
      ###using .env
-  
+    HOST = os.getenv("DATABASE_HOST")
+    PORT = os.getenv("DATABASE_PORT")
+    DBUSER = os.getenv("DB_USER")
+    DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
+    DATABASE = os.getenv("DATABASE")
+
+
     #DATABASE = settings.POSTGRES_DB
     print("DATABASE -> ",DATABASE)
     #DATABASE_PASSWORD = settings.POSTGRES_PASSWORD
@@ -78,20 +80,20 @@ async def check_and_create_database():
    
     try:
         print("\nin sec func")
-        print("user: ", DBUSER)
+        print("user: ", os.getenv("DB_USER"))
         #DATABASE = settings.POSTGRES_DB
-        print("DATABASE -> ",DATABASE)
+        print("DATABASE -> ",os.getenv("DATABASE"))
         #DATABASE_PASSWORD = settings.POSTGRES_PASSWORD
-        print("DATABASE_PASSWORD -> ",DATABASE_PASSWORD)
+        print("DATABASE_PASSWORD -> ",os.getenv("DATABASE_PASSWORD"))
         #HOST = settings.POSTGRES_SERVER
-        print("HOST -> ",HOST)
+        print("HOST -> ",os.getenv("DATABASE_HOST"))
         #USER = settings.POSTGRES_USER
-        print("USER -> ",DBUSER)
+        print("PORT -> ",os.getenv("DATABASE_PORT"))
         conn = await asyncpg.connect(
-            user=DBUSER,
-            password=DATABASE_PASSWORD,
-            host= HOST,
-            port=PORT
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DATABASE_PASSWORD"),
+            host= os.getenv("DATABASE_HOST"),
+            port=os.getenv("DATABASE_PORT")
         )
         print("conn -> ", conn)
         # conn = await asyncpg.connect(
