@@ -45,7 +45,10 @@ class Trademark(ModelView, model=Trademark):
     def create_model(self, form):
         # Extract form data
         form_data = form.data
-        files = request.files
+        files = {
+            "left_logo": request.files.get("left_logo"),
+            "right_logo": request.files.get("right_logo")
+        }
 
         # Call your API endpoint to handle file upload and other data
         response = requests.post(
@@ -65,7 +68,10 @@ class Trademark(ModelView, model=Trademark):
     def update_model(self, form, model):
         # Extract form data
         form_data = form.data
-        files = request.files
+        files = {
+            "left_logo": request.files.get("left_logo"),
+            "right_logo": request.files.get("right_logo")
+        }
 
         # Call your API endpoint to handle file upload and other data
         response = requests.put(
