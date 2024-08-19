@@ -3,6 +3,8 @@ from sqladmin import ModelView
 from sqlalchemy import Column
 from wtforms import FileField
 from fastapi import UploadFile, File
+from flask import request
+import requests
 
 # from fastapi_storages import FileSystemStorage
 # from fastapi_storages.integrations.sqlalchemy import FileType
@@ -39,6 +41,47 @@ class Trademark(ModelView, model=Trademark):
         }
         
     }
+
+    def create_model(self, form):
+        # Extract form data
+        form_data = form.data
+        files = request.files
+
+        # Call your API endpoint to handle file upload and other data
+        response = requests.post(
+            "https://staff-records-manager-1.onrender.com/api/logo/?name=", 
+            data=form_data, 
+            files=files
+        )
+
+        if response.status_code == 201:
+            # Handle successful creation
+            return True
+        else:
+            # Handle errors
+            form.errors['api_error'] = response.json().get('detail', 'Unknown error')
+            return False
+
+    def update_model(self, form, model):
+        # Extract form data
+        form_data = form.data
+        files = request.files
+
+        # Call your API endpoint to handle file upload and other data
+        response = requests.put(
+            f"https://staff-records-manager-1.onrender.com/api/logo/update/{model.id}", 
+            data=form_data, 
+            files=files
+        )
+
+        if response.status_code == 200:
+            # Handle successful update
+            return True
+        else:
+            # Handle errors
+            form.errors['api_error'] = response.json().get('detail', 'Unknown error')
+            return False
+
     column_list = [Trademark.id, Trademark.name, Trademark.left_logo, Trademark.right_logo, Trademark.created_at]
 
 class Center(ModelView, model=Centre):
