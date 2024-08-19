@@ -81,6 +81,32 @@ def create_logo(
         raise HTTPException(status_code=400, detail="Business Info already exists")
     return trademark.create(db=db, obj_in=trade_in, file=left_logo, file2=right_logo)
 
+
+@api_router.post("/console/logo/", response_model=schemas.Trademark, tags=["Business Brand"])
+def create_logo(
+    *,
+    db: Session = Depends(get_db),
+    trade_in: schemas.TrademarkCreate = Depends(),
+    left_logo: UploadFile = File(None),
+    right_logo: UploadFile = File(None),
+) -> Trademark:
+    logo_obj = trademark.get_by_field(db, "name", trade_in.name)
+    if logo_obj:
+        raise HTTPException(status_code=400, detail="Business Info already exists")
+
+    # Save the uploaded files if they exist
+    left_logo_path = crud.save_and_resize_image(left_logo, f"{trade_in.name}_left.jpg") if left_logo else None
+    right_logo_path = crud.save_and_resize_image(right_logo, f"{trade_in.name}_right.jpg") if right_logo else None
+
+    # Set the file paths in the input schema
+    trade_in.left_logo = left_logo_path
+    trade_in.right_logo = right_logo_path
+
+    return trademark.create(db=db, obj_in=trade_in)
+
+
+
+
 @api_router.get("/logo/get/{id}", response_model=schemas.Trademark,  tags=["Business Brand"])
 def read_logo(
     *,
@@ -119,6 +145,32 @@ def update_logo(
     if not logo_obj:
         raise HTTPException(status_code=404, detail="Business logo not found")
     return trademark.update(db=db, db_obj=logo_obj, obj_in=trademark_in, file=left_logo, file2=right_logo)
+
+
+@api_router.put("/console/logo/update/{id}", response_model=schemas.Trademark, tags=["Business Brand"])
+def update_logo(
+    *,
+    db: Session = Depends(get_db),
+    id: str,
+    trademark_in: schemas.TrademarkUpdate = Depends(),
+    left_logo: UploadFile = File(None),
+    right_logo: UploadFile = File(None),
+) -> Trademark:
+    logo_obj = trademark.get(db=db, id=id)
+    if not logo_obj:
+        raise HTTPException(status_code=404, detail="Business logo not found")
+
+    # Save the uploaded files if they exist
+    if left_logo:
+        left_logo_path = crud.save_and_resize_image(left_logo, f"{trademark_in.name}_left.jpg")
+        trademark_in.left_logo = left_logo_path
+
+    if right_logo:
+        right_logo_path = crud.save_and_resize_image(right_logo, f"{trademark_in.name}_right.jpg")
+        trademark_in.right_logo = right_logo_path
+
+    return trademark.update(db=db, db_obj=logo_obj, obj_in=trademark_in)
+
 
 @api_router.delete("/logo/{id}",   tags=["Business Brand"])
 def delete_logo(

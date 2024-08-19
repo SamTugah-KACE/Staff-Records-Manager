@@ -62,7 +62,7 @@ class Trademark(ModelView, model=Trademark):
 
         # Call your FastAPI API endpoint to handle file upload and other data
         response = requests.post(
-            "https://staff-records-manager-1.onrender.com/api/logo/",
+            "https://staff-records-manager-1.onrender.com/api/console/logo/",
             data=payload,
             files=files
         )
@@ -93,7 +93,7 @@ class Trademark(ModelView, model=Trademark):
 
         # Call your FastAPI API endpoint to handle file upload and other data
         response = requests.put(
-            f"https://staff-records-manager-1.onrender.com/api/logo/update/{model.id}",
+            f"https://staff-records-manager-1.onrender.com/api/console/logo/update/{model.id}",
             data=payload,
             files=files
         )
