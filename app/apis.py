@@ -61,6 +61,11 @@ bio_data_related_models  = [
 api_router = APIRouter(prefix="/api")
 
 
+@api_router.get("/", response_class=HTMLResponse)
+async def read_root(request: Request):
+    return templates.TemplateResponse("user-login.html", {"request": request})
+
+
 @api_router.get("/search/", response_model=Dict[str, List[Dict[str, Any]]], tags=["Search Space"])
 def search(search_string: str, db: Session = Depends(get_db), current_user: User = Depends(current_active_admin_user)):
     results = crud.search_all(db, search_string, search_models, current_user)
