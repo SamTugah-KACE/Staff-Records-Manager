@@ -50,10 +50,17 @@ class Trademark(ModelView, model=Trademark):
             "right_logo": request.files.get("right_logo")
         }
 
-        # Call your API endpoint to handle file upload and other data
+        # Prepare the payload for the POST request
+        payload = {
+            "name": form_data.get("name"),
+            "created_at": form_data.get("created_at"),
+            "updated_at": form_data.get("updated_at")
+        }
+
+        # Call your FastAPI API endpoint to handle file upload and other data
         response = requests.post(
-            "https://staff-records-manager-1.onrender.com/api/logo/?name=", 
-            data=form_data, 
+            "https://staff-records-manager-1.onrender.com/api/logo/",
+            data=payload,
             files=files
         )
 
@@ -73,10 +80,17 @@ class Trademark(ModelView, model=Trademark):
             "right_logo": request.files.get("right_logo")
         }
 
-        # Call your API endpoint to handle file upload and other data
+        # Prepare the payload for the PUT request
+        payload = {
+            "name": form_data.get("name"),
+            "created_at": form_data.get("created_at"),
+            "updated_at": form_data.get("updated_at")
+        }
+
+        # Call your FastAPI API endpoint to handle file upload and other data
         response = requests.put(
-            f"https://staff-records-manager-1.onrender.com/api/logo/update/{model.id}", 
-            data=form_data, 
+            f"https://staff-records-manager-1.onrender.com/api/logo/update/{model.id}",
+            data=payload,
             files=files
         )
 
