@@ -28,8 +28,8 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi import Request,Form
 from passlib.context import CryptContext
-
-
+from mail import *
+from auth import get_password_hash
 
 templates = Jinja2Templates(directory="templates")
 
@@ -72,8 +72,8 @@ def search(search_string: str, db: Session = Depends(get_db), current_user: User
     return results
 
 #Business Brand
-@api_router.post("/logo/", response_model=schemas.Trademark, tags=["Business Brand"])
-def create_logo(
+@api_router.post("/logo/", response_model=schemas.Trademark, tags=["Business Brand - (HR Dashboard)"])
+def create_business(
     *,
     db: Session = Depends(get_db),
     trade_in: schemas.TrademarkCreate = Depends(),
@@ -87,8 +87,8 @@ def create_logo(
     return trademark.create(db=db, obj_in=trade_in, file=left_logo, file2=right_logo)
 
 
-@api_router.post("/console/logo/", response_model=schemas.Trademark, tags=["Business Brand"])
-def create_logo(
+@api_router.post("/console/logo/", response_model=schemas.Trademark, tags=["Business Brand - (HR Dashboard)"])
+def create_business(
     *,
     db: Session = Depends(get_db),
     trade_in: schemas.TrademarkCreate = Depends(),
@@ -112,8 +112,8 @@ def create_logo(
 
 
 
-@api_router.get("/logo/get/{id}", response_model=schemas.Trademark,  tags=["Business Brand"])
-def read_logo(
+@api_router.get("/logo/get/{id}", response_model=schemas.Trademark,  tags=["Business Brand - (HR Dashboard)"])
+def read_business_info(
     *,
     db: Session = Depends(get_db),
     id: str,
@@ -121,11 +121,11 @@ def read_logo(
 ) -> Trademark:
     trademark_obj = trademark.get(db=db, id=id)
     if not trademark_obj:
-        raise HTTPException(status_code=404, detail="Business logo not found")
+        raise HTTPException(status_code=404, detail="Business Data not found")
     return trademark_obj
 
-@api_router.get("/logos/", response_model=List[schemas.Trademark],  tags=["Business Brand"])
-def read_logos(
+@api_router.get("/logos/", response_model=List[schemas.Trademark],  tags=["Business Brand - (HR Dashboard)"])
+def read_businesses_info(
     *,
     db: Session = Depends(get_db),
     skip: int = 0,
@@ -136,8 +136,8 @@ def read_logos(
     return trademark_obj
 
 
-@api_router.put("/logo/update/{id}", response_model=schemas.Trademark,  tags=["Business Brand"])
-def update_logo(
+@api_router.put("/logo/update/{id}", response_model=schemas.Trademark,  tags=["Business Brand - (HR Dashboard)"])
+def update_business_info(
     *,
     db: Session = Depends(get_db),
     id: str,
@@ -148,12 +148,12 @@ def update_logo(
 ) -> Trademark:
     logo_obj = trademark.get(db=db, id=id)
     if not logo_obj:
-        raise HTTPException(status_code=404, detail="Business logo not found")
+        raise HTTPException(status_code=404, detail="Business Data not found")
     return trademark.update(db=db, db_obj=logo_obj, obj_in=trademark_in, file=left_logo, file2=right_logo)
 
 
-@api_router.put("/console/logo/update/{id}", response_model=schemas.Trademark, tags=["Business Brand"])
-def update_logo(
+@api_router.put("/console/logo/update/{id}", response_model=schemas.Trademark, tags=["Business Brand - (HR Dashboard)"])
+def update_business_info(
     *,
     db: Session = Depends(get_db),
     id: str,
@@ -163,7 +163,7 @@ def update_logo(
 ) -> Trademark:
     logo_obj = trademark.get(db=db, id=id)
     if not logo_obj:
-        raise HTTPException(status_code=404, detail="Business logo not found")
+        raise HTTPException(status_code=404, detail="Business Data not found")
 
     # Save the uploaded files if they exist
     if left_logo:
@@ -177,8 +177,8 @@ def update_logo(
     return trademark.update(db=db, db_obj=logo_obj, obj_in=trademark_in)
 
 
-@api_router.delete("/logo/{id}",   tags=["Business Brand"])
-def delete_logo(
+@api_router.delete("/logo/{id}",   tags=["Business Brand - (HR Dashboard)"])
+def delete_business_data(
     *,
     db: Session = Depends(get_db),
     id: str,
@@ -186,8 +186,9 @@ def delete_logo(
 ):
     logo_obj = trademark.get(db=db, id=id)
     if not logo_obj:
-        raise HTTPException(status_code=404, detail="Business logo not found")
+        raise HTTPException(status_code=404, detail="Business Data not found")
     return trademark.delete_trademark(db, id)
+
 
 
 
@@ -580,6 +581,113 @@ def user_biodata_registration(request: Request):
 
 
 
+#BioData
+@api_router.post("/bio_data_/", response_model=schemas.BioData, tags=["BioData"])
+async def create_bio_data_(
+    *,
+    request: Request,
+    db: Session = Depends(get_db),
+    #bio_data_in: schemas.BioDataCreate,
+    title: Optional[str] = Form(None),
+    first_name: Optional[str] = Form(None),
+    other_names: Optional[str] = Form(None),
+    surname: Optional[str] = Form(None),
+    previous_name: Optional[str] = Form(None),
+    gender: Optional[str] = Form(None),
+    date_of_birth: Optional[date] = Form(None),
+    nationality: Optional[str] = Form(None),
+    hometown: Optional[str] = Form(None),
+    religion: Optional[str] = Form(None),
+    marital_status: Optional[str] = Form(None),
+    residential_addr: Optional[str] = Form(None),
+    active_phone_number: Optional[str] = Form(None),
+    email: Optional[EmailStr] = Form(None),
+    ssnit_number: Optional[str] = Form(None),
+    ghana_card_number: Optional[str] = Form(None),
+    is_physically_challenged: Optional[bool] = Form(None),
+    disability: Optional[str] = Form(None),
+    file: UploadFile = File(None),
+    
+) -> BioData:
+    bio_data_obj = bio_data.get_by_field(db, "active_phone_number", active_phone_number)
+    if bio_data_obj:
+        raise HTTPException(status_code=400, detail="Phone Number Already Exists")
+    bio_data_obj = bio_data.get_by_field(db, "email", email)
+    if bio_data_obj:
+        raise HTTPException(status_code=400, detail="Email Address Already Exists")
+    bio_data_obj = bio_data.get_by_field(db, "ssnit_number", ssnit_number)
+    if bio_data_obj:
+        raise HTTPException(status_code=400, detail="Social Security Number Already Exists")
+    bio_data_obj = bio_data.get_by_field(db, "ghana_card_number", ghana_card_number)
+    if bio_data_obj:
+        raise HTTPException(status_code=400, detail="National ID Number Already Exists")
+    
+    if bio_data_obj:
+         return templates.TemplateResponse("biodata-exist-error.html", {"request": request})
+    
+    # Generate username and password
+    username = generate_username(first_name, surname)
+    password = generate_password()
+
+
+    bio_data_in = BioData()
+    bio_data_in.title=title
+    bio_data_in.first_name=first_name
+    bio_data_in.other_names=other_names
+    bio_data_in.surname=surname
+    bio_data_in.previous_name=previous_name
+    bio_data_in.gender=gender
+    bio_data_in.date_of_birth=date_of_birth
+    bio_data_in.nationality=nationality
+    bio_data_in.hometown=hometown
+    bio_data_in.religion=religion
+    bio_data_in.marital_status=marital_status
+    bio_data_in.residential_addr=residential_addr
+    bio_data_in.active_phone_number=active_phone_number
+    bio_data_in.email=email
+    bio_data_in.ssnit_number=ssnit_number
+    bio_data_in.ghana_card_number=ghana_card_number
+    bio_data_in.is_physically_challenged=is_physically_challenged
+    bio_data_in.disability=disability
+    
+    files = {"image_col": file}
+    new_biodata = bio_data.create(db=db, obj_in=bio_data_in, files=files)
+
+     # Hash the password
+    #hashed_password = get_password_hash(password)
+    hashed_password = password
+
+    # Prepare the user data
+    user_data = {
+        "bio_row_id": new_biodata.id,  # Using the generated bio-data ID
+        "username": username,
+        "email": email,
+        "hashed_password": hashed_password,
+        "role": "user",  # Set role as 'user'
+        "is_active": True
+    }
+
+    # Create the user in the User table
+    new_user = create_user_(
+        request=request,
+        bio_row_id=user_data['bio_row_id'],
+        username=user_data['username'],
+        email=user_data['email'],
+        hashed_password=user_data['hashed_password'],
+        role=user_data['role'],
+        db=db
+    )
+
+    # Send email with credentials
+    email_body = get_email_template(username, password, 'localhost:8000')
+    await send_email(email=email, subject="Account Credentials", body=email_body)
+    
+    print("\n\n=======user registration status: ", new_user)
+    return new_biodata
+
+    #return templates.TemplateResponse("biodata-registration-success.html", {"request": request, "title": title, "first_name": first_name,"surname": surname,"email": email, "bio_row_id": new_biodata.id,})
+    #return bio_data.create(db=db, obj_in=bio_data_in, files=files)
+
 
 
 
@@ -627,7 +735,8 @@ def create_bio_data(
     if bio_data_obj:
          return templates.TemplateResponse("biodata-exist-error.html", {"request": request})
     
-    
+
+
     bio_data_in = BioData()
     bio_data_in.title=title
     bio_data_in.first_name=first_name
@@ -650,7 +759,12 @@ def create_bio_data(
     
     files = {"image_col": file}
     new_biodata = bio_data.create(db=db, obj_in=bio_data_in, files=files)
-    return templates.TemplateResponse("biodata-registration-success.html", {"request": request, "title": title, "first_name": first_name,"surname": surname,"email": email, "bio_row_id": new_biodata.id,})
+
+    
+    
+    return new_biodata
+
+    #return templates.TemplateResponse("biodata-registration-success.html", {"request": request, "title": title, "first_name": first_name,"surname": surname,"email": email, "bio_row_id": new_biodata.id,})
     #return bio_data.create(db=db, obj_in=bio_data_in, files=files)
 
 @api_router.get("/staff_bio_data/", response_model=List[schemas.BioData], tags=["BioData"])
@@ -750,17 +864,18 @@ def update_image(
 
 
 
-@api_router.delete("/bio_data/rm/{id}", response_model=schemas.BioData,  tags=["BioData"])
+@api_router.delete("/bio_data/rm/{id}", response_model=schemas.BioData, tags=["BioData"])
 def delete_bio_data(
     *,
     db: Session = Depends(get_db),
     id: str,
-    
+    force_delete: bool = Query(False, description="Force delete the bio_data without confirmation")
 ) -> BioData:
     bio_data_obj = bio_data.get(db=db, id=id)
     if not bio_data_obj:
         raise HTTPException(status_code=404, detail="bio_data not found")
-    return bio_data.remove(db=db, id=id)
+
+    return bio_data.remove(db=db, id=id, force_delete=force_delete)
 
 
 
@@ -826,6 +941,32 @@ def user_registration(request: Request, bio_row_id: str, db: Session = Depends(g
 # def create_user(user: schemas.UserCreate, db: Session = Depends(get_db), ):
 #     return crud.create_user(db=db, user=user)
 
+@api_router.post("/user_",  tags=["Users"], status_code=status.HTTP_201_CREATED)
+def create_user_(
+    request: Request,
+    bio_row_id: Optional[str] = Form(None),
+    username: Optional[str] = Form(None),
+    email: Optional[str] = Form(None),
+    hashed_password: Optional[str] = Form(...),
+    role: Optional[str] = Form(None),
+    db: Session = Depends(get_db) 
+    ):
+
+    # Create user with hashed password
+    #hash_password = get_password_hash(hashed_password)
+    db_user = User()
+    db_user.bio_row_id=bio_row_id
+    db_user.username=username
+    db_user.email = email
+    db_user.hashed_password=hashed_password
+    db_user.role=role,
+    db_user.is_active=True
+    # db.add(db_user)
+    # db.commit()
+    # db.refresh(db_user)
+
+    new_user = crud.create_user(db=db, user=db_user)
+    return templates.TemplateResponse("user-registration-success.html", {"request": request, "username": new_user.username})
 
 
 @api_router.post("/user",  tags=["Users"], status_code=status.HTTP_201_CREATED)

@@ -78,8 +78,22 @@ CREATE TABLE users (
     hashed_password VARCHAR NOT NULL,
     reset_pwd_token VARCHAR,
     is_active BOOLEAN DEFAULT TRUE,
-    role VARCHAR DEFAULT 'user'
+    role VARCHAR DEFAULT 'user',
+    failed_login_attempts  INTEGER  DEFAULT 0,
+    account_locked_until  TIMESTAMPTZ,
+    lock_count INTEGER DEFAULT 0
 );
+
+
+CREATE TABLE refresh_tokens(
+     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+     created_at TIMESTAMPTZ DEFAULT NOW(),
+     updated_at TIMESTAMPTZ DEFAULT NOW(),
+     user_id UUID REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+     refresh_token VARCHAR,
+     expiration_time  TIMESTAMPTZ NOT NULL
+);
+
 
 CREATE TABLE employment_details (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

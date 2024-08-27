@@ -31,3 +31,5 @@ pg8000==1.29.8
 sqladmin[full]
 fastapi_storages
 requests
+fastapi_limiter
+slowapi

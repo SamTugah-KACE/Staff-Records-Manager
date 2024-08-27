@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, condecimal,  constr, validator, Field, UUID4
+from pydantic import BaseModel, EmailStr, condecimal,  constr, validator, field_validator, Field, UUID4
 from datetime import datetime, date
 from typing import Optional, List
 from enum import Enum
@@ -230,6 +230,15 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: Optional[str] = None
+    #expires: datetime
+
+#RefreshToken
+class RefreshTokenResponse(BaseModel):
+    new_access_token: Optional[str]
+    token_type: Optional[str]
+    refresh_token: Optional[str]
+    status: Optional[str]
+
 
 #User
 class UserBase(BaseModel):
@@ -240,6 +249,18 @@ class UserBase(BaseModel):
     reset_pwd_token: Optional[str]
     is_active: bool = True
     role: str = "user"
+    failed_login_attempts: int 
+    account_locked_until: Optional[datetime]
+    lock_count: Optional[int]
+
+     # Checking if UUID4 fields accept only UUID4 as value
+    @field_validator('bio_row_id', mode='before')
+    def validate_fields_with_uuid4(cls, v, info):
+        try:
+            uuid.UUID(str(v), version=4)
+        except ValueError:
+            raise ValueError(f'\n{info.field_name} must have a valid UUID4')
+        return v
 
 class UserCreate(UserBase):
     pass

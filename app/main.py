@@ -109,6 +109,112 @@ async def generic_exception_handler(request: Request, exc: Exception):
 
 
 
+from fastapi import Request, HTTPException, Depends
+import requests
+from starlette.middleware.base import BaseHTTPMiddleware
+from sqlalchemy.orm import Session
+from database.db_session import get_db
+import os
+
+#intruder_list = []
+
+
+# class IntruderDetectionMiddleware:
+#     async def __call__(self, request: Request, call_next):
+#         client_ip = request.client.host
+#         if client_ip in [intruder['ip_address'] for intruder in intruder_list]:
+#             raise HTTPException(status_code=403, detail="Access Denied: You are not authorized to access this server.")
+
+#         response = await call_next(request)
+#         if response.status_code == 401 or response.status_code == 403:
+#             await log_intruder_info(request)
+
+#         return response
+
+class IntruderDetectionMiddleware(BaseHTTPMiddleware):
+    def __init__(self, app, db: Session = Depends(get_db)):
+        super().__init__(app)
+        self.db = db
+    
+    async def intruder_info(request: Request):
+        #intruder_list = []
+        client_ip = request.client.host
+        headers = request.headers
+        user_agent = headers.get("User-Agent")
+        mac_address = headers.get("X-MAC-Address")  # Custom header for MAC Address
+        location = requests.get(f"https://ipinfo.io/{client_ip}/geo").json()
+
+        intruder_info = {
+            "ip_address": client_ip,
+            "mac_address": mac_address,
+            "user_agent": user_agent,
+            "location": location,
+        }
+        print("intruder info dict: ", intruder_info)
+        settings.intruder_list.append(intruder_info)
+        print(f"Intruder detected: {intruder_info}")
+
+        return intruder_info
+
+
+    async def log_intruder_info(ip_addr: str, mac_addr: str, user_agent: str, location: str):
+        # Get current date to create or append to the log file
+        current_date = datetime.now().strftime('%Y-%m-%d')
+        log_file_name = f"intruder_log_{current_date}.txt"
+        log_directory = "security/logs/"
+
+        os.makedirs(log_directory, exist_ok=True)
+        
+
+        # Check if the log file exists
+        if not os.path.exists(log_directory):
+            os.makedirs(log_directory)
+
+        
+        log_filepath = os.path.join(log_directory, log_file_name)
+        
+
+        # Create log entry
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        log_entry = f"{ip_addr} | {mac_addr} | {user_agent} | {location} | {timestamp}"
+
+        # Check if the log file already exists
+        if os.path.exists(log_filepath):
+            with open(log_filepath, 'a') as file:
+                file.write("================================================================================\n")
+                file.write(log_entry + "\n")
+        else:
+            with open(log_file_name, 'w') as file:
+                file.write("IP Addr | Mac Addr | User Agent | location | Timestamp\n")
+                file.write(log_entry + "\n")
+
+        return log_filepath
+
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        print("response in middleware: ", response)
+        # Example of handling rate limit exceeded and locking accounts
+        if response.status_code == 429:  # Too Many Requests
+            username = request.headers.get("X-Username")
+            print("\nusername in middleware: ", username)
+            if username:
+                user = self.db.query(User).filter(User.username == username).first()
+                if user:
+                    print("user in middleware: ", user)
+                    user.lock_account(lock_time_minutes=10)
+                    self.db.commit()
+                    info = await IntruderDetectionMiddleware.intruder_info(request=request)
+                    log = await IntruderDetectionMiddleware.log_intruder_info(info.get('ip_address'), info.get('mac_address'), info.get('user_agent'), info.get('location'))
+
+                    print("log info: ", log)
+
+
+        return response
+
+#app.middleware("http")(IntruderDetectionMiddleware())
+app.add_middleware(IntruderDetectionMiddleware)
+
+
 
 if __name__ == '__main__':
     uvicorn.run("main:app", host='127.0.0.1', port=8080, log_level="info", reload = True)

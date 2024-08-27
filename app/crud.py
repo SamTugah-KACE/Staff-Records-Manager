@@ -659,12 +659,22 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
 
 
-    def remove(self, db: Session, id: Union[uuid.UUID, Dict[str, Any]]) -> ModelType:
+    def remove(self, db: Session, id: Union[uuid.UUID, Dict[str, Any]], force_delete: bool = False) -> ModelType:
+        obj = None  # Initialize the obj variable
+
         try:
+            # Convert string id to uuid.UUID if it is a string
+            if isinstance(id, str):
+                try:
+                    id = uuid.UUID(id)
+                except ValueError:
+                    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid UUID format.")
+
+            print("instance of id in crud: ", isinstance(id, uuid.UUID))
             if isinstance(id, uuid.UUID):
                 obj = db.query(self.model).filter(self.model.id == id).first()
+                print("id data obj: ", obj)
             elif isinstance(id, dict):
-                obj = None
                 for field, value in id.items():
                     if inspect(self.model).columns[field].unique or inspect(self.model).columns[field].index:
                         obj = db.query(self.model).filter(getattr(self.model, field) == value).first()
@@ -674,19 +684,50 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             if not obj:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found.")
 
-            # # Check referential integrity
-            for relationship in inspect(self.model).relationships:
-                if db.query(relationship.mapper.class_).filter(getattr(relationship.mapper.class_, relationship.back_populates) == obj).count() > 0:
-                    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Cannot delete {self.model.__name__} because it is referenced by other records.")
+            # Handle force delete logic
+            if force_delete:
+                # Delete related data
+                for relationship in inspect(self.model).relationships:
+                    related_class = relationship.mapper.class_
+                    
+                    related_field = None
+                    if relationship.backref:
+                        related_field = getattr(related_class, relationship.backref, None)
+                    elif relationship.back_populates:
+                        related_field = getattr(related_class, relationship.back_populates, None)
 
+                    if related_field is not None:
+                        related_objects = db.query(related_class).filter(related_field == obj).all()
+                        print("all related objects:: ", related_objects)
+                        for related_obj in related_objects:
+                            print("\nrelated_obj to be deleted: ", related_obj)
+                            db.delete(related_obj)
+
+            # Check referential integrity unless force_delete is True
+            if not force_delete:
+                for relationship in inspect(self.model).relationships:
+                    related_class = relationship.mapper.class_
+
+                    related_field = None
+                    if relationship.backref:
+                        related_field = getattr(related_class, relationship.backref, None)
+                    elif relationship.back_populates:
+                        related_field = getattr(related_class, relationship.back_populates, None)
+
+                    if related_field is not None:
+                        if db.query(related_class).filter(related_field == obj).count() > 0:
+                            raise HTTPException(
+                                status_code=status.HTTP_400_BAD_REQUEST,
+                                detail=f"Cannot delete {self.model.__name__} because it is referenced by other records. Use force_delete=True to override."
+                            )
+
+            # Proceed with deletion of the current object
             db.delete(obj)
             db.commit()
             return obj
         except:
             db.rollback()
             raise
-    
-    
    
 
 
@@ -1111,8 +1152,8 @@ def generate_pdf_for_bio_data(bio_data, trademark, declarations, academics, prof
                 pdf.ln(10)
                 pdf.cell(200, 10, txt="I. Declarations", ln=True, align='L')
 
-                signatures_dir = 'downloads/signatures'
-                #signatures_dir = 'uploads/images'
+                #signatures_dir = 'downloads/signatures'
+                signatures_dir = 'uploads/images'
                 os.makedirs(signatures_dir, exist_ok=True)
 
                 for declaration in declarations:

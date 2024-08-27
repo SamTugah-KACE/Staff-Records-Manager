@@ -36,7 +36,9 @@ COPY . .
 
 # Ensure the upload directory exists and has appropriate permissions
 RUN mkdir -p ./uploads/images/ && chmod -R 755 ./uploads/images/
+RUN mkdir -p ./downloads/signatures/ && chmod -R 755 ./downloads/signatures/
 RUN mkdir -p ./downloads/documents/  && chmod -R 755 ./downloads/documents/
+RUN mkdir -p ./security/logs/  && chmod -R 755 ./security/logs/
 
 # Expose the port that the application listens on
 EXPOSE 8000

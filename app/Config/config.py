@@ -1,5 +1,6 @@
 import secrets
 import os
+
  
 #from dotenv import load_dotenv
 
@@ -20,6 +21,7 @@ class Settings:
     RETRY_DELAY_BASE: int = 0  # Initial retry delay in seconds
     RETRY_DELAY_MULTIPLIER: int = 1  # Exponential backoff multiplier
 
+    intruder_list = []
     
     # POSTGRES_USER: str = os.getenv("POSTGRES_USER", "sam_tugah_kace")
     # POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "vjIDmbKK2KNpFm8h64JgK7jKW9bTpxP5")
@@ -29,7 +31,8 @@ class Settings:
     
     POSTGRES_USER: str = os.getenv("POSTGRES_USER", "postgres")
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "password")
-    POSTGRES_SERVER: str = os.getenv("POSTGRES_SERVER", "staff-records")
+    POSTGRES_SERVER: str = os.getenv("POSTGRES_SERVER", "localhost")
+    # POSTGRES_SERVER: str = os.getenv("POSTGRES_SERVER", "staff-records")
     POSTGRES_PORT: str = os.getenv("POSTGRES_PORT", 5432)
     POSTGRES_DB: str = os.getenv("POSTGRES_DB", "staff_records_db")
 
@@ -56,7 +59,8 @@ class Settings:
     # DATABASE_URL: str = os.getenv("DATABASE_URL","postgresql://sam_tugah_kace:vjIDmbKK2KNpFm8h64JgK7jKW9bTpxP5@dpg-cqrmj3ggph6c73a1u4k0-a/staff_records_db")
 
     
-    DATABASE_HOST: str=os.getenv("DATABASE_HOST", "staff-records")
+    # DATABASE_HOST: str=os.getenv("DATABASE_HOST", "staff-records")
+    DATABASE_HOST: str=os.getenv("DATABASE_HOST", "localhost")
     DATABASE_PORT: str=os.getenv("DATABASE_PORT",5432)
     DBUSER: str=os.getenv("DB_USER","postgres")
     DATABASE_PASSWORD: str=os.getenv("DATABASE_PASSWORD","password")
@@ -71,16 +75,17 @@ class Settings:
 
     #DATABASE_URL = f"mysql+aiomysql://{MySQL_USER}:{MySQL_PASSWORD}@{MySQL_SERVER}/{MySQL_DB}"
 
-    MAIL_USERNAME: str = os.getenv("MAIL_USERNAME")
-    MAIL_PASSWORD: str = os.getenv("MAIL_PASSWORD")
+    MAIL_USERNAME: str = os.getenv("MAIL_USERNAME", 'dev.aiti.com.gh@gmail.com')
+    MAIL_PASSWORD: str = os.getenv("MAIL_PASSWORD", 'palvpbokbnisspps') #uefuovgtfwyfgskv previous password
     MAIL_FROM: str = os.getenv("MAIL_FROM", "dev.aiti.com.gh@gmail.com")
-    MAIL_PORT: str = os.getenv("MAIL_PORT")
-    MAIL_SERVER: str = os.getenv("MAIL_SERVER")
+    MAIL_PORT: int = os.getenv("MAIL_PORT", 587)
+    MAIL_SERVER: str = os.getenv("MAIL_SERVER", 'smtp.gmail.com')
     MAIL_STARTTLS: bool = True
     MAIL_SSL_TLS: bool = os.getenv("MAIL_SSL_TLS", False)
     USE_CREDENTIALS: bool = True
     VALIDATE_CERTS: bool = True
 
+   
 
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "https://smconf-test.web.app")
 
@@ -88,6 +93,7 @@ class Settings:
     EMAIL_CODE_DURATION_IN_MINUTES: int = 15
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 45
     REFRESH_TOKEN_DURATION_IN_MINUTES: int =  2592000
+    REFRESH_TOKEN_REMEMBER_ME_DAYS: int = 30
     COOKIE_ACCESS_EXPIRE = 1800
     COOKIE_REFRESH_EXPIRE = 2592000 # 1 Month
     COOKIE_DOMAIN: str = os.getenv("COOKIE_DOMAIN", "gikace.dev")

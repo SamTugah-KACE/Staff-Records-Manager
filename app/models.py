@@ -1,8 +1,8 @@
-from sqlalchemy import Column, String, Boolean, Date, DateTime, ForeignKey, DECIMAL, CheckConstraint, LargeBinary
+from sqlalchemy import Column, String, Boolean, Date, DateTime, Integer, ForeignKey, DECIMAL, CheckConstraint, LargeBinary
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import validates, relationship, backref
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 import uuid
 from database.db_session import Base
@@ -140,8 +140,39 @@ class User(BaseModel):
     reset_pwd_token = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
     role = Column(String, default="user")
+    failed_login_attempts = Column(Integer, default=0)
+    account_locked_until = Column(DateTime, nullable=True)
+    lock_count = Column(Integer, default=0)
 
     bio_row = relationship("BioData")
+
+    # def is_account_locked(self):
+    #     if self.account_locked_until:
+    #         print("datetime.now(): ", datetime.now(timezone.utc))
+    #         return self.account_locked_until > datetime.now(timezone.utc)
+    #     return False
+
+    def is_account_locked(self):
+        return self.account_locked_until and self.account_locked_until > datetime.now(timezone.utc)
+    
+    def lock_account(self, lock_time_minutes=10):
+        self.account_locked_until = datetime.now(timezone.utc) + timedelta(minutes=lock_time_minutes)
+        self.failed_login_attempts = 0  # Reset failed attempts after locking
+
+    def reset_failed_attempts(self):
+        self.failed_login_attempts = 0
+        self.account_locked_until = None
+
+
+class RefreshToken(BaseModel):
+        __tablename__ = "refresh_tokens"
+        
+        user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), unique=True,nullable=True)
+        refresh_token = Column(String, unique=True)
+        expiration_time = Column(DateTime, nullable=False)
+
+        user_token = relationship('User', backref='users', uselist=False)
+     
 
 
 class EmploymentDetail(BaseModel):
