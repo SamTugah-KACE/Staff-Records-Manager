@@ -56,7 +56,7 @@ class Settings:
     DATABASE_PASSWORD: str=os.getenv("DATABASE_PASSWORD","mE5an1w7jBSx2YtbBpnYaaQxjlErdmXI")
     DATABASE: str=os.getenv("DATABASE","staff_records_db_41ko")
     
-    DATABASE_URL: str = os.getenv("DATABASE_URL","postgresql://sam_tugah_kace:mE5an1w7jBSx2YtbBpnYaaQxjlErdmXI@dpg-cr6sq556l47c739af3fg-a/staff_records_db_41ko")
+    # DATABASE_URL: str = os.getenv("DATABASE_URL","postgresql://sam_tugah_kace:mE5an1w7jBSx2YtbBpnYaaQxjlErdmXI@dpg-cr6sq556l47c739af3fg-a/staff_records_db_41ko")
 
     
     # DATABASE_HOST: str=os.getenv("DATABASE_HOST", "staff-records")
@@ -65,7 +65,7 @@ class Settings:
     # DBUSER: str=os.getenv("DB_USER","postgres")
     # DATABASE_PASSWORD: str=os.getenv("DATABASE_PASSWORD","password")
     # DATABASE: str=os.getenv("DATABASE","staff_records_db")
-    #DATABASE_URL: str = os.getenv("DATABASE_URL","postgresql://sam_tugah_kace:vjIDmbKK2KNpFm8h64JgK7jKW9bTpxP5@dpg-cqrmj3ggph6c73a1u4k0-a/staff_records_db")
+    # DATABASE_URL: str = os.getenv("DATABASE_URL","postgresql://sam_tugah_kace:vjIDmbKK2KNpFm8h64JgK7jKW9bTpxP5@dpg-cqrmj3ggph6c73a1u4k0-a/staff_records_db")
 
     MySQL_USER: str = os.getenv("MySQL_USER", "samuelkusiduahAI")
     MySQL_PASSWORD: str = os.getenv("MySQL_PASSWORD", "password_80")
@@ -91,9 +91,9 @@ class Settings:
 
 
     EMAIL_CODE_DURATION_IN_MINUTES: int = 15
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 45
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 2700
     REFRESH_TOKEN_DURATION_IN_MINUTES: int =  2592000
-    REFRESH_TOKEN_REMEMBER_ME_DAYS: int = 30
+    REFRESH_TOKEN_REMEMBER_ME_DAYS: int = 60
     COOKIE_ACCESS_EXPIRE = 1800
     COOKIE_REFRESH_EXPIRE = 2592000 # 1 Month
     COOKIE_DOMAIN: str = os.getenv("COOKIE_DOMAIN", "gikace.dev")

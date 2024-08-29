@@ -326,8 +326,8 @@ class LoginService:
         db.commit()
         
         # Token creation logic
-        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-        refresh_token_expires = timedelta(minutes=settings.REFRESH_TOKEN_DURATION_IN_MINUTES)
+        access_token_expires = timedelta(seconds=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        refresh_token_expires = timedelta(seconds=settings.REFRESH_TOKEN_DURATION_IN_MINUTES)
         
         if form_data.scopes and "remember_me" in form_data.scopes:
             refresh_token_expires = timedelta(days=settings.REFRESH_TOKEN_REMEMBER_ME_DAYS)
@@ -340,7 +340,8 @@ class LoginService:
         )
 
 
-        expiration_time = datetime.now(timezone.utc) + refresh_token_expires
+        expiration_time = datetime.now() + refresh_token_expires
+        access_token_expiration = datetime.now() + timedelta(seconds=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
         db_refresh_token = db.query(RefreshToken).filter(RefreshToken.user_id == user.id).first()
         if db_refresh_token:
@@ -354,12 +355,16 @@ class LoginService:
 
         # Set cookies for access and refresh tokens
         response.set_cookie(key="AccessToken", value=access_token, httponly=True, secure=True, expires=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-        response.set_cookie(key="RefreshToken", value=refresh_token, httponly=True, secure=True, expires=settings.REFRESH_TOKEN_DURATION_IN_MINUTES)
+        
+        if form_data.scopes and "remember_me" in form_data.scopes:
+            response.set_cookie(key="RefreshToken", value=refresh_token, httponly=True, secure=True, expires=(settings.REFRESH_TOKEN_DURATION_IN_MINUTES+settings.REFRESH_TOKEN_DURATION_IN_MINUTES))
+        else:
+            response.set_cookie(key="RefreshToken", value=refresh_token, httponly=True, secure=True, expires=settings.REFRESH_TOKEN_DURATION_IN_MINUTES)
 
         return {
             "access_token": access_token,
             "token_type": "bearer",
-            "access_token_expiration": access_token_expires,
+            "access_token_expiration": access_token_expiration,
             "user": {
                 "id": user.id, 
                 "email": user.email,

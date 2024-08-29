@@ -95,6 +95,8 @@ async def check_and_create_database():
             host= os.getenv("DATABASE_HOST"),
             port=os.getenv("DATABASE_PORT")
         )
+
+        
         print("conn -> ", conn)
         # conn = await asyncpg.connect(
         #     user=settings.POSTGRES_USER,
