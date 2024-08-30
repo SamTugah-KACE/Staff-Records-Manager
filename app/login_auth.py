@@ -286,7 +286,7 @@ class LoginService:
                 )
             else:
                 # Unlock the account if the lock time has passed
-                user.reset_failed_attempts()
+                #user.reset_failed_attempts()
                 user.account_locked_until = None
                 db.commit()
 
