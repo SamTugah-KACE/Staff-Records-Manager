@@ -1,3 +1,4 @@
+import database.setup
 import os
 import asyncpg
 from dotenv import load_dotenv
@@ -121,12 +122,18 @@ async def check_and_create_database():
             print(f"Database '{db_name}' created successfully.")
             await conn.close()
             await execute_sql()
+        # else:
+        #     print("db already created: ", db_name)
+        #     await execute_sql()
            
 
         return True
     
     except Exception as error:
         print("Error while connecting to PostgreSQL:", error)
+        await execute_sql()
+        #conn2 = await asyncpg.connect(user=os.getenv("DB_USER"), password=os.getenv("DATABASE_PASSWORD"), database=os.getenv("DATABASE"), host=os.getenv("DATABASE_HOST"))
+        #print("conn2: ", conn2)
         return False
 
 
