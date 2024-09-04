@@ -354,12 +354,12 @@ class LoginService:
         db.commit()
 
         # Set cookies for access and refresh tokens
-        response.set_cookie(key="AccessToken", value=access_token, httponly=True, secure=True, expires=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        response.set_cookie(key="AccessToken", value=access_token, httponly=True, secure=True, samesite='none', expires=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         
         if form_data.scopes and "remember_me" in form_data.scopes:
-            response.set_cookie(key="RefreshToken", value=refresh_token, httponly=True, secure=True, expires=(settings.REFRESH_TOKEN_DURATION_IN_MINUTES+settings.REFRESH_TOKEN_DURATION_IN_MINUTES))
+            response.set_cookie(key="RefreshToken", value=refresh_token, httponly=True, secure=True, samesite='none', expires=(settings.REFRESH_TOKEN_DURATION_IN_MINUTES+settings.REFRESH_TOKEN_DURATION_IN_MINUTES))
         else:
-            response.set_cookie(key="RefreshToken", value=refresh_token, httponly=True, secure=True, expires=settings.REFRESH_TOKEN_DURATION_IN_MINUTES)
+            response.set_cookie(key="RefreshToken", value=refresh_token, httponly=True, secure=True, samesite='none', expires=settings.REFRESH_TOKEN_DURATION_IN_MINUTES)
 
         return {
             "access_token": access_token,
