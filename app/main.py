@@ -55,7 +55,7 @@ def start_application():
     allow_methods=["*"],
     allow_headers=["*"]
     )
-    create_tables()
+    #create_tables()
     include_router(app)
     #lifespan(app)
 
