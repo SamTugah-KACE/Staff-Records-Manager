@@ -184,30 +184,30 @@ async def check_and_create_database():
         )
 
         # Check if the database exists
-        db_exists = await conn.fetchval(f"SELECT 1 FROM pg_catalog.pg_database WHERE datname = '{DATABASE}'")
-        print("database exists? ", db_exists)
-        if not db_exists:
-            await conn.execute(f"CREATE DATABASE {DATABASE}")
-            print(f"Database '{DATABASE}' created successfully.")
-            await conn.close()
-            await execute_sql()
-        else:
-            # Connect to the existing database to check for tables
-            await conn.close()
-            conn = await asyncpg.connect(user=DBUSER, password=DATABASE_PASSWORD, database=DATABASE, host=HOST)
+        # db_exists = await conn.fetchval(f"SELECT 1 FROM pg_catalog.pg_database WHERE datname = '{DATABASE}'")
+        # print("database exists? ", db_exists)
+        # if not db_exists:
+        #     await conn.execute(f"CREATE DATABASE {DATABASE}")
+        #     print(f"Database '{DATABASE}' created successfully.")
+        #     await conn.close()
+        #     await execute_sql()
+        # else:
+        #     # Connect to the existing database to check for tables
+        #     await conn.close()
+        #     conn = await asyncpg.connect(user=DBUSER, password=DATABASE_PASSWORD, database=DATABASE, host=HOST)
 
-            table_exists = await conn.fetchval(
-                "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public')"
-            )
+        #     table_exists = await conn.fetchval(
+        #         "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public')"
+        #     )
 
-            if table_exists:
-                print(f"Database '{DATABASE}' already has tables. Skipping SQL execution.")
-            else:
-                print(f"Database '{DATABASE}' exists but has no tables. Executing SQL script.")
-                await execute_sql()
+        #     if table_exists:
+        #         print(f"Database '{DATABASE}' already has tables. Skipping SQL execution.")
+        #     else:
+        #         print(f"Database '{DATABASE}' exists but has no tables. Executing SQL script.")
+        #         await execute_sql()
 
-            await conn.close()
-
+        #     await conn.close()
+        await execute_sql()
         return True
 
     except Exception as error:
