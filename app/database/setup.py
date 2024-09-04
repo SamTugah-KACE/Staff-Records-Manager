@@ -140,7 +140,7 @@ import os
 import asyncpg
 from dotenv import load_dotenv
 
-load_dotenv(dotenv_path='Config/app.env')
+#load_dotenv(dotenv_path='Config/app.env')
 
 async def execute_sql():
     HOST = os.getenv("DATABASE_HOST")
@@ -185,7 +185,7 @@ async def check_and_create_database():
 
         # Check if the database exists
         db_exists = await conn.fetchval(f"SELECT 1 FROM pg_catalog.pg_database WHERE datname = '{DATABASE}'")
-        
+        print("database exists? ", db_exists)
         if not db_exists:
             await conn.execute(f"CREATE DATABASE {DATABASE}")
             print(f"Database '{DATABASE}' created successfully.")
