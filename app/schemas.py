@@ -604,6 +604,28 @@ class Trademark(TrademarkInDBBase):
 
 
 
+#Role
+class RoleBase(BaseModel):
+    roles: str
+    dashboard: Optional[str]
+
+class RoleCreate(RoleBase):
+    pass
+
+class RoleUpdate(RoleBase):
+    pass
+
+class RoleInDBBase(RoleBase, BaseSchema):
+    pass
+
+    class Config:
+        orm_mode = True
+
+class Role(RoleInDBBase):
+    pass
+
+
+
 
 
 

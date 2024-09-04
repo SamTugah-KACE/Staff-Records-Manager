@@ -116,7 +116,9 @@ class BioData(BaseModel):
     ghana_card_number = Column(String,  unique=True, nullable=False)
     is_physically_challenged = Column(Boolean, nullable=False)
     disability = Column(String, nullable=True)
-    image_col = Column(String, unique=True, nullable=True)  #accept image file upload and store the file path to the copied directory
+    image_col = Column(String, unique=True, nullable=True),  #accept image file upload and store the file path to the copied directory
+    registered_by = Column(String)
+
     user = relationship('User', backref='bio_data', uselist=False, cascade='all, delete-orphan')
     employment_detail = relationship('EmploymentDetail', backref='bio_data', uselist=False, cascade='all, delete-orphan')
     bank_details = relationship('BankDetail', backref='bio_data', cascade='all, delete-orphan')
@@ -338,5 +340,13 @@ class Trademark(BaseModel):
     name = Column(String, unique=True, nullable=False)
     left_logo = Column(String, nullable=True) #accept image file upload and store the file path to the copied directory
     right_logo = Column(String, nullable=True) #accept image file upload and store the file path to the copied directory
+
+
+class UserRole(BaseModel):
+    __tablename__ = "user_role"
+
+    roles = Column(String, unique=True, nullable=False)
+    dashboard = Column(String)
+
     
 

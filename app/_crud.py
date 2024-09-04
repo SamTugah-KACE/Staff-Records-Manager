@@ -12,7 +12,7 @@ from models import (NextOfKin, EmergencyContact,
                     EmploymentDetail, EmploymentType, 
                     StaffCategory, Grade, Centre, Directorate, BankDetail,
                     Academic, Professional, Qualification,
-                    EmploymentHistory, EmergencyContact, FamilyInfo)  
+                    EmploymentHistory, EmergencyContact, FamilyInfo, UserRole)  
 import schemas
 
 
@@ -291,3 +291,9 @@ class CRUDFamilyInfo(CRUDBase[schemas.FamilyInfo, schemas.FamilyInfoCreate, sche
     pass
 
 family_info = CRUDFamilyInfo(FamilyInfo)
+
+
+class CRUDRole(CRUDBase[schemas.Role, schemas.RoleCreate, schemas.RoleUpdate]):
+    pass
+
+role = CRUDRole(UserRole)

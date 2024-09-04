@@ -9,7 +9,7 @@ from Config.config import settings
 import schemas
 from models import (BioData, EmploymentDetail, BankDetail, Academic, Professional, 
                         Qualification, EmploymentHistory, FamilyInfo, EmergencyContact, 
-                        NextOfKin, Declaration, StaffCategory, Centre, User, Directorate, Grade, EmploymentType, Trademark)
+                        NextOfKin, Declaration, StaffCategory, Centre, User, Directorate, Grade, EmploymentType, Trademark, UserRole)
 from crud import (bio_data, declaration, 
                   user, trademark)
 
@@ -19,7 +19,7 @@ import os
 from crud import generate_pdf_for_bio_data
 import crud
 from _crud import (centre, employment_type, grade, directorate, staff_category, bank_detail, emergency_contact, employment_detail, employment_history, 
-                  next_of_kin, family_info, academic, professional, qualification)
+                  next_of_kin, family_info, academic, professional, qualification, role)
 
 from auth import current_active_user, current_active_admin, current_active_admin_user
 from uuid import UUID
@@ -1025,6 +1025,88 @@ def delete_user(user_id: UUID, db: Session = Depends(get_db), ):
         raise HTTPException(status_code=404, detail="User not found")
     
     return "Data deleted successfully"
+
+
+
+
+#UserRole
+@api_router.post("/role/", response_model=schemas.Role, tags=["Role"])
+def create_Role(
+    *,
+    db: Session = Depends(get_db),
+    request: Request,
+    roles: Optional[str] = Form(None),
+    dashboard: Optional[str] = Form(None)
+    #Role_in: schemas.RoleCreate,
+    
+) -> UserRole:
+    User_obj = role.get_by_field(db, "roles", roles)
+    if User_obj:
+        raise HTTPException(status_code=400, detail="Role already exists")
+    
+    Role_in = UserRole()
+    Role_in.roles=roles
+    Role_in.dashboard=dashboard
+    db.add(Role_in)
+    db.commit()
+    db.refresh(Role_in)
+    return Role_in
+    # return templates.TemplateResponse("admin-dashboard.html", {"request": request})
+
+@api_router.get("/Role/{id}", response_model=schemas.Role,  tags=["Role"])
+def read_Role(
+    *,
+    db: Session = Depends(get_db),
+    id: str,
+    
+) -> UserRole:
+    Role_obj = role.get(db=db, id=id)
+    if not Role_obj:
+        raise HTTPException(status_code=404, detail="Role not found")
+    return Role_obj
+
+@api_router.get("/Roles/", response_model=List[schemas.Role],  tags=["Role"])
+def read_Roles(
+    *,
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100
+    
+) -> List[UserRole]:
+    Role_obj = role.get_multi(db, skip, limit)
+    
+    return Role_obj
+
+
+@api_router.put("/Role/{id}", response_model=schemas.Role,  tags=["Role"])
+def update_Role(
+    *,
+    db: Session = Depends(get_db),
+    id: str,
+    Role_in: schemas.RoleUpdate,
+    
+) -> UserRole:
+    Role_obj = role.get(db=db, id=id)
+    if not Role_obj:
+        raise HTTPException(status_code=404, detail="Role not found")
+    return UserRole.update(db=db, db_obj=Role_obj, obj_in=Role_in)
+
+@api_router.delete("/Role/rm/{id}", response_model=schemas.Role,  tags=["Role"])
+def delete_Role(
+    *,
+    db: Session = Depends(get_db),
+    id: str,
+    force_delete: bool = Query(False)  # Default is False, allowing normal delete
+) -> UserRole:
+    Role_obj = role.get(db=db, id=id)
+    if not Role_obj:
+        raise HTTPException(status_code=404, detail="Role not found")
+    return UserRole.remove(db=db, id=id, force_delete=force_delete)
+
+
+
+
+
 
 
 

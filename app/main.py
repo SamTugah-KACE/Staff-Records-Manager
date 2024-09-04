@@ -12,14 +12,15 @@ from fastapi.responses import JSONResponse
 from database.db_session import engine
 from database.admin import router
 from models import Base, User, BioData
-from auth import auth_router
+from oauth_api import auth_router
 from sqladmin import Admin, ModelView
 from dashboard import *
 
 
 
 def create_tables():
-    Base.metadata.create_all(bind=engine)
+    #Base.metadata.create_all(bind=engine)
+    Base.metadata.drop_all(bind=engine)
 
 
 
@@ -54,7 +55,7 @@ def start_application():
     allow_methods=["*"],
     allow_headers=["*"]
     )
-    #create_tables()
+    create_tables()
     include_router(app)
     #lifespan(app)
 

@@ -17,7 +17,7 @@ import requests
 from mail import account_emergency, send_email
 import os
 import json
-
+from auth import getCurrentUserDashbaord
 # intruder_list = []
 class LoginService:
     
@@ -361,6 +361,8 @@ class LoginService:
         else:
             response.set_cookie(key="RefreshToken", value=refresh_token, httponly=True, secure=True, samesite='none', expires=settings.REFRESH_TOKEN_DURATION_IN_MINUTES)
 
+        dash = getCurrentUserDashbaord(user, db)
+        print("dashboard -> ", dash)
         return {
             "access_token": access_token,
             "token_type": "bearer",
@@ -368,7 +370,8 @@ class LoginService:
             "user": {
                 "id": user.id, 
                 "email": user.email,
-                "role": user.role
+                "role": user.role,
+                "dashboard": dash
             },
             "refresh_token": refresh_token,
             "refresh_token_expiration": expiration_time

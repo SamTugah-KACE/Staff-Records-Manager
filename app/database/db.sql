@@ -65,7 +65,8 @@ CREATE TABLE bio_data (
     ghana_card_number VARCHAR NOT NULL,
     is_physically_challenged BOOLEAN NOT NULL,
     disability VARCHAR,
-    image_col VARCHAR
+    image_col VARCHAR,
+    registered_by  VARCHAR
 );
 
 CREATE TABLE users (
@@ -233,6 +234,23 @@ CREATE TABLE trademark (
     right_logo VARCHAR
 );
  
+CREATE TABLE user_role(
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    roles VARCHAR UNIQUE NOT NULL,
+    dashboard VARCHAR
+);
+
+
+
+-- Insert seed data into user_role
+INSERT INTO user_role (roles, dashboard) VALUES
+('Admin', '/admin/home'),
+('HR', '/hr/home'),
+('I.T Staff', '/staff/home'),
+('Customer-Care Staff', '/staff/home'),
+('System-Admin', '/admin/home');
 
 
 -- Insert seed data into centre
@@ -287,11 +305,11 @@ INSERT INTO bio_data (title, first_name, other_names, surname, previous_name, ge
 --admin: password123
 --users: password456
 INSERT INTO users (bio_row_id, username, email, hashed_password, reset_pwd_token, is_active, role) VALUES
-((SELECT id FROM bio_data WHERE first_name = 'John' AND surname = 'Doe'), 'johndoe', 'john.doe@example.com', '$2b$12$9SImAs0e9awgo6W3fI0qi.hUTgWetdaAWf.UM6wAfif2u1npzM8SW', NULL, TRUE, 'user'),
-((SELECT id FROM bio_data WHERE first_name = 'Jane' AND surname = 'Smith'), 'janesmith', 'jane.smith@example.com', '$2b$12$9SImAs0e9awgo6W3fI0qi.hUTgWetdaAWf.UM6wAfif2u1npzM8SW', NULL, TRUE, 'user'),
-((SELECT id FROM bio_data WHERE first_name = 'Michael' AND surname = 'Brown'), 'michaelbrown', 'michael.brown@example.com', '$2b$12$w7tjYNMXWMVGUnY14.pBTuqchkwILGQr5tivsUeuFltZT5YW35FqK', NULL, TRUE, 'admin'),
-((SELECT id FROM bio_data WHERE first_name = 'Angela' AND surname = 'Taylor'), 'angelataylor', 'angela.taylor@example.com', '$2b$12$9SImAs0e9awgo6W3fI0qi.hUTgWetdaAWf.UM6wAfif2u1npzM8SW', NULL, TRUE, 'user'),
-((SELECT id FROM bio_data WHERE first_name = 'Daniel' AND surname = 'Wilson'), 'danielwilson', 'daniel.wilson@example.com', 'hashedpassword5', NULL, TRUE, 'admin');
+((SELECT id FROM bio_data WHERE first_name = 'John' AND surname = 'Doe'), 'johndoe', 'john.doe@example.com', '$2b$12$9SImAs0e9awgo6W3fI0qi.hUTgWetdaAWf.UM6wAfif2u1npzM8SW', NULL, TRUE, 'I.T Staff'),
+((SELECT id FROM bio_data WHERE first_name = 'Jane' AND surname = 'Smith'), 'janesmith', 'jane.smith@example.com', '$2b$12$9SImAs0e9awgo6W3fI0qi.hUTgWetdaAWf.UM6wAfif2u1npzM8SW', NULL, TRUE, 'HR'),
+((SELECT id FROM bio_data WHERE first_name = 'Michael' AND surname = 'Brown'), 'michaelbrown', 'michael.brown@example.com', '$2b$12$w7tjYNMXWMVGUnY14.pBTuqchkwILGQr5tivsUeuFltZT5YW35FqK', NULL, TRUE, 'Admin'),
+((SELECT id FROM bio_data WHERE first_name = 'Angela' AND surname = 'Taylor'), 'angelataylor', 'angela.taylor@example.com', '$2b$12$9SImAs0e9awgo6W3fI0qi.hUTgWetdaAWf.UM6wAfif2u1npzM8SW', NULL, TRUE, 'Customer-Care Staff'),
+((SELECT id FROM bio_data WHERE first_name = 'Daniel' AND surname = 'Wilson'), 'danielwilson', 'daniel.wilson@example.com', 'hashedpassword5', NULL, TRUE, 'System-Admin');
 
 
 
