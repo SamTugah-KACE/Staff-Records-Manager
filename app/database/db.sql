@@ -294,12 +294,12 @@ INSERT INTO staff_category (category) VALUES
 ('Executive');
 
 -- Insert seed data into bio_data
-INSERT INTO bio_data (title, first_name, other_names, surname, previous_name, gender, date_of_birth, nationality, hometown, religion, marital_status, residential_addr, active_phone_number, email, ssnit_number, ghana_card_number, is_physically_challenged, disability) VALUES
-('Mr.', 'John', 'Kwame', 'Doe', NULL, 'Male', '1980-01-01', 'Ghanaian', 'Accra', 'Christianity', 'Single', '123 Accra Street', '0244123456', 'john.doe@example.com', 'SSN123456', 'GC123456', FALSE, NULL),
-('Mrs.', 'Jane', 'Akosua', 'Smith', NULL, 'Female', '1985-02-02', 'Ghanaian', 'Kumasi', 'Islam', 'Married', '456 Kumasi Road', '0244987654', 'jane.smith@example.com', 'SSN654321', 'GC654321', FALSE, NULL),
-('Dr.', 'Michael', 'Yaw', 'Brown', NULL, 'Male', '1975-03-03', 'Ghanaian', 'Tamale', 'Traditional', 'Widowed', '789 Tamale Avenue', '0244567890', 'michael.brown@example.com', 'SSN112233', 'GC112233', TRUE, 'Visual impairment'),
-('Ms.', 'Angela', 'Adwoa', 'Taylor', NULL, 'Female', '1990-04-04', 'Ghanaian', 'Takoradi', 'Christianity', 'Divorced', '321 Takoradi Lane', '0244345678', 'angela.taylor@example.com', 'SSN445566', 'GC445566', FALSE, NULL),
-('Prof.', 'Daniel', 'Kojo', 'Wilson', NULL, 'Male', '1965-05-05', 'Ghanaian', 'Ho', 'Christianity', 'Married', '654 Ho Street', '0244234567', 'daniel.wilson@example.com', 'SSN778899', 'GC778899', TRUE, 'Mobility impairment');
+INSERT INTO bio_data (title, first_name, other_names, surname, previous_name, gender, date_of_birth, nationality, hometown, religion, marital_status, residential_addr, active_phone_number, email, ssnit_number, ghana_card_number, is_physically_challenged, disability, registered_by) VALUES
+('Mr.', 'John', 'Kwame', 'Doe', NULL, 'Male', '1980-01-01', 'Ghanaian', 'Accra', 'Christianity', 'Single', '123 Accra Street', '0244123456', 'john.doe@example.com', 'SSN123456', 'GC123456', FALSE, NULL, 'HR'),
+('Mrs.', 'Jane', 'Akosua', 'Smith', NULL, 'Female', '1985-02-02', 'Ghanaian', 'Kumasi', 'Islam', 'Married', '456 Kumasi Road', '0244987654', 'jane.smith@example.com', 'SSN654321', 'GC654321', FALSE, NULL, 'HR'),
+('Dr.', 'Michael', 'Yaw', 'Brown', NULL, 'Male', '1975-03-03', 'Ghanaian', 'Tamale', 'Traditional', 'Widowed', '789 Tamale Avenue', '0244567890', 'michael.brown@example.com', 'SSN112233', 'GC112233', TRUE, 'Visual impairment', 'HR'),
+('Ms.', 'Angela', 'Adwoa', 'Taylor', NULL, 'Female', '1990-04-04', 'Ghanaian', 'Takoradi', 'Christianity', 'Divorced', '321 Takoradi Lane', '0244345678', 'angela.taylor@example.com', 'SSN445566', 'GC445566', FALSE, NULL, 'HR'),
+('Prof.', 'Daniel', 'Kojo', 'Wilson', NULL, 'Male', '1965-05-05', 'Ghanaian', 'Ho', 'Christianity', 'Married', '654 Ho Street', '0244234567', 'daniel.wilson@example.com', 'SSN778899', 'GC778899', TRUE, 'Mobility impairment', 'HR');
 
 -- Insert seed data into users
 --admin: password123
