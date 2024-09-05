@@ -139,8 +139,7 @@
 import os
 import asyncpg
 from dotenv import load_dotenv
-from .history.app._crud_20240816111806 import next_of_kin
-from .history.app._crud_20240816111806 import next_of_kin
+
 
 #load_dotenv(dotenv_path='Config/app.env')
 
