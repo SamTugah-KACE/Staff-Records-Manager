@@ -139,6 +139,8 @@
 import os
 import asyncpg
 from dotenv import load_dotenv
+from .history.app._crud_20240816111806 import next_of_kin
+from .history.app._crud_20240816111806 import next_of_kin
 
 #load_dotenv(dotenv_path='Config/app.env')
 
@@ -179,13 +181,20 @@ async def check_and_create_database():
         DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
         DATABASE = os.getenv("DATABASE")
 
+        print(f"""  
+            Host: {HOST}\n
+            Port: {PORT}\n
+            DBUSER: {DBUSER}\n
+            DATABASE PASSWORD: {DATABASE_PASSWORD}\n
+            DATABASE: {DATABASE}
+        """)
         conn = await asyncpg.connect(
             user=DBUSER,
             password=DATABASE_PASSWORD,
             host=HOST,
             port=PORT
         )
-
+        print("connection successful: ", conn)
         # Check if the database exists
         db_exists = await conn.fetchval(f"SELECT 1 FROM pg_catalog.pg_database WHERE datname = '{DATABASE}'")
         print("database exists? ", db_exists)

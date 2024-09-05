@@ -252,7 +252,7 @@ INSERT INTO user_role (roles, dashboard) VALUES
 ('Customer-Care Staff', '/staff/home'),
 ('System-Admin', '/admin/home');
 
-
+ 
 -- Insert seed data into centre
 INSERT INTO centre (location, region) VALUES
 ('Accra', 'Greater Accra'),
