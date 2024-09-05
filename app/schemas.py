@@ -207,6 +207,7 @@ class BioDataBase(BaseModel):
     is_physically_challenged: bool
     disability: Optional[str]
     image_col: Optional[str] = None
+    registered_by:Optional[str]
 
 class BioDataCreate(BioDataBase):
     pass

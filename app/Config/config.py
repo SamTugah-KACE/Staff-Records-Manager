@@ -41,13 +41,6 @@ class Settings:
 
 
 
-    # POSTGRES_USER: str = os.getenv("POSTGRES_USER", "sam_tugah_kace")
-    # POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "vjIDmbKK2KNpFm8h64JgK7jKW9bTpxP5")
-    # POSTGRES_SERVER: str = os.getenv("POSTGRES_SERVER", "dpg-cqrmj3ggph6c73a1u4k0-a")
-    # POSTGRES_PORT: str = os.getenv("POSTGRES_PORT", 5432)
-    # POSTGRES_DB: str = os.getenv("POSTGRES_DB", "staff_records_db")
-
-
     SQLALCHEMY_DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"
 
     DATABASE_HOST: str=os.getenv("DATABASE_HOST", "dpg-cr6sq556l47c739af3fg-a")
@@ -56,7 +49,7 @@ class Settings:
     DATABASE_PASSWORD: str=os.getenv("DATABASE_PASSWORD","mE5an1w7jBSx2YtbBpnYaaQxjlErdmXI")
     DATABASE: str=os.getenv("DATABASE","staff_records_db_41ko")
     
-    # DATABASE_URL: str = os.getenv("DATABASE_URL","postgresql://sam_tugah_kace:mE5an1w7jBSx2YtbBpnYaaQxjlErdmXI@dpg-cr6sq556l47c739af3fg-a/staff_records_db_41ko")
+    DATABASE_URL: str = os.getenv("DATABASE_URL","postgresql://sam_tugah_kace:mE5an1w7jBSx2YtbBpnYaaQxjlErdmXI@dpg-cr6sq556l47c739af3fg-a/staff_records_db_41ko")
 
     
     # DATABASE_HOST: str=os.getenv("DATABASE_HOST", "staff-records")
