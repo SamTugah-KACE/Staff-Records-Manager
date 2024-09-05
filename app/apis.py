@@ -1089,7 +1089,7 @@ def update_Role(
     Role_obj = role.get(db=db, id=id)
     if not Role_obj:
         raise HTTPException(status_code=404, detail="Role not found")
-    return UserRole.update(db=db, db_obj=Role_obj, obj_in=Role_in)
+    return role.update(db=db, db_obj=Role_obj, obj_in=Role_in)
 
 @api_router.delete("/Role/rm/{id}", response_model=schemas.Role,  tags=["Role"])
 def delete_Role(
@@ -1101,7 +1101,7 @@ def delete_Role(
     Role_obj = role.get(db=db, id=id)
     if not Role_obj:
         raise HTTPException(status_code=404, detail="Role not found")
-    return UserRole.remove(db=db, id=id, force_delete=force_delete)
+    return role.remove(db=db, id=id, force_delete=force_delete)
 
 
 
