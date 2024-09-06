@@ -68,6 +68,7 @@ async def read_root(request: Request):
 
 @api_router.get("/search/", response_model=Dict[str, List[Dict[str, Any]]], tags=["Search Space"])
 def search(search_string: str, db: Session = Depends(get_db), current_user: User = Depends(current_active_admin_user)):
+    print("\ncurrent-user in search api: ", current_user)
     results = crud.search_all(db, search_string, search_models, current_user)
     return results
 

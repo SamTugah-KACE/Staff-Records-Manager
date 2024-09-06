@@ -49,7 +49,7 @@ class Settings:
     DATABASE_PASSWORD: str=os.getenv("DATABASE_PASSWORD","mE5an1w7jBSx2YtbBpnYaaQxjlErdmXI")
     DATABASE: str=os.getenv("DATABASE","staff_records_db_41ko")
     
-    DATABASE_URL: str = os.getenv("DATABASE_URL","postgresql://sam_tugah_kace:mE5an1w7jBSx2YtbBpnYaaQxjlErdmXI@dpg-cr6sq556l47c739af3fg-a/staff_records_db_41ko")
+    # DATABASE_URL: str = os.getenv("DATABASE_URL","postgresql://sam_tugah_kace:mE5an1w7jBSx2YtbBpnYaaQxjlErdmXI@dpg-cr6sq556l47c739af3fg-a/staff_records_db_41ko")
 
     
     # DATABASE_HOST: str=os.getenv("DATABASE_HOST", "staff-records")

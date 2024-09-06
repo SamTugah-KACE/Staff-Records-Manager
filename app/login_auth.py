@@ -333,7 +333,7 @@ class LoginService:
             refresh_token_expires = timedelta(days=settings.REFRESH_TOKEN_REMEMBER_ME_DAYS)
 
         access_token = Security.create_access_token(
-            data={"sub": str(user.email)}, expires_delta=access_token_expires
+            data={"sub": str(user.username)}, expires_delta=access_token_expires
         )
         refresh_token = Security.create_refresh_token(
             data={"sub": str(user)}, expires_delta=refresh_token_expires

@@ -7,7 +7,7 @@ import schemas
 from fpdf import FPDF
 from models import (Centre, Directorate, Grade, EmploymentType, StaffCategory, BioData, EmploymentDetail, 
                     BankDetail, Academic, Professional, Qualification, EmploymentHistory, FamilyInfo, EmergencyContact, NextOfKin, 
-                    Declaration, StaffCategory,User, Trademark)
+                    Declaration, StaffCategory,User, Trademark, UserRole)
 
 
 from PIL import Image,  UnidentifiedImageError
@@ -277,12 +277,69 @@ def search_related_models(db: Session, related_model: Type[Any], search_terms: L
         return [custom_jsonable_encoder(record) for record in related_query_results]
     return []
 
+# def search_all(db: Session, search_string: str, models: List[Type[Any]], current_user: User) -> Dict[str, List[Dict[str, Any]]]:
+#     # Sanitize and validate input
+#     search_string = search_string.lower().strip()
+#     if not validate_input(search_string):
+#         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid input detected")
+
+#     search_terms = re.sub(r'[^\w\s]', '', search_string).split()
+#     results = {}
+
+#     try:
+#         for model in models:
+#             conditions = []
+#             for column in inspect(model).columns:
+#                 if isinstance(column.type, (String, Text)):
+#                     conditions.extend([getattr(model, column.name).ilike(f"%{term}%") for term in search_terms])
+#                 elif isinstance(column.type, (PostgreSQL_UUID, uuid.UUID)):
+#                     if is_valid_uuid(search_string):
+#                         conditions.append(getattr(model, column.name) == uuid.UUID(search_string))
+#                 # Skip non-searchable types
+
+#             if conditions:
+#                 query = db.query(model).filter(or_(*conditions))
+#                 query_results = query.all()
+
+#                 if query_results:
+#                     if current_user.role == "Admin" or current_user.role == "HR":
+#                         model_results = [custom_jsonable_encoder(record) for record in query_results]
+#                     else:
+#                         model_results = [
+#                             custom_jsonable_encoder(record) if record.id == current_user.bio_row_id else {
+#                                 'Name': getattr(record, 'name', None),
+#                                 'Staff Category': getattr(record, 'staff_category', None),
+#                                 'Employment Type': getattr(record, 'employment_type', None),
+#                                 'Qualification': getattr(record, 'qualification', None),
+#                                 'Image': getattr(record, 'image_col', None)
+#                             }
+#                             for record in query_results
+#                         ]
+
+#                     if model_results:
+#                         results[model.__name__] = model_results
+
+#         return results
+#     except SQLAlchemyError as e:
+#         db.rollback()
+#         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Database error in search_all: {str(e)}")
+#     except Exception as e:
+#         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Error in search_all: {str(e)}")
+
+
+
 def search_all(db: Session, search_string: str, models: List[Type[Any]], current_user: User) -> Dict[str, List[Dict[str, Any]]]:
     # Sanitize and validate input
     search_string = search_string.lower().strip()
     if not validate_input(search_string):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid input detected")
-
+    
+    # Retrieve user role from the UserRole table
+    user_role = db.query(UserRole).filter(UserRole.roles == current_user.role).first()
+    print("user_role: ", user_role)
+    if not user_role:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User role is not authorized for search")
+    
     search_terms = re.sub(r'[^\w\s]', '', search_string).split()
     results = {}
 
@@ -295,16 +352,17 @@ def search_all(db: Session, search_string: str, models: List[Type[Any]], current
                 elif isinstance(column.type, (PostgreSQL_UUID, uuid.UUID)):
                     if is_valid_uuid(search_string):
                         conditions.append(getattr(model, column.name) == uuid.UUID(search_string))
-                # Skip non-searchable types
 
             if conditions:
                 query = db.query(model).filter(or_(*conditions))
                 query_results = query.all()
 
                 if query_results:
-                    if current_user.role == "admin":
+                    # If the user's role is Admin or HR, they can view full records
+                    if user_role.roles in ["Admin", "HR"]:
                         model_results = [custom_jsonable_encoder(record) for record in query_results]
                     else:
+                        # Non-admins and non-HR only see limited fields
                         model_results = [
                             custom_jsonable_encoder(record) if record.id == current_user.bio_row_id else {
                                 'Name': getattr(record, 'name', None),
@@ -320,11 +378,13 @@ def search_all(db: Session, search_string: str, models: List[Type[Any]], current
                         results[model.__name__] = model_results
 
         return results
+
     except SQLAlchemyError as e:
         db.rollback()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Database error in search_all: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Error in search_all: {str(e)}")
+
 
 
 

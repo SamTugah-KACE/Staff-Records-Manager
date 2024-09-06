@@ -82,12 +82,14 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-        token_data = TokenData(username=username)
+        print("username :", username)
+        # if username is None:
+        #     raise credentials_exception
+        # token_data = TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    user = crud.get_user_by_username(db, username=token_data.username)
+    user = crud.get_user_by_username(db, username=username)
+    print("user obj: ", user)
     if user is None:
         raise credentials_exception
     return user
@@ -118,7 +120,7 @@ def getCurrentUserDashbaord(current_user: models.User, db:Session = Depends(get_
 
 
 def current_active_admin(current_user: schemas.User = Depends(get_current_active_user)):
-    if current_user.role != "admin":
+    if current_user.role != "Admin":
         raise HTTPException(status_code=403, detail="Admins Only")
     return current_user
 
@@ -132,12 +134,22 @@ def current_active_user(current_user: schemas.User = Depends(get_current_active_
         raise HTTPException(status_code=403, detail="Users Only")
     return current_user
 
-def current_active_admin_user(current_user: schemas.User = Depends(get_current_active_user)):
-    print("user.role: ", current_user.role)
-    if (current_user.role != "admin") and (current_user.role != "user"):
-        raise HTTPException(status_code=403, detail="Unknown User")
-    return current_user
+# def current_active_admin_user(current_user: schemas.User = Depends(get_current_active_user)):
+#     print("user.role: ", current_user.role)
+#     if (current_user.role != "admin") and (current_user.role != "user"):
+#         raise HTTPException(status_code=403, detail="Unknown User")
+#     return current_user
 
+
+def current_active_admin_user(current_user: schemas.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    # Fetch the role from the UserRole table
+    user_role = db.query(models.UserRole).filter(models.UserRole.roles == current_user.role).first()
+
+    # If role is not found or is not authorized, raise an error
+    if not user_role:
+        raise HTTPException(status_code=403, detail="Access denied. Unauthorized user.")
+    print("current user in depends = ", current_user)
+    return current_user
 
 
 
