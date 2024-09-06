@@ -398,10 +398,10 @@ class LoginService:
         if not user_email:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unable to determine logged-in user")
         
-        print("email from payload token: ", user_email)
+        print("username from payload token: ", user_email)
 
         # Retrieve the user from the database
-        user = db.query(User).filter(User.email == user_email).first()
+        user = db.query(User).filter(User.username == user_email).first()
         if not user:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
         
