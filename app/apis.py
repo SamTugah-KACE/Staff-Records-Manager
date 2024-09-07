@@ -627,8 +627,8 @@ async def create_bio_data_(
     if bio_data_obj:
         raise HTTPException(status_code=400, detail="National ID Number Already Exists")
     
-    if bio_data_obj:
-         return templates.TemplateResponse("biodata-exist-error.html", {"request": request})
+    # if bio_data_obj:
+    #      return templates.TemplateResponse("biodata-exist-error.html", {"request": request})
     
     # Generate username and password
     username = generate_username(first_name, surname)
