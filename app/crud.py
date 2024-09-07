@@ -169,6 +169,13 @@ def update_user(db: Session, user_id: uuid.UUID, user_update: schemas.UserUpdate
 def get_user_by_username(db: Session, username: str):
     return db.query(User).filter(User.username == username).first()
 
+
+def activate_deactivate_account(db: Session, email: str, status: bool):
+    user = db.query(User).filter(User.email == email).first()
+    user.is_active = status
+    db.commit()
+    return user.is_active
+
 def get_user_by_email(db: Session, email: str):
     return db.query(User).filter(User.email == email).first()
 

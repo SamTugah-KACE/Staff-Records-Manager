@@ -1,6 +1,7 @@
 from datetime import date
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, status, UploadFile, File
 from pydantic import EmailStr
+import sqlalchemy
 from sqlalchemy.orm import Session
 from database.db_session import get_db
 from auth import authenticate_user,create_access_token
@@ -1017,6 +1018,10 @@ def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), )
 def update_user(user_id: UUID, user_update: schemas.UserUpdate, db: Session = Depends(get_db), ):
     return crud.update_user(db=db, user_id=user_id, user_update=user_update)
 
+
+@api_router.put("/user/account/{email}",  tags=["Users"])
+def update_user_account(email: str, status: bool, db: Session = Depends(get_db), ):
+    return crud.activate_deactivate_account(db, email, status)
 
 
 @api_router.delete("/users/rm/{user_id}", tags=["Users"])
