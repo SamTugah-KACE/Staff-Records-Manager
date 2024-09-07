@@ -1,5 +1,5 @@
 from datetime import date
-from fastapi import APIRouter, Depends, Form, HTTPException, Query, status, UploadFile, File
+from fastapi import APIRouter, Depends, Form, HTTPException, Query, status, UploadFile, File, WebSocket, WebSocketDisconnect
 from pydantic import EmailStr
 import sqlalchemy
 from sqlalchemy.orm import Session
@@ -40,6 +40,9 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 def get_password_hash(password: str):
     return pwd_context.hash(password)
 
+
+# List of connected clients
+clients: List[WebSocket] = []
 
 # List of all models
 all_models = [
@@ -1032,6 +1035,24 @@ def delete_user(user_id: UUID, db: Session = Depends(get_db), ):
     
     return "Data deleted successfully"
 
+
+
+
+@api_router.websocket("/ws/staff")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    clients.append(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()  # Listen for data from client
+            # Here you can process the data
+    except WebSocketDisconnect:
+        clients.remove(websocket)
+    
+# Function to broadcast updates to all clients
+async def broadcast_update(message: str):
+    for client in clients:
+        await client.send_text(message)
 
 
 

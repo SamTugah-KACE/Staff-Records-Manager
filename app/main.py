@@ -2,7 +2,7 @@ from fastapi.middleware.cors import CORSMiddleware
 #from utils.database import engine,SessionLocal
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
-from fastapi import FastAPI,Request,status, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI,Request,status
 import uvicorn
 from apis import api_router
 from Config.config import settings
@@ -15,7 +15,6 @@ from models import Base, User, BioData
 from oauth_api import auth_router
 from sqladmin import Admin, ModelView
 from dashboard import *
-from typing import List
 
 
 
@@ -93,24 +92,7 @@ async def startup_event():
     async with lifespan(app):
         pass
 
-# List of connected clients
-clients: List[WebSocket] = []
 
-@app.websocket("/ws/staff")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    clients.append(websocket)
-    try:
-        while True:
-            data = await websocket.receive_text()  # Listen for data from client
-            # Here you can process the data
-    except WebSocketDisconnect:
-        clients.remove(websocket)
-    
-# Function to broadcast updates to all clients
-async def broadcast_update(message: str):
-    for client in clients:
-        await client.send_text(message)
 
 
 # Custom error handling middleware
