@@ -630,7 +630,12 @@ async def create_bio_data_(
     
     # if bio_data_obj:
     #      return templates.TemplateResponse("biodata-exist-error.html", {"request": request})
-    
+    # Retrieve user role from the UserRole table
+    #user_role = db.query(UserRole).filter(UserRole.roles == current_user.role).first()
+    print("user_role: ", current_user)
+    if not current_user:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User role '{current_user}' is not authorized for this task.")
+
     # Generate username and password
     username = generate_username(first_name, surname)
     password = generate_password()
