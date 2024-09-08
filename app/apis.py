@@ -612,7 +612,8 @@ async def create_bio_data_(
     is_physically_challenged: Optional[bool] = Form(None),
     disability: Optional[str] = Form(None),
     file: UploadFile = File(None),
-    
+    system_role: str = Form(None),
+    current_user: User = Depends(current_active_admin_user),
 ) -> BioData:
     bio_data_obj = bio_data.get_by_field(db, "active_phone_number", active_phone_number)
     if bio_data_obj:
@@ -654,6 +655,7 @@ async def create_bio_data_(
     bio_data_in.ghana_card_number=ghana_card_number
     bio_data_in.is_physically_challenged=is_physically_challenged
     bio_data_in.disability=disability
+    bio_data_in.registered_by = current_user.role
     
     files = {"image_col": file}
     new_biodata = bio_data.create(db=db, obj_in=bio_data_in, files=files)
@@ -668,7 +670,7 @@ async def create_bio_data_(
         "username": username,
         "email": email,
         "hashed_password": hashed_password,
-        "role": "user",  # Set role as 'user'
+        "role": system_role,  # Set role as 'user'
         "is_active": True
     }
 
