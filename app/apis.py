@@ -1101,7 +1101,7 @@ def read_Role(
 
 
 
-@api_router.get("/roles/", response_model=List[schemas.Role],  tags=["Role"])
+@api_router.get("/roles/",   tags=["Role"])
 def read_Roles(
     *,
     db: Session = Depends(get_db),
