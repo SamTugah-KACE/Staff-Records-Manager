@@ -57,6 +57,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def get_multi(self, db: Session, skip: int = 0, limit: int = 100) -> List[ModelType]:
         return db.query(self.model).offset(skip).limit(limit).all()
     
+    def get_multi_field(self, db: Session, skip: int = 0, limit: int = 100) -> List[ModelType]:
+        return db.query(self.model.roles).offset(skip).limit(limit).all()
+    
     # def get_multi_with_join(self, db: Session, skip: int = 0, limit: int = 10) -> List[ModelType]:
     #     query = db.query(self.model)
     #     # Auto join related tables using joinedload

@@ -1099,6 +1099,21 @@ def read_Role(
         raise HTTPException(status_code=404, detail="Role not found")
     return Role_obj
 
+
+
+@api_router.get("/roles/", response_model=List[schemas.Role],  tags=["Role"])
+def read_Roles(
+    *,
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100
+    
+) -> List[UserRole]:
+    Role_obj = role.get_multi_field(db, skip, limit)
+    
+    return Role_obj
+
+
 @api_router.get("/Roles/", response_model=List[schemas.Role],  tags=["Role"])
 def read_Roles(
     *,
