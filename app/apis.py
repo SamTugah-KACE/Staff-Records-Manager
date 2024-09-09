@@ -1110,8 +1110,15 @@ def read_Roles(
     
 ) -> List[UserRole]:
     Role_obj = role.get_multi_field(db, skip, limit)
+    Role_obj = db.query(UserRole).offset(skip).limit(limit).all()
+
+    rols = []
+
+    for role in Role_obj:
+        rols.append(role.roles)
+        print("rols: ", rols)
     
-    return Role_obj
+    return rols
 
 
 @api_router.get("/Roles/", response_model=List[schemas.Role],  tags=["Role"])
