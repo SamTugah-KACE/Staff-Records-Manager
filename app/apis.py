@@ -1101,24 +1101,21 @@ def read_Role(
 
 
 
-# @api_router.get("/roles/",   tags=["Role"])
-# def read_Roles(
-#     *,
-#     db: Session = Depends(get_db),
-#     skip: int = 0,
-#     limit: int = 100
+@api_router.get("/roles/", response_model=List[str], tags=["Role"])
+def read_Roles(
+    *,
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100
     
-# ) -> List[UserRole]:
-#     Role_obj = role.get_multi_field(db, skip, limit)
-#     Role_obj = db.query(UserRole).offset(skip).limit(limit).all()
-
-#     rols = []
-
-#     for role in Role_obj:
-#         rols.append(role.roles)
-#         print("rols: ", rols)
+) -> List[UserRole]:
+    # Role_obj = role.get_multi_field(db, skip, limit)
+    roles_obj = db.query(UserRole).offset(skip).limit(limit).all()
+    print("\nroles_obj: ", roles_obj)
+     # Extracting the role names from the result
+    roles_list = [role.roles for role in roles_obj]
     
-#     return rols
+    return roles_list
 
 
 @api_router.get("/Roles/", response_model=List[schemas.Role],  tags=["Role"])
