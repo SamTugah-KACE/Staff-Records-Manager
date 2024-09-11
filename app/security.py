@@ -1,7 +1,7 @@
 from fastapi.exceptions import HTTPException
 from models import User
 from passlib.context import CryptContext
-from datetime import datetime,timedelta
+from datetime import datetime,timedelta, timezone
 from Config.config import settings
 from sqlalchemy.orm import Session
 from fastapi import status,Depends
@@ -64,9 +64,9 @@ class Security():
     def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
         to_encode = data.copy()
         if expires_delta:
-            expire = datetime.utcnow() + expires_delta
+            expire = datetime.now(timezone.utc) + expires_delta
         else:
-            expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+            expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.ALGORITHM)
         return encoded_jwt
@@ -79,9 +79,9 @@ class Security():
     @staticmethod
     def generate_reset_password_token(expires: int = None):
         if expires is not None:
-            expires = datetime.utcnow() + expires
+            expires = datetime.now(timezone.utc) + expires
         else:
-            expires = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+            expires = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         to_encode = {"exp": expires}
         encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY, settings.ALGORITHM)
         return encoded_jwt
@@ -116,9 +116,9 @@ class Security():
     def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None):
         to_encode = data.copy()
         if expires_delta:
-            expire = datetime.utcnow() + expires_delta
+            expire = datetime.now(timezone.utc) + expires_delta
         else:
-            expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+            expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.ALGORITHM)
         return encoded_jwt

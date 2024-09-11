@@ -169,7 +169,7 @@ class User(BaseModel):
 class RefreshToken(BaseModel):
         __tablename__ = "refresh_tokens"
         
-        user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), unique=True,nullable=True)
+        user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), unique=True, nullable=True)
         refresh_token = Column(String, unique=True)
         expiration_time = Column(DateTime, nullable=False)
 
