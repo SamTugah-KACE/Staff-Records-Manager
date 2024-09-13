@@ -1,8 +1,9 @@
 import io
 from database.db_session import  Base
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, RelationshipProperty
+from sqlalchemy.orm.relationships import RelationshipProperty, inspect
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import inspect
+# from sqlalchemy import inspect
 import schemas
 from fpdf import FPDF
 from models import (Centre, Directorate, Grade, EmploymentType, StaffCategory, BioData, EmploymentDetail, 

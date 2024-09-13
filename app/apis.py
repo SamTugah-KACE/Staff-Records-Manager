@@ -1079,7 +1079,11 @@ def create_Role(
         raise HTTPException(status_code=400, detail="Role already exists")
     
     Role_in = UserRole()
-    Role_in.roles=roles
+    if ("Staff" or "staff") in roles:
+        Role_in.roles=roles
+    else:
+        Role_in.roles=roles+" Staff"
+        
     Role_in.dashboard=dashboard
     db.add(Role_in)
     db.commit()

@@ -9,7 +9,7 @@ from datetime import timedelta, datetime, timezone
 from fastapi import Depends, HTTPException, status, Response, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from security import Security
-from models import User, RefreshToken
+from models import User, RefreshToken, BioData
 from database.db_session import get_db
 from Config.config import settings
 from fastapi.encoders import jsonable_encoder
@@ -18,6 +18,7 @@ from mail import account_emergency, send_email
 import os
 import json
 from auth import getCurrentUserDashbaord
+
 # intruder_list = []
 class LoginService:
     
@@ -363,12 +364,18 @@ class LoginService:
 
         dash = getCurrentUserDashbaord(user, db)
         print("dashboard -> ", dash)
+        bio = db.query(BioData).filter(BioData.id == user.bio_row_id).first()
+        print("\nuser bio-data: ", bio)
+        fullname = ""
+        if bio:
+            fullname = f"{bio.title} {bio.first_name} {bio.surname} {bio.other_names or ''}"
         return {
             "access_token": access_token,
             "token_type": "bearer",
             "access_token_expiration": access_token_expiration,
             "user": {
                 "id": user.id, 
+                "welcome": fullname + f" ({user.role})",
                 "email": user.email,
                 "role": user.role,
                 "dashboard": dash
