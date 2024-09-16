@@ -57,7 +57,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
     
 
-    def get_detailed(db: Session, model: Type[ModelType], id: uuid.UUID) -> Optional[ModelType]:
+    def get_detailed(self, db: Session, model: Type[ModelType], id: uuid.UUID) -> Optional[ModelType]:
         try:
             # Start with the base query for the primary model
             query = db.query(model)
