@@ -132,7 +132,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         print("\nobj: ", idn)
         if not idn:
             print("bio_row_id****")
-            idn = db.query.filter(self.model.bio_row_id == id).first()
+            idn = db.query(self.model).filter(self.model.bio_row_id == id).first()
             print("\nresulting obj ^: ", idn)
         
         return idn
