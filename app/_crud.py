@@ -81,7 +81,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                     
                     if related_query:
                         return related_query
-
+            
             return result
 
         except SQLAlchemyError as e:
