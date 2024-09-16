@@ -12,10 +12,17 @@ from models import (NextOfKin, EmergencyContact,
                     EmploymentDetail, EmploymentType, 
                     StaffCategory, Grade, Centre, Directorate, BankDetail,
                     Academic, Professional, Qualification,
-                    EmploymentHistory, EmergencyContact, FamilyInfo, UserRole)  
+                    EmploymentHistory, EmergencyContact, FamilyInfo, UserRole, BioData)  
 import schemas
 from sqlalchemy.exc import SQLAlchemyError
 import uuid
+from uuid import UUID
+
+
+
+
+
+
 
 
 
@@ -31,10 +38,94 @@ ModelType = TypeVar('ModelType', bound=BaseModel)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
+def get_model_id_by_related_id(
+    db: Session,
+    model: Type,  # SQLAlchemy model, not Pydantic BaseModel
+    related_id: UUID
+) -> Optional[UUID]:
+    """
+    Retrieve the primary ID of a given model using a related row's foreign key ID.
+
+    :param db: SQLAlchemy session to use for querying
+    :param model: The SQLAlchemy model class whose ID we are looking for
+    :param related_id: The UUID of the related row
+    :return: The primary UUID of the model, or None if not found
+    """
+    try:
+        # Loop through relationships in the model to find foreign key relationships
+        for relationship in model.__mapper__.relationships:
+            related_model = relationship.mapper.class_
+
+            # Check if the related model's primary key matches the provided `related_id`
+            related_row = db.query(related_model).filter(related_model.id == related_id).first()
+
+            if related_row:
+                # Load the relationship using the class-bound attribute (not strings)
+                model_row = db.query(model).options(joinedload(getattr(model, relationship.key)))\
+                    .filter(getattr(model, relationship.key) == (related_row))\
+                    .first()
+
+                if model_row:
+                    return model_row.id
+
+        raise HTTPException(status_code=404, detail="No matching record found with the given related ID")
+
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error occurred: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+    
+# def get_model_id_by_related_id(
+#         db: Session,
+#         model: Type[BaseModel],
+#         related_id: UUID
+#         ) -> Optional[UUID]:
+#         """
+#         Retrieve the primary ID of a given model using a related row's foreign key ID.
+
+#         :param db: SQLAlchemy session to use for querying
+#         :param model: The model class whose ID we are looking for
+#         :param related_id: The UUID of the related row
+#         :return: The primary UUID of the model, or None if not found
+#         """
+#         try:
+#             # Loop through relationships in the model to find foreign key relationships
+#             for relationship in model.__mapper__.relationships:
+#                 # Retrieve the related model class
+#                 related_model = relationship.mapper.class_
+
+#                 print("\nrelated_model: ", related_model)
+
+#                 # Check if the related model's primary key matches the provided `related_id`
+#                 related_row = db.query(related_model).filter(related_model.id == related_id).first()
+#                 print("\nrelated row: ", related_row)
+#                 if related_row:
+#                     # Fetch the row from the main model using the related model's foreign key
+#                     model_row = db.query(model).options(joinedload(relationship.key))\
+#                         .filter(getattr(model, relationship.key).contains(related_row))\
+#                         .first()
+#                     print("\nmodel row: ", model_row)
+#                     if model_row:
+#                         print("\nmodel_row.id: ", model_row.id)
+#                         return model_row.id
+
+#             raise HTTPException(status_code=404, detail="No matching record found with the given related ID")
+
+#         except SQLAlchemyError as e:
+#             db.rollback()
+#             raise HTTPException(status_code=500, detail=f"Database error occurred: {str(e)}")
+#         except Exception as e:
+#             raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+
+
 
 class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def __init__(self, model: Type[ModelType]):
         self.model = model
+    
+    
+        
 
     def get(self, db: Session, id: str) -> Optional[ModelType]:
         return db.query(self.model).filter(self.model.id == id).first()

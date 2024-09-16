@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Form, HTTPException, Query, status, Uplo
 from pydantic import EmailStr
 import sqlalchemy
 from sqlalchemy.orm import Session
-from database.db_session import get_db
+from database.db_session import get_db, Base
 from auth import authenticate_user,create_access_token
 from datetime import datetime, timedelta
 from Config.config import settings
@@ -31,6 +31,11 @@ from fastapi import Request,Form
 from passlib.context import CryptContext
 from mail import *
 from auth import get_password_hash
+from _crud import get_model_id_by_related_id
+from typing_extensions import Literal
+
+
+
 
 templates = Jinja2Templates(directory="templates")
 
@@ -68,6 +73,48 @@ api_router = APIRouter()
 @api_router.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
     return templates.TemplateResponse("user-login.html", {"request": request})
+
+
+# Define a dictionary to map strings to model classes
+model_mapping = {
+    "BioData": BioData,
+    "EmploymentDetail": EmploymentDetail,
+    "FamilyInfo": FamilyInfo,
+    "BankDetail": BankDetail,
+    "Academic": Academic,
+    "Professional": Professional,
+    "Qualification": Qualification,
+    "EmergencyContact": EmergencyContact,
+    "EmploymentHistory": EmploymentHistory,
+    "NextOfKin": NextOfKin,
+    # Add other model mappings here
+}
+
+
+
+@api_router.get("/ID/{mod}", response_model=Optional[UUID], tags=["ID"])
+def read_mode_id(
+    *,
+    db: Session = Depends(get_db),
+    mod: Literal["BioData", "EmploymentDetail", "FamilyInfo",  "BankDetail", "Academic", "Professional", 
+                 "Qualification", "EmergencyContact", "EmploymentHistory", "NextOfKin"],  # Expect string names
+    id: UUID
+) -> Optional[UUID]:
+    # Get the model class from the mapping
+    model_class = model_mapping.get(mod)
+
+    if not model_class:
+        raise HTTPException(status_code=400, detail=f"Model '{mod}' not found")
+
+    obj_id = get_model_id_by_related_id(db=db, model=model_class, related_id=id)
+    
+    if not obj_id:
+        raise HTTPException(status_code=404, detail=f"ID for model '{mod}' not found")
+    
+    return obj_id
+
+
+
 
 
 @api_router.get("/search/", response_model=Dict[str, List[Dict[str, Any]]], tags=["Search Space"])
