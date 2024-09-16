@@ -1,5 +1,5 @@
 import io
-from database.db_session import  Base
+from database.db_session import Base
 from sqlalchemy.orm import Session, joinedload, RelationshipProperty
 from sqlalchemy.orm.relationships import RelationshipProperty, inspect
 from sqlalchemy.exc import IntegrityError
@@ -122,7 +122,7 @@ def _image_to_base64(filepath: bytes) -> bytes:
 def get_user(db: Session, user_id: uuid.UUID):
     return db.query(User).filter(User.id == user_id).first()
 
-def get_detailed_crud(db:Session, model, id) -> Optional[ModelType]:
+def get_detailed_crud_(db:Session, model, id) -> Optional[ModelType]:
         try:
             # Start with the base query
             query = db.query(model)
@@ -138,6 +138,42 @@ def get_detailed_crud(db:Session, model, id) -> Optional[ModelType]:
 
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+
+def get_detailed_crud(db: Session, model: Type[ModelType], id: uuid.UUID) -> Optional[ModelType]:
+    try:
+        # Start with the base query for the primary model
+        query = db.query(model)
+
+        # Loop through relationships and load related data
+        for relationship in model.__mapper__.relationships:
+            relationship_attr = getattr(model, relationship.key)
+            query = query.options(joinedload(relationship_attr))
+
+        # Check if the provided UUID matches the model's primary key
+        result = query.filter(model.id == id).first()
+
+        # If no result by primary key, check for a match in related rows by foreign key
+        if not result:
+            for relationship in model.__mapper__.relationships:
+                related_model = relationship.mapper.class_
+                foreign_key_column = relationship.local_remote_pairs[0][0]
+                
+                # Join the related model and filter by related model's UUID foreign key
+                related_query = db.query(model).join(related_model).filter(foreign_key_column == id).first()
+                
+                if related_query:
+                    return related_query
+
+        return result
+
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Database error: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An unexpected error occurred: {str(e)}")
+
+
+
 
 def update_user(db: Session, user_id: uuid.UUID, user_update: schemas.UserUpdate):
     db_user = get_user(db, user_id)
