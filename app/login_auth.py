@@ -375,6 +375,7 @@ class LoginService:
             "access_token_expiration": access_token_expiration,
             "user": {
                 "id": user.id, 
+                "bio_row_id": user.bio_row_id,
                 "welcome": fullname + f" ({user.role})",
                 "email": user.email,
                 "role": user.role,
