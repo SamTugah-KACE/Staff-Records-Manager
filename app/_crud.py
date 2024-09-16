@@ -291,6 +291,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             for field in obj_in.dict(exclude_unset=True):
                 setattr(db_obj, field, getattr(obj_in, field))
             
+            print("\nupdate db_obj: ", db_obj)
             # Save the updated object
             db.add(db_obj)
             db.commit()
@@ -301,6 +302,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             db.rollback()
             raise ValueError("Data update would conflict with existing unique fields") from e
         except Exception as e:
+            print("500 error: ", e)
             raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
 
 
