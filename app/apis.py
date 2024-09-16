@@ -1544,7 +1544,7 @@ def read_academic(
         raise HTTPException(status_code=404, detail="academic not found")
     return academic_obj
 
-@api_router.put("/academic/{id}", response_model=schemas.Academic,  tags=["Academics"])
+@api_router.put("/update/academic/{id}", response_model=schemas.Academic,  tags=["Academics"])
 def update_academic(
     *,
     db: Session = Depends(get_db),

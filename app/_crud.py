@@ -128,7 +128,22 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         
 
     def get(self, db: Session, id: str) -> Optional[ModelType]:
-        return db.query(self.model).filter(self.model.id == id).first()
+        idn = db.query(self.model).filter(self.model.id == id).first()
+        print("\nobj: ", idn)
+        if not idn:
+            print("bio_row_id****")
+            idn = db.query.filter(self.model.bio_row_id == id).first()
+            print("\nresulting obj ^: ", idn)
+        
+        return idn
+    
+
+    def get_(self, db: Session, id: str, bio_row_id: Optional[str] = None) -> Optional[ModelType]:
+        query = db.query(self.model)
+        if bio_row_id:
+            return query.filter(self.model.bio_row_id == bio_row_id).first()
+        return query.filter(self.model.id == id).first()
+
     
     def get_detailed_(self, db:Session, model, id) -> Optional[ModelType]:
         try:
