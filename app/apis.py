@@ -2089,9 +2089,9 @@ def delete_next_of_kin(
 
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 import logging
-from .history.app.models_20240820111424 import BioData
 
-#from .history.app.schemas_20240814124601 import QualificationResponse
+
+
 
 logger = logging.getLogger(__name__)
 
