@@ -685,7 +685,7 @@ async def create_bio_data_(
 
 
     # Validate role permissions
-    allowed_roles = ['System Administrator', 'System Admin', 'Sys. Admin', 'I.T Admin', 'Human Resource Manager'  ,'HR Manager', 'HRM', 'HR']
+    allowed_roles = ['System Administrator', 'System Admin', 'Admin', 'Sys. Admin', 'I.T Admin', 'Human Resource Manager'  ,'HR Manager', 'HRM', 'HR']
     if not any(role.lower() in current_user.role.lower() for role in allowed_roles):
         raise HTTPException(status_code=403, detail="Not authorized to register BioData")
 
