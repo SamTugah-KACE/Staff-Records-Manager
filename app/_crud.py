@@ -129,7 +129,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     def get(self, db: Session, id: str) -> Optional[ModelType]:
         idn = db.query(self.model).filter(self.model.id == id).first()
-        print("\nobj: ", idn)
+        print("\nobj: ", idn.institution)
         if not idn:
             print("bio_row_id****")
             idn = db.query(self.model).filter(self.model.bio_row_id == id).first()
@@ -246,6 +246,38 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         except IntegrityError as e:
             db.rollback()
             raise ValueError("Data already exists with conflicting unique fields") from e
+        
+
+
+    
+    def update(self, db: Session, db_obj: ModelType, obj_in: ModelType) -> ModelType:
+        try:
+            # Check for uniqueness based on provided data
+            self.check_unique_fields(db, obj_in, exclude_id=db_obj.id)
+            
+            # Attempt to set new values from the input object
+            update_data = obj_in.dict(exclude_unset=True)  # Safely handle partial updates
+            print("update data/payload: ", update_data)
+            # Iterate through the provided fields and set attributes
+            for field, value in update_data.items():
+                if hasattr(db_obj, field):  # Ensure field exists in the model
+                    setattr(db_obj, field, value)
+                else:
+                    print(f"Warning: Model does not have the attribute '{field}'")
+
+            # Save the updated object
+            db.add(db_obj)
+            db.commit()
+            db.refresh(db_obj)
+            return db_obj
+
+        except IntegrityError as e:
+            db.rollback()  # Roll back transaction on integrity errors
+            raise ValueError("Data update would conflict with existing unique fields") from e
+        except Exception as e:
+            print(f"500 error: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+
 
     # def update(self, db: Session, db_obj: ModelType, obj_in: ModelType) -> ModelType:
     #     try:
@@ -282,29 +314,29 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
 
 
-    def update(self, db: Session, db_obj: ModelType, obj_in: ModelType) -> ModelType:
-        try:
-            # Check for uniqueness based on provided data, excluding the object's own ID
-            self.check_unique_fields(db, obj_in, exclude_id=db_obj.id)
+    # def update(self, db: Session, db_obj: ModelType, obj_in: ModelType) -> ModelType:
+    #     try:
+    #         # Check for uniqueness based on provided data, excluding the object's own ID
+    #         self.check_unique_fields(db, obj_in, exclude_id=db_obj.id)
             
-            # Attempt to set new values from the input object
-            for field in obj_in.dict(exclude_unset=True):
-                print("field in update fields: ", field)
-                setattr(db_obj, field, getattr(obj_in, field))
+    #         # Attempt to set new values from the input object
+    #         for field in obj_in.dict(exclude_unset=True):
+    #             print("field in update fields: ", field)
+    #             setattr(db_obj, field, getattr(obj_in, field))
             
-            print("\nupdate db_obj: ", db_obj)
-            # Save the updated object
-            db.add(db_obj)
-            db.commit()
-            db.refresh(db_obj)
-            return db_obj
+    #         print("\nupdate db_obj: ", db_obj)
+    #         # Save the updated object
+    #         db.add(db_obj)
+    #         db.commit()
+    #         db.refresh(db_obj)
+    #         return db_obj
         
-        except IntegrityError as e:
-            db.rollback()
-            raise ValueError("Data update would conflict with existing unique fields") from e
-        except Exception as e:
-            print("500 error: ", e)
-            raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+    #     except IntegrityError as e:
+    #         db.rollback()
+    #         raise ValueError("Data update would conflict with existing unique fields") from e
+    #     except Exception as e:
+    #         print("500 error: ", e)
+    #         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
 
 
     def remove(self, db: Session, id: uuid.UUID, force_delete: bool = False) -> ModelType:
@@ -349,43 +381,44 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def check_unique_fields(self, db: Session, obj: ModelType, exclude_id: Optional[uuid.UUID] = None):
         # Retrieve unique columns from the model's table
         unique_columns = [col for col in self.model.__table__.columns if col.unique]
-        
-        for column in unique_columns:
-            # Build the query to check for conflicts on unique fields
-            query = db.query(self.model).filter(getattr(self.model, column.name) == getattr(obj, column.name))
-            
-            # Exclude the current object from the uniqueness check by its ID
-            if exclude_id:
-                query = query.filter(self.model.id != exclude_id)
+        print("unique columns: ", unique_columns)
+        if unique_columns:
+            for column in unique_columns:
+                # Build the query to check for conflicts on unique fields
+                query = db.query(self.model).filter(getattr(self.model, column.name) == getattr(obj, column.name))
+                print("\nquery: ", query)
+                # Exclude the current object from the uniqueness check by its ID
+                if exclude_id:
+                    query = query.filter(self.model.id != exclude_id)
 
-            # Fetch the first record that would cause a conflict
-            existing_obj = query.first()
+                # Fetch the first record that would cause a conflict
+                existing_obj = query.first()
 
-            if existing_obj:
-                raise IntegrityConstraintViolation(f"Conflict found with unique field: '{column.name}'")
+                if existing_obj:
+                    raise IntegrityConstraintViolation(f"Conflict found with unique field: '{column.name}'")
 
-        # Check for uniqueness in related models' foreign key fields, if any
-        for relationship in self.model.__mapper__.relationships:
-            related_model = relationship.mapper.class_
-            
-            # Get the related column (foreign key)
-            foreign_key_column = relationship.local_remote_pairs[0][0]
-            
-            # Check for related rows that have conflicting unique fields
-            for related_column in related_model.__table__.columns:
-                if related_column.unique:
-                    related_query = db.query(related_model).filter(
-                        getattr(related_model, related_column.name) == getattr(obj, related_column.name)
-                    )
+            # Check for uniqueness in related models' foreign key fields, if any
+            for relationship in self.model.__mapper__.relationships:
+                related_model = relationship.mapper.class_
+                
+                # Get the related column (foreign key)
+                foreign_key_column = relationship.local_remote_pairs[0][0]
+                
+                # Check for related rows that have conflicting unique fields
+                for related_column in related_model.__table__.columns:
+                    if related_column.unique:
+                        related_query = db.query(related_model).filter(
+                            getattr(related_model, related_column.name) == getattr(obj, related_column.name)
+                        )
 
-                    # Exclude the current object's related row from the check
-                    if exclude_id:
-                        related_query = related_query.filter(foreign_key_column != exclude_id)
-                    
-                    existing_related_obj = related_query.first()
+                        # Exclude the current object's related row from the check
+                        if exclude_id:
+                            related_query = related_query.filter(foreign_key_column != exclude_id)
+                        
+                        existing_related_obj = related_query.first()
 
-                    if existing_related_obj:
-                        raise IntegrityConstraintViolation(f"Conflict found in related unique field: '{related_column.name}'")
+                        if existing_related_obj:
+                            raise IntegrityConstraintViolation(f"Conflict found in related unique field: '{related_column.name}'")
 
     # def check_unique_fields(self, db: Session, obj: ModelType, exclude_id: Optional[str] = None):
     #     # Iterate over all columns to find unique ones
