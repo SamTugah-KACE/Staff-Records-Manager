@@ -679,13 +679,24 @@ async def create_bio_data_(
     #      return templates.TemplateResponse("biodata-exist-error.html", {"request": request})
     # Retrieve user role from the UserRole table
     #user_role = db.query(UserRole).filter(UserRole.roles == current_user.role).first()
-    print("user_role: ", current_user)
-    if not current_user:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User role '{current_user}' is not authorized for this task.")
+    print("user_role: ", current_user.role)
+    # if not current_user:
+    #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User role '{current_user}' is not authorized for this task.")
 
-    # Generate username and password
-    username = generate_username(first_name, surname)
-    password = generate_password()
+
+    # Validate role permissions
+    allowed_roles = ['System Administrator', 'System Admin', 'Sys. Admin', 'I.T Admin', 'Human Resource Manager'  ,'HR Manager', 'HRM', 'HR']
+    if not any(role.lower() in current_user.role.lower() for role in allowed_roles):
+        raise HTTPException(status_code=403, detail="Not authorized to register BioData")
+
+    # Check if System Admin already registered a user
+    if "admin" in current_user.role.lower():
+        # Check if System Admin has already registered a user
+        existing_registration = db.query(BioData).filter(BioData.registered_by == current_user.role).first()
+        if existing_registration:
+            raise HTTPException(status_code=400, detail="System Admin has already registered a user. Further registrations are not allowed.")
+
+    
 
 
     bio_data_in = BioData()
@@ -709,8 +720,16 @@ async def create_bio_data_(
     bio_data_in.disability=disability
     bio_data_in.registered_by = current_user.role
     
-    files = {"image_col": file}
+    files = {"image_col": file} if file else None
+    
+    
+
     new_biodata = bio_data.create(db=db, obj_in=bio_data_in, files=files)
+
+
+    # Generate username and password
+    username = generate_username(first_name, surname)
+    password = generate_password()
 
      # Hash the password
     #hashed_password = get_password_hash(password)
@@ -742,6 +761,13 @@ async def create_bio_data_(
     await send_email(email=email, subject="Account Credentials", body=email_body)
     
     print("\n\n=======user registration status: ", new_user)
+
+     # Notify System Admin if it's their first registration
+    if "admin" in current_user.role.lower():
+        message = "This is your only opportunity to register a user. Future registrations are disabled."
+        return {"msg": message, "bio_data": new_biodata}
+
+
     return new_biodata
 
     #return templates.TemplateResponse("biodata-registration-success.html", {"request": request, "title": title, "first_name": first_name,"surname": surname,"email": email, "bio_row_id": new_biodata.id,})
@@ -2063,6 +2089,7 @@ def delete_next_of_kin(
 
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 import logging
+from .history.app.models_20240820111424 import BioData
 
 #from .history.app.schemas_20240814124601 import QualificationResponse
 

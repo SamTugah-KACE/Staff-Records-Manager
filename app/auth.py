@@ -153,6 +153,15 @@ def current_active_admin_user(current_user: schemas.User = Depends(get_current_a
     return current_user
 
 
+def is_authorized_role(roles: list, current_user: schemas.User = Depends(get_current_active_user)):
+    return any(role.lower() in current_user.role.lower() for role in roles)
+
+def check_admin_registration_limit(db: Session, current_user: schemas.User = Depends(get_current_active_user)):
+    if "admin" in current_user.role.lower():
+        existing_registration = db.query(models.BioData).filter(models.BioData.registered_by == current_user.role).first()
+        if existing_registration:
+            raise HTTPException(status_code=400, detail="System Admin has already registered a user.")
+
 
 # @auth_router.post("/token", response_model=schemas.Token)
 # def login_for_access_token(db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()):
