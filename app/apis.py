@@ -1553,8 +1553,10 @@ def update_academic(
     
 ) -> Academic:
     academic_obj = academic.get(db=db, id=id)
+    print("\nacademic_obj: ", academic_obj)
     if not academic_obj:
         raise HTTPException(status_code=404, detail="academic not found")
+    print("\nacademic_in: ", academic_in)
     return academic.update(db=db, db_obj=academic_obj, obj_in=academic_in)
 
 @api_router.delete("/academic/rm/{id}", response_model=schemas.Academic,  tags=["Academics"])

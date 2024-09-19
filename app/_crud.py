@@ -289,6 +289,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             
             # Attempt to set new values from the input object
             for field in obj_in.dict(exclude_unset=True):
+                print("field in update fields: ", field)
                 setattr(db_obj, field, getattr(obj_in, field))
             
             print("\nupdate db_obj: ", db_obj)
