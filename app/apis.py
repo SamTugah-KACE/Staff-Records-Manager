@@ -10,7 +10,7 @@ from Config.config import settings
 import schemas
 from models import (BioData, EmploymentDetail, BankDetail, Academic, Professional, 
                         Qualification, EmploymentHistory, FamilyInfo, EmergencyContact, 
-                        NextOfKin, Declaration, StaffCategory, Centre, User, Directorate, Grade, EmploymentType, Trademark, UserRole)
+                        NextOfKin, Declaration, StaffCategory, Centre, User, Directorate, Grade, EmploymentType, Trademark, UserRole, SavedForm)
 from crud import (bio_data, declaration, 
                   user, trademark)
 
@@ -622,7 +622,27 @@ def delete_staff_category(
 
 
 
+@api_router.get("/saved-form/", tags=["Saved Form"])
+async def get_saved_form(db: Session = Depends(get_db)):
+    saved_form = db.query(SavedForm).first()
+    if not saved_form:
+        raise HTTPException(status_code=404, detail="No saved form found")
+    return {"form_layout": saved_form.form_layout}
 
+
+@api_router.post("/save-form/")
+async def save_form(form_data: dict, db: Session = Depends(get_db)):
+    saved_form = db.query(SavedForm).first()
+    
+    if saved_form:
+        saved_form.form_layout = form_data
+        db.commit()
+        return {"message": "Form updated successfully"}
+    
+    new_form = SavedForm(form_layout=form_data)
+    db.add(new_form)
+    db.commit()
+    return {"message": "Form saved successfully"}
 
 
 
@@ -772,6 +792,181 @@ async def create_bio_data_(
 
     #return templates.TemplateResponse("biodata-registration-success.html", {"request": request, "title": title, "first_name": first_name,"surname": surname,"email": email, "bio_row_id": new_biodata.id,})
     #return bio_data.create(db=db, obj_in=bio_data_in, files=files)
+
+# Mapping dictionary to correlate form field labels to database columns
+FIELD_MAPPING = {
+    'National ID Number': 'ghana_card_number',
+    'Ghana Card Number': 'ghana_card_number',  # Alternative label for National ID
+
+    'Email Address': 'email',
+    'Email': 'email',
+
+    'Phone Number': 'active_phone_number',
+    'Contact Number': 'active_phone_number',  # Alternative label for Phone Number
+    'Mobile Number': 'active_phone_number',
+
+    'Date of Birth': 'date_of_birth',
+    'DOB': 'date_of_birth',
+
+    'First Name': 'first_name',
+    'Given Name': 'first_name',  # Alternative for First Name
+
+    'Surname': 'surname',
+    'Last Name': 'surname',  # Alternative label for Surname
+    'Family Name': 'surname',
+
+    'Profile Image': 'image_col',
+    'Image': 'image_col',
+    'Profile Picture': 'image_col',
+
+    'Nationality': 'nationality',
+    # '': 'hometown',
+
+    'Home Town': 'hometown',
+    'Place of Birth': 'hometown',
+
+    'Marital Status': 'marital_status',
+
+    'Residential Address': 'residential_addr',
+    'Home Address': 'residential_addr',
+    'GPS': 'residential_addr',
+    'GPS Address': 'residential_addr',
+
+    'SSNIT': 'ssnit_number',
+    'Social Security Number': 'ssnit_number',
+    # Add more mappings here for other potential variations
+}
+
+
+
+#BioData for dynamic HR registration form
+@api_router.post("/create_staff/", response_model=schemas.BioData, tags=["BioData"])
+async def create_staff(
+    *,
+    request: Request,
+    db: Session = Depends(get_db),
+    form_data: dict = Form(...),  # Accept dynamic form data
+    file: UploadFile = File(None),
+    # system_role: str = Form(None),
+    current_user: User = Depends(current_active_admin_user),
+) -> BioData:
+    
+
+     # Initialize bio_data_in object
+    bio_data_in = BioData()
+
+    # Process known fields based on FIELD_MAPPING
+    for field_label, field_value in form_data.items():
+        if field_label in FIELD_MAPPING:
+            column_name = FIELD_MAPPING[field_label]
+            setattr(bio_data_in, column_name, field_value)
+        else:
+            # Handle unknown fields by storing them in a JSONB column (flexible schema)
+            if not bio_data_in.extra_data:
+                bio_data_in.extra_data = {}
+            bio_data_in.extra_data[field_label] = field_value
+
+
+
+
+    bio_data_obj = bio_data.get_by_field(db, "active_phone_number", bio_data_in.active_phone_number)
+    if bio_data_obj:
+        raise HTTPException(status_code=400, detail="Phone Number Already Exists")
+    bio_data_obj = bio_data.get_by_field(db, "email", bio_data_in.email)
+    if bio_data_obj:
+        raise HTTPException(status_code=400, detail="Email Address Already Exists")
+    bio_data_obj = bio_data.get_by_field(db, "ssnit_number", bio_data_in.ssnit_number)
+    if bio_data_obj:
+        raise HTTPException(status_code=400, detail="Social Security Number Already Exists")
+    bio_data_obj = bio_data.get_by_field(db, "ghana_card_number", bio_data_in.ghana_card_number)
+    if bio_data_obj:
+        raise HTTPException(status_code=400, detail="National ID Number Already Exists")
+    
+    # if bio_data_obj:
+    #      return templates.TemplateResponse("biodata-exist-error.html", {"request": request})
+    # Retrieve user role from the UserRole table
+    #user_role = db.query(UserRole).filter(UserRole.roles == current_user.role).first()
+    print("user_role: ", current_user.role)
+    # if not current_user:
+    #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User role '{current_user}' is not authorized for this task.")
+
+
+    # Validate role permissions
+    allowed_roles = ['Platform Admin', 'Platform Administrator', 'System Administrator', 'System Admin', 'Admin', 'Sys. Admin', 'I.T Admin', 'Human Resource Manager'  ,'HR Manager', 'HRM', 'HR']
+    if not any(role.lower() in current_user.role.lower() for role in allowed_roles):
+        raise HTTPException(status_code=403, detail="Not authorized to register BioData")
+
+    # Check if System Admin already registered a user
+    if "admin" in current_user.role.lower():
+        # Check if System Admin has already registered a user
+        existing_registration = db.query(BioData).filter(BioData.registered_by == current_user.role).first()
+        if existing_registration:
+            raise HTTPException(status_code=400, detail="Platform Admin has already registered a user. Further registrations are not allowed.")
+
+    
+    bio_data_in.registered_by = current_user.role
+    
+    files = {"image_col": file} if file else None
+    
+    
+
+    new_biodata = bio_data.create(db=db, obj_in=bio_data_in, files=files)
+
+
+    # Generate username and password
+    username = generate_username(bio_data_in.first_name, bio_data_in.surname)
+    password = generate_password()
+
+     # Hash the password
+    #hashed_password = get_password_hash(password)
+    hashed_password = password
+
+    # Prepare the user data
+    user_data = {
+        "bio_row_id": new_biodata.id,  # Using the generated bio-data ID
+        "username": username,
+        "email": bio_data_in.email,
+        "hashed_password": hashed_password,
+        "role": form_data.get("System Role") or form_data.get("Role") or form_data.get("User Role"),
+        # "role": system_role,  # Set role as 'user'
+        "is_active": True
+    }
+
+    # Create the user in the User table
+    new_user = create_user_(
+        request=request,
+        bio_row_id=user_data['bio_row_id'],
+        username=user_data['username'],
+        email=user_data['email'],
+        hashed_password=user_data['hashed_password'],
+        role=user_data['role'],
+        db=db
+    )
+
+    # Send email with credentials
+    email_body = get_email_template(username, password, 'localhost:8000')
+    await send_email(email=bio_data_in.email, subject="Account Credentials", body=email_body)
+    
+    print("\n\n=======user registration status: ", new_user)
+
+     # Notify System Admin if it's their first registration
+    if "admin" in current_user.role.lower():
+        message = "This is your only opportunity to register a user. Future registrations are disabled."
+        return {"msg": message, "bio_data": new_biodata}
+
+
+    return new_biodata
+
+
+
+
+
+
+
+
+
+
+
 
 
 

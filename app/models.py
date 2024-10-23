@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean, Date, DateTime, Integer, ForeignKey, DECIMAL, CheckConstraint, LargeBinary
+from sqlalchemy import Column, String, Boolean, JSON, Date, DateTime, Integer, ForeignKey, DECIMAL, CheckConstraint, LargeBinary
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import validates, relationship, backref
@@ -6,6 +6,8 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 import uuid
 from database.db_session import Base
+from sqlalchemy.dialects.postgresql import JSONB
+
 
 
 # Enums
@@ -104,20 +106,21 @@ class BioData(BaseModel):
     surname = Column(String(100), nullable=False)
     previous_name = Column(String, nullable=True)
     gender = Column(String, default=Gender.Other.value, nullable=False)
-    date_of_birth = Column(Date, nullable=False)
-    nationality = Column(String, nullable=False)
-    hometown = Column(String, nullable=False)
+    date_of_birth = Column(Date)
+    nationality = Column(String)
+    hometown = Column(String)
     religion = Column(String, nullable=True)
     marital_status = Column(String, default=MaritalStatus.Other.value, nullable=False)
-    residential_addr = Column(String, nullable=False)
-    active_phone_number = Column(String,  unique=True, nullable=False)
-    email = Column(String, unique=True, nullable=False)
-    ssnit_number = Column(String, unique=True, nullable=False)
-    ghana_card_number = Column(String,  unique=True, nullable=False)
-    is_physically_challenged = Column(Boolean, nullable=False)
+    residential_addr = Column(String)
+    active_phone_number = Column(String,  unique=True)
+    email = Column(String, unique=True)
+    ssnit_number = Column(String, unique=True)
+    ghana_card_number = Column(String,  unique=True)
+    is_physically_challenged = Column(Boolean)
     disability = Column(String, nullable=True)
     image_col = Column(String, unique=True, nullable=True)  #accept image file upload and store the file path to the copied directory
     registered_by = Column(String)
+    extra_data = Column(JSONB, default={})  # For storing unknown/dynamic fields
 
     user = relationship('User', backref='bio_data', uselist=False, cascade='all, delete-orphan')
     employment_detail = relationship('EmploymentDetail', backref='bio_data', uselist=False, cascade='all, delete-orphan')
@@ -349,4 +352,7 @@ class UserRole(BaseModel):
     dashboard = Column(String)
 
     
+class SavedForm(BaseModel):
+    __tablename__ = "saved_forms"
 
+    form_layout = Column(JSON, nullable=False)  # Store form layout as JSON
