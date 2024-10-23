@@ -129,7 +129,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     def get(self, db: Session, id: str) -> Optional[ModelType]:
         idn = db.query(self.model).filter(self.model.id == id).first()
-        print("\nobj: ", idn.institution)
+        # print("\nobj: ", idn.institution)
         if not idn:
             print("bio_row_id****")
             idn = db.query(self.model).filter(self.model.bio_row_id == id).first()

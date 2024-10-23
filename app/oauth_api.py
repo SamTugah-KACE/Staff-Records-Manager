@@ -22,6 +22,7 @@ from fastapi.responses import FileResponse
 import requests
 from log_ import *
 from fastapi.responses import PlainTextResponse
+from auth import get_current_user, getCurrentUserDashbaord
 
 
 app = FastAPI()
@@ -267,3 +268,17 @@ async def download_intruder_log(date: str = None):
     
     return FileResponse(log_file_path, filename=log_filename)
 
+
+
+@auth_router.get("/protected-route")
+#@limiter.limit("5/minute")  # Brute force protection
+async def protected_route(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    try:
+        url = getCurrentUserDashbaord(current_user=current_user, db=db)
+        print("current user dashboard url: ", url)
+
+        
+        return url
+
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have access")
