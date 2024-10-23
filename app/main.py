@@ -19,8 +19,8 @@ from dashboard import *
 
 
 def create_tables():
-    Base.metadata.create_all(bind=engine)
-    #Base.metadata.drop_all(bind=engine)
+    # Base.metadata.create_all(bind=engine)
+    Base.metadata.drop_all(bind=engine)
 
 
 
@@ -55,7 +55,7 @@ def start_application():
     allow_methods=["*"],
     allow_headers=["*"]
     )
-    #create_tables()
+    create_tables()
     include_router(app)
     #lifespan(app)
 

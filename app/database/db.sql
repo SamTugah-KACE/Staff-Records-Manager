@@ -43,30 +43,65 @@ CREATE TABLE staff_category (
     category VARCHAR NOT NULL
 );
 
+-- CREATE TABLE bio_data (
+--     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+--     created_at TIMESTAMPTZ DEFAULT NOW(),
+--     updated_at TIMESTAMPTZ DEFAULT NOW(),
+--     title VARCHAR DEFAULT 'Other' NOT NULL,
+--     first_name VARCHAR(100) NOT NULL,
+--     other_names VARCHAR(100),
+--     surname VARCHAR(100) NOT NULL,
+--     previous_name VARCHAR,
+--     gender VARCHAR DEFAULT 'Other' NOT NULL,
+--     date_of_birth DATE NOT NULL,
+--     nationality VARCHAR NOT NULL,
+--     hometown VARCHAR NOT NULL,
+--     religion VARCHAR,
+--     marital_status VARCHAR DEFAULT 'Other' NOT NULL,
+--     residential_addr VARCHAR NOT NULL,
+--     active_phone_number VARCHAR NOT NULL,
+--     email VARCHAR NOT NULL,
+--     ssnit_number VARCHAR NOT NULL,
+--     ghana_card_number VARCHAR NOT NULL,
+--     is_physically_challenged BOOLEAN NOT NULL,
+--     disability VARCHAR,
+--     image_col VARCHAR,
+--     registered_by  VARCHAR
+-- );
+
 CREATE TABLE bio_data (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
-    title VARCHAR DEFAULT 'Other' NOT NULL,
+    title VARCHAR DEFAULT 'Other',
     first_name VARCHAR(100) NOT NULL,
     other_names VARCHAR(100),
     surname VARCHAR(100) NOT NULL,
     previous_name VARCHAR,
-    gender VARCHAR DEFAULT 'Other' NOT NULL,
-    date_of_birth DATE NOT NULL,
-    nationality VARCHAR NOT NULL,
-    hometown VARCHAR NOT NULL,
+    gender VARCHAR DEFAULT 'Other',
+    date_of_birth DATE,
+    nationality VARCHAR,
+    hometown VARCHAR,
     religion VARCHAR,
-    marital_status VARCHAR DEFAULT 'Other' NOT NULL,
-    residential_addr VARCHAR NOT NULL,
+    marital_status VARCHAR DEFAULT 'Other',
+    residential_addr VARCHAR,
     active_phone_number VARCHAR NOT NULL,
     email VARCHAR NOT NULL,
-    ssnit_number VARCHAR NOT NULL,
-    ghana_card_number VARCHAR NOT NULL,
-    is_physically_challenged BOOLEAN NOT NULL,
+    ssnit_number VARCHAR,
+    ghana_card_number VARCHAR,
+    is_physically_challenged BOOLEAN,
     disability VARCHAR,
     image_col VARCHAR,
-    registered_by  VARCHAR
+    registered_by  VARCHAR,
+    extra_data JSONB DEFAULT '{}'  -- New column for dynamic fields
+);
+
+-- New table for saving form layouts
+CREATE TABLE saved_forms (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    form_layout JSON NOT NULL  -- Stores form layout in JSON format
 );
 
 CREATE TABLE users (
