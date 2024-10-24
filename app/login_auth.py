@@ -355,8 +355,24 @@ class LoginService:
         db.commit()
 
         # Set cookies for access and refresh tokens
-        response.set_cookie(key="AccessToken", value=access_token, httponly=True, secure=True, samesite='none', expires=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        # response.set_cookie(key="AccessToken", value=access_token, httponly=True, secure=False, samesite='none', expires=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         
+        
+
+        is_production = os.getenv("ENV") == "development"
+
+        response.set_cookie(
+            key="AccessToken",
+            value=access_token,
+            httponly=True,
+            secure=is_production,  # Set to True in production, False in development
+            samesite='none' if is_production else 'lax',  # Use lax in dev for non-HTTPS
+            expires=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+            )
+
+
+
+
         if form_data.scopes and "remember_me" in form_data.scopes:
             response.set_cookie(key="RefreshToken", value=refresh_token, httponly=True, secure=True, samesite='none', expires=(settings.REFRESH_TOKEN_DURATION_IN_MINUTES+settings.REFRESH_TOKEN_DURATION_IN_MINUTES))
         else:
