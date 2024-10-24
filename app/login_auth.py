@@ -365,7 +365,7 @@ class LoginService:
             key="AccessToken",
             value=access_token,
             httponly=True,
-            secure=False,  # Set to True in production, False in development
+            secure=is_production,  # Set to True in production, False in development
             samesite='none' if is_production else 'lax',  # Use lax in dev for non-HTTPS
             expires=settings.ACCESS_TOKEN_EXPIRE_MINUTES
             )
