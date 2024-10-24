@@ -359,7 +359,7 @@ class LoginService:
         
         
 
-        is_production = os.getenv("ENV") == "development"
+        is_production = os.getenv("ENV") == "production"
 
         response.set_cookie(
             key="AccessToken",

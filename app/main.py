@@ -50,7 +50,7 @@ def start_application():
     app = FastAPI(docs_url="/api", title=settings.PROJECT_NAME, version=settings.PROJECT_VERSION)
     app.add_middleware(
     CORSMiddleware,
-    allow_origins= ['https://staff-records-management-system.onrender.com', 'http://localhost:3000'],
+    allow_origins= ['http://localhost:3000','https://staff-records-management-system.onrender.com'],
     allow_credentials=True,    
     allow_methods=["*"],
     allow_headers=["*"]
