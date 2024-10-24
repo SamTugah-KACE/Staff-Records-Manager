@@ -360,12 +360,12 @@ class LoginService:
         
 
         is_production = os.getenv("ENV") == "production"
-
+        print("is_production: ", is_production)
         response.set_cookie(
             key="AccessToken",
             value=access_token,
             httponly=True,
-            secure=is_production,  # Set to True in production, False in development
+            secure=False,  # Set to True in production, False in development
             samesite='none' if is_production else 'lax',  # Use lax in dev for non-HTTPS
             expires=settings.ACCESS_TOKEN_EXPIRE_MINUTES
             )
