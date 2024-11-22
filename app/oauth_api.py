@@ -23,7 +23,13 @@ import requests
 from log_ import *
 from fastapi.responses import PlainTextResponse
 from auth import get_current_user, getCurrentUserDashbaord
+import logging
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,  # Adjust level to DEBUG for more detailed logs
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 app = FastAPI()
 
@@ -275,10 +281,15 @@ async def download_intruder_log(date: str = None):
 async def protected_route(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
     try:
         url = getCurrentUserDashbaord(current_user=current_user, db=db)
+        logging.info(f"Redirecting {current_user.username} to dashboard: {dashboard_url}")
         print("current user dashboard url: ", url)
 
         
         return url
 
+    except HTTPException as http_exc:
+        logging.warning(f"HTTPException in protected_route: {http_exc.detail}")
+        raise http_exc
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have access")
+        logging.error(f"Unexpected error in protected_route: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred.")

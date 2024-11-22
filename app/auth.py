@@ -27,7 +27,13 @@ from fastapi.responses import FileResponse
 import requests
 from log_ import *
 from fastapi.responses import PlainTextResponse
+import logging
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,  # Adjust level to DEBUG for more detailed logs
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
 # app = FastAPI()
@@ -84,6 +90,10 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         print("username :", username)
+        logging.info(f"Decoded token payload, username: {username}")
+        if username is None:
+            logging.warning("Token payload does not contain a username.")
+            raise credentials_exception
         # if username is None:
         #     raise credentials_exception
         # token_data = TokenData(username=username)
@@ -92,31 +102,57 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
     user = crud.get_user_by_username(db, username=username)
     print("user obj: ", user)
     if user is None:
+        logging.warning(f"User not found for username: {username}")
         raise credentials_exception
+        
+    logging.info(f"Authenticated user: {user.username}")
     return user
+    
 
 def get_current_active_user(current_user: schemas.User = Depends(get_current_user)):
     if current_user.is_active != True:
         raise HTTPException(status_code=400, detail="User's account is Inactive.")
     return current_user
 
-def getCurrentUserDashbaord(current_user: models.User, db:Session = Depends(get_db)):
-    #role = None
-    dash = None
-    print("current user: ", current_user.role)
+
+def getCurrentUserDashbaord(current_user: models.User, db: Session):
     try:
+        if not current_user.is_active:
+            raise HTTPException(status_code=400, detail="User's account is inactive.")
         
-        # if current_user.is_active != True:
-        #     raise HTTPException(status_code=400, detail="User's account is Inactive.")
-        user = db.query(models.UserRole).filter(models.UserRole.roles == current_user.role).first()
-        dash = user.dashboard
-        print("Current User Role: ", user.roles)
-        print("Current User Dashboard: ", user.dashboard)
-        return dash
-    
+        user_role = db.query(models.UserRole).filter(models.UserRole.roles == current_user.role).first()
+        
+        if not user_role:
+            raise HTTPException(status_code=404, detail="User role not found.")
+        
+        logging.info(f"User Role: {user_role.roles}, Dashboard: {user_role.dashboard}")
+        return user_role.dashboard
+
+    except HTTPException:
+        # Re-raise known HTTPExceptions
+        raise
     except Exception as e:
-        print("exception checking current user role Dashboard: ", e)
-        raise HTTPException(status_code=400, detail=str(e))
+        logging.error(f"Error fetching user dashboard: {e}")
+        raise HTTPException(status_code=500, detail="Unable to determine user dashboard.")
+
+
+# def getCurrentUserDashbaord(current_user: models.User, db:Session = Depends(get_db)):
+#     #role = None
+#     dash = None
+#     print("current user: ", current_user.role)
+#     try:
+        
+#         # if current_user.is_active != True:
+#         #     raise HTTPException(status_code=400, detail="User's account is Inactive.")
+#         user = db.query(models.UserRole).filter(models.UserRole.roles == current_user.role).first()
+#         dash = user.dashboard
+#         print("Current User Role: ", user.roles)
+#         print("Current User Dashboard: ", user.dashboard)
+#         return dash
+    
+#     except Exception as e:
+#         print("exception checking current user role Dashboard: ", e)
+#         raise HTTPException(status_code=400, detail=str(e))
 
 
 
