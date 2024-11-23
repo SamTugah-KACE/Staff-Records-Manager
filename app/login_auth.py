@@ -378,7 +378,7 @@ class LoginService:
             value=access_token,
             httponly=True,
             secure=is_production,  # Set to True in production, False in development
-            samesite='none'  #if is_production else 'lax',  # Use lax in dev for non-HTTPS
+            samesite='none',  #if is_production else 'lax',  # Use lax in dev for non-HTTPS
             expires=settings.ACCESS_TOKEN_EXPIRE_MINUTES,
             # domain=domain  # Specify domain if necessary
             )
