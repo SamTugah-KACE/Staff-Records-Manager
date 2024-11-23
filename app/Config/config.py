@@ -78,6 +78,8 @@ class Settings:
     USE_CREDENTIALS: bool = True
     VALIDATE_CERTS: bool = True
 
+
+    ENV:str = "development"
    
 
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "https://smconf-test.web.app")

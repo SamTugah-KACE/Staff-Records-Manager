@@ -18,11 +18,18 @@ from mail import account_emergency, send_email
 import os
 import json
 from auth import getCurrentUserDashbaord
+from dotenv import load_dotenv
+
+
+
+# Load .env file
+load_dotenv()
+
 
 # intruder_list = []
 class LoginService:
     
-    
+
 
     # async def log_intruder_info(request: Request):
     #     client_ip = request.client.host
@@ -358,9 +365,14 @@ class LoginService:
         # response.set_cookie(key="AccessToken", value=access_token, httponly=True, secure=False, samesite='none', expires=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         
         
-        domain = os.getenv("FRONTEND_DOMAIN", None)  # E.g., "example.com" or None for development
-        is_production = os.getenv("ENV") == "production"
+        # domain = os.getenv("FRONTEND_DOMAIN", None)  # E.g., "example.com" or None for development
+        is_production =  settings.ENV == "production"   # Check if ENV is 'production'
+        print("Running in environment:", is_production)
         print("is_production: ", is_production)
+        
+        print("\n=====================\nRunning in environment:", "production" if is_production else "development")
+        print("is_production:", is_production)
+        
         response.set_cookie(
             key="AccessToken",
             value=access_token,
@@ -372,7 +384,7 @@ class LoginService:
             )
 
         
-        print("\nresponse.headers: ",response.headers)
+        print("\n============================\nresponse.headers: ",response.headers)
 
 
         if form_data.scopes and "remember_me" in form_data.scopes:
@@ -380,13 +392,30 @@ class LoginService:
         else:
             response.set_cookie(key="RefreshToken", value=refresh_token, httponly=True, secure=is_production, samesite='none' if is_production else 'lax', expires=settings.REFRESH_TOKEN_DURATION_IN_MINUTES)
 
-        dash = getCurrentUserDashbaord(user, db)
-        print("dashboard -> ", dash)
-        bio = db.query(BioData).filter(BioData.id == user.bio_row_id).first()
-        print("\nuser bio-data: ", bio)
-        fullname = ""
-        if bio:
-            fullname = f"{bio.title} {bio.first_name} {bio.surname} {bio.other_names or ''}"
+        # dash = getCurrentUserDashbaord(user, db)
+        # print("dashboard -> ", dash)
+        # bio = db.query(BioData).filter(BioData.id == user.bio_row_id).first()
+        # print("\nuser bio-data: ", bio)
+        # fullname = ""
+        # if bio:
+        #     fullname = f"{bio.title} {bio.first_name} {bio.surname} {bio.other_names or ''}"
+        
+        try:
+            dash = getCurrentUserDashbaord(user, db)
+            print("dashboard -> ", dash)
+            bio = db.query(BioData).filter(BioData.id == user.bio_row_id).first()
+            print("\nuser bio-data: ", bio)
+
+            if bio:
+                fullname = f"{bio.title} {bio.first_name} {bio.surname} {bio.other_names or ''}"
+        except Exception as e:
+            # logger.error(f"Error fetching bio data: {e}")
+            print(f"\nError fetching bio data: {e}")
+            fullname = ""
+        
+        
+        
+        
         return {
             "access_token": access_token,
             "token_type": "bearer",
