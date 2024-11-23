@@ -377,7 +377,7 @@ class LoginService:
             key="AccessToken",
             value=access_token,
             httponly=True,
-            secure=is_production,  # Set to True in production, False in development
+            secure=False,  # Set to True in production, False in development
             samesite='none' if is_production else 'lax',  # Use lax in dev for non-HTTPS
             expires=settings.ACCESS_TOKEN_EXPIRE_MINUTES,
             # domain=domain  # Specify domain if necessary
@@ -388,9 +388,9 @@ class LoginService:
 
 
         if form_data.scopes and "remember_me" in form_data.scopes:
-            response.set_cookie(key="RefreshToken", value=refresh_token, httponly=True, secure=is_production, samesite='none' if is_production else 'lax', expires=(settings.REMEMBER_ME_REFRESH_TOKEN_IN_MINUTES))
+            response.set_cookie(key="RefreshToken", value=refresh_token, httponly=True, secure=False, samesite='none' if is_production else 'lax', expires=(settings.REMEMBER_ME_REFRESH_TOKEN_IN_MINUTES))
         else:
-            response.set_cookie(key="RefreshToken", value=refresh_token, httponly=True, secure=is_production, samesite='none' if is_production else 'lax', expires=settings.REFRESH_TOKEN_DURATION_IN_MINUTES)
+            response.set_cookie(key="RefreshToken", value=refresh_token, httponly=True, secure=False, samesite='none' if is_production else 'lax', expires=settings.REFRESH_TOKEN_DURATION_IN_MINUTES)
 
         # dash = getCurrentUserDashbaord(user, db)
         # print("dashboard -> ", dash)
