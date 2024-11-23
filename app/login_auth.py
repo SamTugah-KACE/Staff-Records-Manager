@@ -371,13 +371,14 @@ class LoginService:
             # domain=domain  # Specify domain if necessary
             )
 
-
+        
+        print("\nresponse.headers: ",response.headers)
 
 
         if form_data.scopes and "remember_me" in form_data.scopes:
-            response.set_cookie(key="RefreshToken", value=refresh_token, httponly=True, secure=True, samesite='none', expires=(settings.REFRESH_TOKEN_DURATION_IN_MINUTES+settings.REFRESH_TOKEN_DURATION_IN_MINUTES))
+            response.set_cookie(key="RefreshToken", value=refresh_token, httponly=True, secure=is_production, samesite='none' if is_production else 'lax', expires=(settings.REMEMBER_ME_REFRESH_TOKEN_IN_MINUTES))
         else:
-            response.set_cookie(key="RefreshToken", value=refresh_token, httponly=True, secure=True, samesite='none', expires=settings.REFRESH_TOKEN_DURATION_IN_MINUTES)
+            response.set_cookie(key="RefreshToken", value=refresh_token, httponly=True, secure=is_production, samesite='none' if is_production else 'lax', expires=settings.REFRESH_TOKEN_DURATION_IN_MINUTES)
 
         dash = getCurrentUserDashbaord(user, db)
         print("dashboard -> ", dash)

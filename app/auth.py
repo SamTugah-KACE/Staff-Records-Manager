@@ -117,6 +117,7 @@ def get_current_active_user(current_user: schemas.User = Depends(get_current_use
 
 def getCurrentUserDashbaord(current_user: models.User, db: Session):
     try:
+        print("current user in getCurrentUserDashboard: ", current_user)
         if not current_user.is_active:
             raise HTTPException(status_code=400, detail="User's account is inactive.")
         

@@ -281,7 +281,7 @@ async def download_intruder_log(date: str = None):
 async def protected_route(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
     try:
         url = getCurrentUserDashbaord(current_user=current_user, db=db)
-        logging.info(f"Redirecting {current_user.username} to dashboard: {dashboard_url}")
+        logging.info(f"Redirecting {current_user.username} to dashboard: {url}")
         print("current user dashboard url: ", url)
 
         
