@@ -366,31 +366,50 @@ class LoginService:
         
         
         # domain = os.getenv("FRONTEND_DOMAIN", None)  # E.g., "example.com" or None for development
-        is_production =  settings.ENV == "production"   # Check if ENV is 'production'
-        print("Running in environment:", is_production)
-        print("is_production: ", is_production)
+        # is_production =  settings.ENV == "production"   # Check if ENV is 'production'
+        # print("Running in environment:", is_production)
+        # print("is_production: ", is_production)
         
-        print("\n=====================\nRunning in environment:", "production" if is_production else "development")
-        print("is_production:", is_production)
+        # print("\n=====================\nRunning in environment:", "production" if is_production else "development")
+        # print("is_production:", is_production)
         
+        # response.set_cookie(
+        #     key="AccessToken",
+        #     value=access_token,
+        #     httponly=True,
+        #     secure=is_production,  # Set to True in production, False in development
+        #     samesite='none' if is_production else 'lax',  # Use lax in dev for non-HTTPS
+        #     expires=settings.ACCESS_TOKEN_EXPIRE_MINUTES,
+        #     # domain=domain  # Specify domain if necessary
+        #     )
+
         response.set_cookie(
-            key="AccessToken",
-            value=access_token,
+        key="AccessToken",
+        value=access_token,
+        httponly=True,
+        secure=settings.ENV == "production",  # Secure only in production
+        samesite='None' if settings.ENV == "production" else 'Lax',  # Cross-origin for production
+        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        )
+
+        response.set_cookie(
+            key="RefreshToken",
+            value=refresh_token,
             httponly=True,
-            secure=is_production,  # Set to True in production, False in development
-            samesite='none' if is_production else 'lax',  # Use lax in dev for non-HTTPS
-            expires=settings.ACCESS_TOKEN_EXPIRE_MINUTES,
-            # domain=domain  # Specify domain if necessary
-            )
+            secure=settings.ENV == "production",
+            samesite='None' if settings.ENV == "production" else 'Lax',
+            max_age=(settings.REMEMBER_ME_REFRESH_TOKEN_IN_MINUTES * 60 if form_data.scopes and "remember_me" in form_data.scopes else settings.REFRESH_TOKEN_DURATION_IN_MINUTES * 60),
+        )
+
 
         
         print("\n============================\nresponse.headers: ",response.headers)
 
 
-        if form_data.scopes and "remember_me" in form_data.scopes:
-            response.set_cookie(key="RefreshToken", value=refresh_token, httponly=True, secure=is_production, samesite='none' if is_production else 'lax', expires=(settings.REMEMBER_ME_REFRESH_TOKEN_IN_MINUTES))
-        else:
-            response.set_cookie(key="RefreshToken", value=refresh_token, httponly=True, secure=is_production, samesite='none' if is_production else 'lax', expires=settings.REFRESH_TOKEN_DURATION_IN_MINUTES)
+        # if form_data.scopes and "remember_me" in form_data.scopes:
+        #     response.set_cookie(key="RefreshToken", value=refresh_token, httponly=True, secure=is_production, samesite='none' if is_production else 'lax', expires=(settings.REMEMBER_ME_REFRESH_TOKEN_IN_MINUTES))
+        # else:
+        #     response.set_cookie(key="RefreshToken", value=refresh_token, httponly=True, secure=is_production, samesite='none' if is_production else 'lax', expires=settings.REFRESH_TOKEN_DURATION_IN_MINUTES)
 
         # dash = getCurrentUserDashbaord(user, db)
         # print("dashboard -> ", dash)
