@@ -50,10 +50,16 @@ def start_application():
     app = FastAPI(docs_url="/api", title=settings.PROJECT_NAME, version=settings.PROJECT_VERSION)
     app.add_middleware(
     CORSMiddleware,
-    allow_origins= ['https://staff-records-management-system-f6y8.onrender.com',  'https://staff-records-management-system.onrender.com' ],
-    allow_credentials=True,    
-    allow_methods=["*"],
-    allow_headers=["*"]
+    allow_origins= [
+        'https://staff-records-management-system-f6y8.onrender.com',  
+        'https://staff-records-management-system.onrender.com' 
+        ],
+    allow_credentials=True,  
+    # allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-CSRFToken"],  
+    # allow_methods=["*"],
+    # allow_headers=["*"]
     )
     create_tables()
     include_router(app)
@@ -93,7 +99,12 @@ async def startup_event():
         pass
 
 
-
+@app.middleware("http")
+async def log_cookies(request: Request, call_next):
+    # logging.info(f"Request cookies: {request.cookies}")
+    print(f"Request cookies from backend: {request.cookies}")
+    response = await call_next(request)
+    return response
 
 # Custom error handling middleware
 @app.exception_handler(RequestValidationError)
@@ -118,6 +129,10 @@ from sqlalchemy.orm import Session
 from database.db_session import get_db
 import os
 
+
+
+
+
 #intruder_list = []
 
 
@@ -132,6 +147,9 @@ import os
 #             await log_intruder_info(request)
 
 #         return response
+
+
+
 
 class IntruderDetectionMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, db: Session = Depends(get_db)):
