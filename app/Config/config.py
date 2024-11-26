@@ -79,7 +79,7 @@ class Settings:
     VALIDATE_CERTS: bool = True
 
 
-    ENV:str = "production"
+    ENV:str = "development"
    
 
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "https://smconf-test.web.app")

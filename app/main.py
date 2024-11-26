@@ -101,6 +101,7 @@ async def startup_event():
 
 @app.middleware("http")
 async def log_cookies(request: Request, call_next):
+    print(f"Request headers: {request.headers}")
     # logging.info(f"Request cookies: {request.cookies}")
     print(f"Request cookies from backend: {request.cookies}")
     response = await call_next(request)
