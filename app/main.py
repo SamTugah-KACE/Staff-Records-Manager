@@ -101,12 +101,13 @@ async def startup_event():
 
 @app.middleware("http")
 async def log_cookies(request: Request, call_next):
-    print(f"Request headers: {request.headers}")
+    print(f"\n\tRequest headers: {request.headers}")
     # logging.info(f"Request cookies: {request.cookies}")
-    print(f"Request cookies from backend: {request.cookies}")
+    print(f"\n\tRequest cookies from backend: {request.cookies}")
     response = await call_next(request)
-    print(f"Response headers: {response.headers}")
+    print(f"\n\tResponse headers: {response.headers}")
     return response
+
 
 # Custom error handling middleware
 @app.exception_handler(RequestValidationError)
