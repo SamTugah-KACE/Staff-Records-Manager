@@ -52,7 +52,7 @@ def start_application():
     CORSMiddleware,
     allow_origins= [
         'https://staff-records-management-system-f6y8.onrender.com',  
-        'https://staff-records-management-system.onrender.com' 
+        'https://staff-records-management-system.onrender.com', 
         ],
     allow_credentials=True,  
     # allow_credentials=True,
