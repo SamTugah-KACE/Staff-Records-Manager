@@ -105,6 +105,7 @@ async def log_cookies(request: Request, call_next):
     # logging.info(f"Request cookies: {request.cookies}")
     print(f"Request cookies from backend: {request.cookies}")
     response = await call_next(request)
+    print(f"Response headers: {response.headers}")
     return response
 
 # Custom error handling middleware
