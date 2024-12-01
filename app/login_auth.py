@@ -387,8 +387,8 @@ class LoginService:
         key="AccessToken",
         value=access_token,
         httponly=True,
-        secure=settings.ENV == "production",  # Secure only in production
-        samesite='None' if settings.ENV == "production" else 'Lax',  # Cross-origin for production
+        secure=True, #settings.ENV == "production",  # Secure only in production
+        samesite='None', # if settings.ENV == "production" else 'Lax',  # Cross-origin for production
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         )
 
@@ -396,8 +396,8 @@ class LoginService:
             key="RefreshToken",
             value=refresh_token,
             httponly=True,
-            secure=settings.ENV == "production",
-            samesite='None' if settings.ENV == "production" else 'Lax',
+            secure=True, #settings.ENV == "production",
+            samesite='None',  #if settings.ENV == "production" else 'Lax',
             max_age=(settings.REMEMBER_ME_REFRESH_TOKEN_IN_MINUTES * 60 if form_data.scopes and "remember_me" in form_data.scopes else settings.REFRESH_TOKEN_DURATION_IN_MINUTES * 60),
         )
 
